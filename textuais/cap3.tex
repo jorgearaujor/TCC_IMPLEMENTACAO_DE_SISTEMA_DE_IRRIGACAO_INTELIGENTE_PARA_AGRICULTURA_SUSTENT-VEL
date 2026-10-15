@@ -1,0 +1,114 @@
+\chapter{Metodologia}
+
+Este trabalho parte de dois problemas observados nas soluções de irrigação automatizada, o custo elevado e a baixa adaptabilidade. Os sistemas de controle disponíveis comercialmente podem ser caros \cite{campos2021}, e muitas plataformas de monitoramento são sistemas fechados, com custos que dificultam a instalação de vários pontos de medição e que não permitem a conexão de sensores de outros fabricantes \cite{puig2022}. Para enfrentar esses problemas, propõe-se um sistema modular baseado em Internet das Coisas, construído com componentes de baixo custo e organizado em camadas independentes, de modo que sensores, atuadores e parâmetros de irrigação possam ser substituídos ou ajustados sem a reestruturação de todo o sistema seja feita.
+ 
+Quanto à natureza, trata-se de uma pesquisa aplicada, pois busca gerar conhecimento voltado à solução de um problema prático e específico. Quanto aos objetivos, a pesquisa é exploratória, uma vez que procura proporcionar maior familiaridade com o problema e verificar a viabilidade de uma alternativa para ele. A abordagem é predominantemente qualitativa, centrada na verificação do funcionamento do sistema e no atendimento aos requisitos definidos.
+ 
+Quanto aos procedimentos, o trabalho iniciou-se com uma pesquisa bibliográfica, que embasou a fundamentação teórica e a análise dos trabalhos relacionados, e prosseguiu com o desenvolvimento de um protótipo funcional, composto por hardware, \textit{firmware}, \textit{backend} e aplicação web. Segundo a classificação de estilos de pesquisa em computação proposta por \citeonline{wazlawick2014}, o trabalho enquadra-se na apresentação de um produto, cujo valor está em demonstrar que a solução atende a um problema relevante. Essa contribuição é complementada pela comparação qualitativa com soluções comerciais e acadêmicas apresentada no Capítulo~\ref{textuais/cap2}.
+ 
+Cabe destacar que o foco do estudo está na viabilidade técnica e econômica do sistema, e não na medição de sua eficiência agronômica. Assim, não fazem parte do escopo a quantificação da economia de água ou dos ganhos de produtividade em campo. O que se busca demonstrar é que é possível desenvolver um sistema de irrigação automatizado, modular e de baixo custo utilizando tecnologias de IoT.
+
+\section{Processo de desenvolvimento}
+ 
+O trabalho foi desenvolvido no Laboratório Maker do Instituto Federal Goiano -- Campus Urutaí e seguiu uma abordagem incremental. O sistema foi construído em ciclos sucessivos: cada versão funcional era avaliada, e o resultado dessa avaliação orientava a versão seguinte. Essa forma de trabalho permitiu trocar componentes e decisões de arquitetura durante o projeto sem descartar o que já havia sido validado, como a lógica de cálculo da irrigação e o banco de dados. As etapas estão resumidas na Figura~\ref{fig:etapas} e são descritas a seguir.
+ 
+\begin{figure}[htbp]
+  \centering
+  % \includegraphics[width=\textwidth]{figuras/etapas-desenvolvimento}
+  \begin{tikzpicture}[
+      node distance=4mm,
+      etapa/.style={draw, rounded corners=2pt, align=center,
+                    text width=2.5cm, minimum height=2.7cm, font=\footnotesize},
+      seta/.style={-{Stealth[length=2mm]}, thick}
+    ]
+    \node[etapa] (e1) {\textbf{1}\\[2pt] Revisão\\ bibliográfica};
+    \node[etapa, right=of e1] (e2) {\textbf{2}\\[2pt] Levantamento e análise de requisitos};
+    \node[etapa, right=of e2] (e3) {\textbf{3}\\[2pt] Primeiro protótipo\\[2pt]
+                                    {\scriptsize Raspberry Pi 4B, Python, MQTT e Node-RED}};
+    \node[etapa, right=of e3] (e4) {\textbf{4}\\[2pt] Segundo protótipo\\[2pt]
+                                    {\scriptsize ESP32, API REST e painel web}};
+    \node[etapa, right=of e4] (e5) {\textbf{5}\\[2pt] Integração e testes em ambiente controlado};
+ 
+    \draw[seta] (e1) -- (e2);
+    \draw[seta] (e2) -- (e3);
+    \draw[seta] (e4) -- (e5);
+    \draw[seta, dashed] (e3.south) to[bend left=35]
+      node[below, font=\scriptsize] {reavaliação dos requisitos} (e2.south);
+    \draw[seta] (e2.north) to[bend left=50]
+      node[below, font=\scriptsize] {construção do segundo protótipo} (e4);
+  \end{tikzpicture}
+  \caption{Etapas do desenvolvimento do trabalho}
+  \label{fig:etapas}
+  \fonte{Elaborado pelo autor}
+\end{figure}
+ 
+A primeira etapa foi uma revisão bibliográfica, cujo objetivo era delimitar o escopo do projeto e definir um caminho a seguir durante o desenvolvimento. Foram pesquisadas as tecnologias já empregadas na agricultura irrigada, como microcontroladores e plataformas embarcadas, sensores de solo e de clima, protocolos de comunicação para Internet das Coisas e métodos de manejo da irrigação. Também foram analisados projetos acadêmicos e soluções comerciais de irrigação inteligente, que serviram de referência para o que o sistema deveria oferecer e para as limitações que ele poderia superar, sobretudo o custo. O principal sistema embasado foi \textbf{"Low-cost open-source platform for irrigation automation"} desvevolvido por \citeauthor{campos2021lowcost}, projeto esse desenvolvido em outro campus do Instituto Federal Goiano.
+
+Na segunda etapa foram levantados e analisados os requisitos do sistema. Do lado do hardware, definiram-se os sensores, os atuadores e a unidade de processamento: o sensor DHT11, para temperatura e umidade relativa do ar; um sensor de umidade do solo; um módulo relé para acionar a válvula solenoide; e um display LCD para exibir as informações no local de instalação. Do lado do escopo, adotou-se o gotejamento como método de irrigação, por aplicar a água de forma localizada. Para o cálculo da lâmina, escolheu-se a abordagem Kc--ETo da FAO-56 \cite{allen1998}, com a evapotranspiração de referência estimada pelo método de Hargreaves-Samani \cite{hargreaves1985reference}, que exige apenas temperatura e latitude e, por isso, é compatível com sensores de baixo custo. Os coeficientes de cultura foram obtidos do Comunicado Técnico 254 da Embrapa \cite{albuquerque2021planilha}. Também nessa etapa foram definidos a forma de comunicação entre o dispositivo e a interface e o armazenamento dos dados em nuvem com o Firebase. Os requisitos detalhados estão no Capitulo~\ref{textuais/cap5}. 
+ 
+A terceira etapa foi a montagem do primeiro protótipo de hardware e software. O Raspberry Pi 4 Model B \cite{raspberrypi4} atuava como unidade central, com firmware desenvolvido em Python. Como o Raspberry Pi não tem entradas analógicas, o sensor de umidade do solo foi lido por meio do conversor analógico-digital ADS1115. A comunicação entre o dispositivo e a interface usava o protocolo MQTT \cite{mqtt5}, com o broker hospedado no próprio Raspberry Pi, e a interface foi construída no Node-RED, com um painel para visualizar as leituras, informar os parâmetros de cálculo e acompanhar o histórico de irrigações nos modos manual e automático. Os testes com esse protótipo confirmaram o Firebase (Cloud Firestore) como solução de armazenamento, escolha mantida até a versão atual.
+ 
+A avaliação do primeiro protótipo levou à revisão da arquitetura. As funções do dispositivo de campo, que consistem em ler os sensores, acionar o relé e transmitir dados, não exigiam um sistema operacional completo nem o poder de processamento do Raspberry Pi, que acrescentava custo, consumo de energia e o risco de corromper o cartão SD diante de instabilidades na rede elétrica. Na quarta etapa, portanto, foi montado um segundo protótipo com o microcontrolador ESP32 \cite{espressif}, que oferece Wi-Fi integrado, dois núcleos de processamento e memória suficiente para manter conexões seguras com a nuvem, a um custo menor. O ESP8266 chegou a ser considerado, mas foi descartado pela memória limitada. Junto com a troca de hardware, a arquitetura de software foi refeita: o processamento e a persistência passaram para uma API REST em Java com Spring Boot, acessada pelo dispositivo via HTTP \cite{rfc9110}, e o Node-RED foi substituído por um painel web em Angular. O firmware foi reescrito em C++, preservando a lógica de cálculo da irrigação. Os sensores, os atuadores e o banco de dados foram mantidos, e essa é a arquitetura atual do sistema, descrita no Capítulo~\ref{textuais/cap5}.
+ 
+Na quinta etapa, o sistema completo, formado pelo dispositivo ESP32, pela API, pelo Firestore e pelo painel web, foi integrado e testado em ambiente controlado. O objetivo foi verificar se todo o ecossistema funcionava de ponta a ponta: o envio das leituras dos sensores até o painel, o envio de comandos do painel até o dispositivo, o acionamento da irrigação nos modos manual e automático e o registro do histórico. Os procedimentos e os resultados desses testes são apresentados no Capítulo~\ref{textuais/cap6}.
+ 
+\section{Materiais e ferramentas}
+ 
+A Tabela~\ref{tab:ferramentas} reúne os materiais e as ferramentas usados na versão atual do sistema, agrupados por categoria, com a versão de cada um e a finalidade no projeto. Os componentes eletrônicos aparecem de forma resumida e são detalhados no Capítulo~\ref{textuais/cap6}. As ferramentas usadas apenas no primeiro protótipo (Python, o broker MQTT Mosquitto, o Node-RED e as bibliotecas de leitura dos sensores no Raspberry Pi) não constam na tabela, porque foram descontinuadas na migração para o ESP32.
+ 
+\begin{table}[htbp]
+  \centering
+  \caption{Ferramentas utilizadas no desenvolvimento}
+  \label{tab:ferramentas}
+  \footnotesize
+  \begin{tabularx}{\textwidth}{@{} l l X @{}}
+    \toprule
+    \textbf{Ferramenta} & \textbf{Versão} & \textbf{Finalidade} \\
+    \midrule
+    \multicolumn{3}{@{}l}{\textit{Hardware}} \\
+    Componentes eletrônicos & -- & Dispositivo de campo: ESP32, DHT11, sensor de umidade do solo, relé, válvula solenoide e display LCD I2C (detalhados no Capítulo~6) \\
+    \midrule
+    \multicolumn{3}{@{}l}{\textit{Linguagens}} \\
+    C++ (framework Arduino) & --  & Firmware do ESP32 \\ % CONFERIR: versão do núcleo ESP32 para Arduino
+    Java                    & 17  & Backend (API REST) \\
+    TypeScript              & 5.9 & Frontend (painel web) \\
+    \midrule
+    \multicolumn{3}{@{}l}{\textit{Frameworks e bibliotecas}} \\
+    Spring Boot             & 4.1.0      & API REST, segurança e validação das requisições \\
+    Angular                 & 21.2       & Painel web de monitoramento e controle \\
+    Tailwind CSS            & 4.1        & Estilização da interface \\
+    Chart.js / ng2-charts   & 4.5 / 10.0 & Gráficos do histórico de leituras \\
+    \midrule
+    \multicolumn{3}{@{}l}{\textit{Serviços}} \\
+    Firebase Authentication & --    & Login dos usuários do painel \\
+    Cloud Firestore         & --    & Banco de dados NoSQL: telemetria, histórico de irrigações e configurações \\
+    Firebase Admin SDK      & 9.4.1 & Acesso do backend ao Firestore e validação de tokens \\
+    Firebase JS SDK         & 12.16 & Autenticação no painel web \\
+    \midrule
+    \multicolumn{3}{@{}l}{\textit{Apoio ao desenvolvimento}} \\
+    Git e GitHub            & --     & Versionamento e hospedagem dos repositórios \\
+    Maven                   & 3.9.16 & Compilação e gerenciamento de dependências do backend \\
+    npm                     & 11.6.2 & Gerenciamento de dependências e scripts do frontend \\
+    Swagger (springdoc-openapi) & 2.8.8 & Documentação interativa dos endpoints da API \\
+    Docker                  & --     & Imagem de execução do backend (Eclipse Temurin 17) \\
+    IntelliJ IDEA           & --     & Desenvolvimento do backend \\
+    Arduino IDE           & --     & Desenvolvimento e gravação do firmware \\ % CONFERIR
+    Visual Studio Code    & --     & Desenvolvimento do frontend \\           % CONFERIR
+    \midrule
+    \multicolumn{3}{@{}l}{\textit{Testes}} \\
+    JUnit                   & --  & Testes unitários do backend \\ % versão gerenciada pelo Spring Boot 4.1
+    Mockito                 & --  & Simulação de dependências nos testes do backend \\
+    \bottomrule
+  \end{tabularx}
+  \fonte{Elaborado pelo autor}
+\end{table}
+
+\section{Procedimentos de avaliação}
+
+A avaliação do sistema foi planejada em três níveis, do componente isolado ao ecossistema completo, todos executados em ambiente controlado. Os resultados são apresentados no Capítulo~\ref{textuais/cap7}.
+ 
+No primeiro nível, os testes unitários verificam o código de cada aplicação separadamente. No backend, as classes de serviço e os controladores são testados com JUnit, e o Mockito substitui as dependências externas, como o Firestore, para que cada teste avalie apenas a lógica da classe. O critério de aceitação é que todos os testes passem.
+ 
+No segundo nível, os testes de integração verificam a comunicação entre as partes do sistema nos dois sentidos. No sentido do dispositivo para o painel, as leituras enviadas pelo ESP32 devem ser registradas no Firestore e exibidas no painel com os mesmos valores. No sentido inverso, um comando emitido no painel, como iniciar a irrigação manual ou trocar o modo de operação, deve chegar ao dispositivo e ser executado. O critério é que os dados e os comandos cheguem íntegros ao destino e que cada irrigação fique registrada no histórico.
+ 
+No terceiro nível, os testes de hardware avaliam o dispositivo de campo. O sensor de umidade do solo é calibrado com leituras em solo seco e em solo saturado, que definem os limites da escala usada pelo firmware. Em seguida, a irrigação é acionada nos modos manual e automático, e o volume aplicado, medido em recipiente graduado, é comparado ao volume calculado pelo sistema. O critério é que a diferença entre os dois volumes fique dentro de uma margem de erro aceitável. % CONFERIR: definir a margem (ex.: 10%)

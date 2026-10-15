@@ -1,0 +1,73 @@
+\chapter{Implementação}
+\label{textuais/cap5}
+
+\section{Arquitetura do sistema}
+% DESCRIÇÃO: figura com as quatro camadas da fundamentação:
+%  - Percepção: ESP32, sensores e atuadores;
+%  - Rede: Wi-Fi e HTTPS (webhooks e long-polling);
+%  - Nuvem: API Spring Boot e Firestore;
+%  - Aplicação: painel Angular.
+% Descreva o fluxo nos dois sentidos: leituras até o painel e comandos
+% até o ESP32.
+
+\begin{figure}[htbp]
+  \centering
+  % \includegraphics[width=\textwidth]{figuras/arquitetura}
+  \caption{Arquitetura geral do sistema}
+  \label{fig:arquitetura}
+  \fonte{Elaborado pelo autor.}
+\end{figure}
+
+\section{Hardware}
+% DESCRIÇÃO: montagem física do protótipo.
+%  - tabela de componentes (função, quantidade, custo);
+%  - esquema elétrico (sugestão: Fritzing) com os pinos do ESP32;
+%  - alimentação (12 V da válvula e alimentação do ESP32);
+%  - custo total do protótipo, com fonte e data dos preços.
+
+\section{Firmware e lógica de irrigação}
+% DESCRIÇÃO: seção central do trabalho, com fluxograma e equações.
+%  - ciclo de leitura dos sensores e envio da telemetria;
+%  - modo automático: limiar de umidade + autorização;
+%  - cálculo da lâmina: ET0 (confirmar o método no código, ex.:
+%    Hargreaves-Samani, a partir da latitude e das temperaturas mínima e
+%    máxima) x Kc = ETc;
+%  - conversão em volume por planta (espaçamentos, vazão e número de
+%    gotejadores) e em tempo de abertura da válvula;
+%  - modo manual com volume definido pelo usuário;
+%  - recebimento de comandos por long-polling e envio do histórico.
+
+\section{Backend}
+% DESCRIÇÃO: API em Java 17 com Spring Boot, Firebase Admin SDK, Swagger
+% e Docker. Ela atende dois clientes: o ESP32 e o painel web.
+
+\subsection{Organização em camadas}
+% DESCRIÇÃO: pacotes e responsabilidades: controller, service,
+% repository, model/dto, security, config e exception.
+
+\subsection{Endpoints e comunicação com o dispositivo}
+% DESCRIÇÃO: tabela de rotas, separando painel e dispositivo. Explique o
+% mecanismo de comandos: a API enfileira o comando e o ESP32 o recebe no
+% long-polling (espera de até 30 s; resposta 204 sem comando).
+
+\subsection{Segurança e autenticação}
+% DESCRIÇÃO: painel com token do Firebase (FirebaseAuthFilter) e lista
+% de acesso na coleção usuarios; dispositivo com X-Device-Key
+% (DeviceKeyFilter); ações de escrita restritas ao administrador.
+
+\subsection{Modelo de dados}
+% DESCRIÇÃO: coleções do Firestore e conteúdo de cada uma: devices,
+% telemetry, irrigationHistory, coeficientes e usuarios. Justifique o uso
+% de um banco NoSQL orientado a documentos.
+
+\section{Frontend}
+% DESCRIÇÃO: Angular 21, Tailwind CSS, Chart.js e Firebase JS SDK.
+
+\subsection{Estrutura da aplicação}
+% DESCRIÇÃO: organização em core (serviços, guards, interceptors,
+% modelos) e features (telas); atualização periódica por polling;
+% interceptor que anexa o token; dados simulados para desenvolvimento.
+
+\subsection{Telas desenvolvidas}
+% DESCRIÇÃO: função de cada tela, de forma breve (as capturas ficam no
+% Cap. 7): Dashboard, Histórico, Configurações, Login e Cadastro.

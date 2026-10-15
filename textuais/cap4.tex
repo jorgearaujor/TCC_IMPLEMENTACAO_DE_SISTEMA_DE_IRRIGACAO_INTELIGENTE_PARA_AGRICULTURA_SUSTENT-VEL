@@ -1,0 +1,69 @@
+% #####################################################################
+\chapter{Levantamento e análise de requisitos}
+% #####################################################################
+% DESCRIÇÃO: parágrafo de abertura dizendo que o capítulo define O QUE o
+% sistema deve fazer, a partir da fundamentação teórica e da análise dos
+% trabalhos relacionados.
+
+\section{Descrição do problema e escopo}
+% DESCRIÇÃO: resuma o problema (irrigação sem controle desperdiça água;
+% soluções comerciais são caras e voltadas a outras escalas) e delimite o
+% escopo: um único dispositivo (esp32-01), irrigação por gotejamento em
+% pequenas áreas, acompanhamento por painel web. Diga também o que ficou
+% fora do escopo (ex.: vários dispositivos, fertirrigação).
+
+\section{Perfis de usuário}
+% DESCRIÇÃO: descreva quem usa o sistema e o que cada perfil pode fazer:
+%  - Administrador: configura parâmetros, culturas e latitude, aciona a
+%    irrigação, muda o modo, autoriza o modo automático e cadastra
+%    usuários;
+%  - Visualizador: acompanha status, sensores e histórico, sem alterar
+%    nada;
+%  - Dispositivo (ator do sistema): envia leituras e recebe comandos.
+
+\section{Requisitos funcionais}
+% DESCRIÇÃO: tabela com identificador (RF01, RF02...), descrição e perfil.
+% Exemplos tirados dos repositórios:
+%  - monitorar umidade do solo, temperatura e umidade do ar;
+%  - alternar entre os modos manual e automático;
+%  - autorizar ou bloquear a irrigação automática;
+%  - acionar a irrigação manual com volume em litros;
+%  - cadastrar culturas e seus Kc por fase;
+%  - configurar os parâmetros agronômicos e a latitude;
+%  - exibir histórico em gráficos (24 h, 7 e 30 dias) e eventos de
+%    irrigação;
+%  - autenticar usuários e permitir que o administrador cadastre novos.
+
+\section{Requisitos não funcionais}
+% DESCRIÇÃO: tabela com identificador (RNF01...), descrição e categoria
+% (segurança, desempenho, usabilidade, tecnologia). Exemplos:
+%  - autenticação de usuários pelo Firebase Authentication;
+%  - autenticação do dispositivo por chave (X-Device-Key);
+%  - armazenamento em nuvem (Firestore);
+%  - atualização do painel a cada 5 s (status) e 10 s (telemetria);
+%  - interface web responsiva;
+%  - comunicação do dispositivo por Wi-Fi e HTTPS.
+
+\section{Regras de negócio}
+% DESCRIÇÃO: as regras que o sistema segue para decidir. Ex.:
+%  - a irrigação automática só ocorre se o modo for automático, se
+%    estiver autorizada e se a umidade do solo estiver abaixo do limiar;
+%  - o Kc é definido pela cultura e pela fase escolhidas, não digitado;
+%  - o volume aplicado depende dos parâmetros agronômicos;
+%  - somente administradores alteram configurações e acionam comandos.
+
+\section{Modelagem do sistema}
+% DESCRIÇÃO: diagramas que ajudam a banca a entender o sistema antes da
+% implementação. Sugestões:
+%  - diagrama de casos de uso (perfis x funcionalidades);
+%  - diagrama de sequência de um fluxo principal (ex.: comando de
+%    irrigação manual saindo do painel até o ESP32).
+
+\begin{figure}[htbp]
+  \centering
+  % \includegraphics[width=\textwidth]{figuras/casos-de-uso}
+  \caption{Diagrama de casos de uso do sistema}
+  \label{fig:casos-de-uso}
+  \fonte{Elaborado pelo autor.}
+\end{figure}
+
