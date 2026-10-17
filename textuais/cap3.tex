@@ -10,7 +10,7 @@ Cabe destacar que o foco do estudo está na viabilidade técnica e econômica do
 
 \section{Processo de desenvolvimento}
  
-O trabalho foi desenvolvido no Laboratório Maker do Instituto Federal Goiano -- Campus Urutaí e seguiu uma abordagem incremental. O sistema foi construído em ciclos sucessivos: cada versão funcional era avaliada, e o resultado dessa avaliação orientava a versão seguinte. Essa forma de trabalho permitiu trocar componentes e decisões de arquitetura durante o projeto sem descartar o que já havia sido validado, como a lógica de cálculo da irrigação e o banco de dados. As etapas estão resumidas na Figura~\ref{fig:etapas} e são descritas a seguir.
+O trabalho foi desenvolvido no Laboratório IFMaker do Instituto Federal Goiano -- Campus Urutaí e seguiu uma abordagem incremental. O sistema foi construído em ciclos sucessivos: cada versão funcional era avaliada, e o resultado dessa avaliação orientava a versão seguinte. Essa forma de trabalho permitiu trocar componentes e decisões de arquitetura durante o projeto sem descartar o que já havia sido validado, como a lógica de cálculo da irrigação e o banco de dados. As etapas estão resumidas na Figura~\ref{fig:etapas} e são descritas a seguir.
  
 \begin{figure}[htbp]
   \centering
@@ -35,14 +35,14 @@ O trabalho foi desenvolvido no Laboratório Maker do Instituto Federal Goiano --
     \draw[seta, dashed] (e3.south) to[bend left=35]
       node[below, font=\scriptsize] {reavaliação dos requisitos} (e2.south);
     \draw[seta] (e2.north) to[bend left=50]
-      node[below, font=\scriptsize] {construção do segundo protótipo} (e4);
+      node[above, font=\scriptsize] {construção do segundo protótipo} (e4.north);
   \end{tikzpicture}
   \caption{Etapas do desenvolvimento do trabalho}
   \label{fig:etapas}
   \fonte{Elaborado pelo autor}
 \end{figure}
  
-A primeira etapa foi uma revisão bibliográfica, cujo objetivo era delimitar o escopo do projeto e definir um caminho a seguir durante o desenvolvimento. Foram pesquisadas as tecnologias já empregadas na agricultura irrigada, como microcontroladores e plataformas embarcadas, sensores de solo e de clima, protocolos de comunicação para Internet das Coisas e métodos de manejo da irrigação. Também foram analisados projetos acadêmicos e soluções comerciais de irrigação inteligente, que serviram de referência para o que o sistema deveria oferecer e para as limitações que ele poderia superar, sobretudo o custo. O principal sistema embasado foi \textbf{"Low-cost open-source platform for irrigation automation"} desvevolvido por \citeauthor{campos2021lowcost}, projeto esse desenvolvido em outro campus do Instituto Federal Goiano.
+A primeira etapa foi uma revisão bibliográfica, cujo objetivo era delimitar o escopo do projeto e definir um caminho a seguir durante o desenvolvimento. Foram pesquisadas as tecnologias já empregadas na agricultura irrigada, como microcontroladores e plataformas embarcadas, sensores de solo e de clima, protocolos de comunicação para Internet das Coisas e métodos de manejo da irrigação. Também foram analisados projetos acadêmicos e soluções comerciais de irrigação inteligente, que serviram de referência para o que o sistema deveria oferecer e para as limitações que ele poderia superar, sobretudo o custo. O principal sistema embasado foi \textbf{"Low-cost open-source platform for irrigation automation"} desvevolvido por \citeauthor{campos2021lowcost}, no Instituto Federal Goiano - Campus Ceres.
 
 Na segunda etapa foram levantados e analisados os requisitos do sistema. Do lado do hardware, definiram-se os sensores, os atuadores e a unidade de processamento: o sensor DHT11, para temperatura e umidade relativa do ar; um sensor de umidade do solo; um módulo relé para acionar a válvula solenoide; e um display LCD para exibir as informações no local de instalação. Do lado do escopo, adotou-se o gotejamento como método de irrigação, por aplicar a água de forma localizada. Para o cálculo da lâmina, escolheu-se a abordagem Kc--ETo da FAO-56 \cite{allen1998}, com a evapotranspiração de referência estimada pelo método de Hargreaves-Samani \cite{hargreaves1985reference}, que exige apenas temperatura e latitude e, por isso, é compatível com sensores de baixo custo. Os coeficientes de cultura foram obtidos do Comunicado Técnico 254 da Embrapa \cite{albuquerque2021planilha}. Também nessa etapa foram definidos a forma de comunicação entre o dispositivo e a interface e o armazenamento dos dados em nuvem com o Firebase. Os requisitos detalhados estão no Capitulo~\ref{textuais/cap5}. 
  
@@ -54,7 +54,9 @@ Na quinta etapa, o sistema completo, formado pelo dispositivo ESP32, pela API, p
  
 \section{Materiais e ferramentas}
  
-A Tabela~\ref{tab:ferramentas} reúne os materiais e as ferramentas usados na versão atual do sistema, agrupados por categoria, com a versão de cada um e a finalidade no projeto. Os componentes eletrônicos aparecem de forma resumida e são detalhados no Capítulo~\ref{textuais/cap6}. As ferramentas usadas apenas no primeiro protótipo (Python, o broker MQTT Mosquitto, o Node-RED e as bibliotecas de leitura dos sensores no Raspberry Pi) não constam na tabela, porque foram descontinuadas na migração para o ESP32.
+A Tabela~\ref{tab:ferramentas} reúne os materiais e as ferramentas usados na versão atual do sistema, com a versão de cada um e a finalidade no projeto. Eles estão organizados em seis categorias, que acompanham as partes do sistema. A categoria \textit{hardware} reúne os componentes físicos do protótipo, como o ESP32, os sensores e os atuadores, que aparecem de forma resumida e são detalhados posteriormente Capitulo~\ref{textuais/cap4}. A categoria \textit{firmware} contém o ambiente e as bibliotecas usados para programar o ESP32. As categorias \textit{backend} e \textit{frontend} agrupam, respectivamente, as tecnologias da API, responsável por receber os dados do dispositivo e os comandos do painel, e as da aplicação web, por meio da qual o usuário acompanha e controla a irrigação. A categoria de nuvem e banco de dados reúne os serviços do Firebase, usados para autenticação e armazenamento. Por fim, a categoria de desenvolvimento e testes reúne as ferramentas de apoio, como o controle de versão e as bibliotecas de testes automatizados.
+
+As ferramentas usadas apenas no primeiro protótipo (Python, o \textit{broker} MQTT Mosquitto, o Node-RED e as bibliotecas de leitura dos sensores no Raspberry Pi) não constam na tabela, porque foram descontinuadas na migração para o ESP32.
  
 \begin{table}[htbp]
   \centering
