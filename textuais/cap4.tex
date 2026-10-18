@@ -2,66 +2,283 @@
 \chapter{Levantamento e análise de requisitos}
 \label{textuais/cap4}
 
+Este capítulo define o que o sistema deve fazer e sob quais condições. A partir da descrição do problema e da delimitação do escopo, são apresentados os perfis de usuário, os requisitos funcionais e não funcionais, as regras de negócio que orientam as decisões do sistema e, por fim, os diagramas que modelam seu comportamento.
 
+% =====================================================================
 \section{Descrição do problema e escopo}
-% DESCRIÇÃO: resuma o problema (irrigação sem controle desperdiça água;
-% soluções comerciais são caras e voltadas a outras escalas) e delimite o
-% escopo: um único dispositivo (esp32-01), irrigação por gotejamento em
-% pequenas áreas, acompanhamento por painel web. Diga também o que ficou
-% fora do escopo (ex.: vários dispositivos, fertirrigação).
+\label{sec:problema-escopo}
 
+A irrigação feita sem controle, por tempo fixo ou pela percepção do produtor, tende a aplicar mais ou menos água do que a cultura necessita, o que gera desperdício ou estresse hídrico. As soluções comerciais que automatizam essa decisão, como as analisadas no Capítulo~\ref{textuais/cap2}, oferecem modelos de decisão elaborados, mas são proprietárias, têm custo elevado e, em geral, são voltadas a escalas diferentes da de pequenas áreas de cultivo.
+
+Para enfrentar esse problema, o sistema proposto monitora a umidade do solo, a temperatura e a umidade do ar, decide quando irrigar com base na umidade do solo e calcula quanto irrigar pelo método FAO-56, escrito por \citeonline{allen1998}, com a ET$_0$ estimada pelo método de Hargreaves-Samani. O acompanhamento e o controle são feitos a distância, por meio de um painel \textit{web}.
+
+O escopo do trabalho compreende:
+\begin{itemize}
+  \item Um único dispositivo de campo, um ESP32 identificado como \texttt{esp32-01}, com sensor de umidade do solo, sensor DHT11, relé e \textit{display} LCD;
+  \item irrigação localizada por gotejamento em pequenas áreas, tendo a alface como cultura de referência;
+  \item Uma API \textit{web} que intermedeia a comunicação entre o dispositivo e o painel e armazena os dados em nuvem;
+  \item Um painel \textit{web} para monitoramento, configuração e acionamento da irrigação, com controle de acesso por perfil de usuário.
+\end{itemize}
+
+Ficam fora do escopo: o controle simultâneo de vários dispositivos, embora o modelo de dados já identifique cada um deles; a fertirrigação; o uso de previsão do tempo; o desenvolvimento de aplicativo móvel nativo; a medição de vento e radiação solar, necessária ao método de Penman-Monteith; e a avaliação da economia de água e da produtividade em campo, conforme delimitado na caracterização da pesquisa.
+
+% =====================================================================
 \section{Perfis de usuário}
-% DESCRIÇÃO: descreva quem usa o sistema e o que cada perfil pode fazer:
-%  - Administrador: configura parâmetros, culturas e latitude, aciona a
-%    irrigação, muda o modo, autoriza o modo automático e cadastra
-%    usuários;
-%  - Visualizador: acompanha status, sensores e histórico, sem alterar
-%    nada;
-%  - Dispositivo (ator do sistema): envia leituras e recebe comandos.
+\label{sec:perfis}
 
+O sistema possui dois perfis de usuário humano e um ator de sistema. O perfil é definido no cadastro do usuário e verificado pela API a cada requisição, de modo que as restrições valem mesmo que alguém tente acessar as funções diretamente, sem passar pelo painel.
+
+O \textbf{Administrador/Operador} tem acesso completo. Além de acompanhar o sistema, ele altera o modo de operação, autoriza ou bloqueia a irrigação automática, inicia e interrompe a irrigação manual, configura os parâmetros agronômicos e a latitude, cadastra culturas e cadastra novos usuários.
+
+O \textbf{Visualizador} tem acesso apenas de leitura. Ele acompanha o estado do dispositivo, as leituras dos sensores, os gráficos e o histórico de irrigações, mas não altera configurações nem envia comandos.
+
+O \textbf{Dispositivo ESP32} é um ator de sistema, não humano. Ele envia as leituras dos sensores, o estado e o histórico de irrigações à API e recebe dela a configuração inicial e os comandos. Por não ser um usuário, autentica-se por uma chave própria, e não por \textit{login} e senha. A Tabela~\ref{tab:permissoes} resume as permissões de cada perfil.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Matriz de permissões por perfil}
+  \label{tab:permissoes}
+  \small
+  \renewcommand{\arraystretch}{1.2}
+  \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X ccc}
+    \hline
+    \textbf{Funcionalidade} & \textbf{Administrador/Operador} & \textbf{Visualizador} &
+    \textbf{Dispositivo} \\
+    \hline
+    Autenticar-se no sistema & Sim & Sim & Sim (por chave) \\
+    Acompanhar painel, gráficos e histórico & Sim & Sim & -- \\
+    Consultar o catálogo de culturas & Sim & Sim & -- \\
+    Alternar o modo e autorizar a irrigação automática & Sim & Não & -- \\
+    Iniciar e interromper a irrigação & Sim & Não & Executa \\
+    Configurar parâmetros agronômicos e latitude & Sim & Não & Recebe e aplica \\
+    Cadastrar culturas & Sim & Não & -- \\
+    Cadastrar usuários & Sim & Não & -- \\
+    Enviar leituras, estado e histórico & -- & -- & Sim \\
+    Receber configuração e comandos & -- & -- & Sim \\
+    \hline
+  \end{tabularx}
+  \fonte{Elaborado pelo autor}
+\end{table}
+
+% =====================================================================
 \section{Requisitos funcionais}
-% DESCRIÇÃO: tabela com identificador (RF01, RF02...), descrição e perfil.
-% Exemplos tirados dos repositórios:
-%  - monitorar umidade do solo, temperatura e umidade do ar;
-%  - alternar entre os modos manual e automático;
-%  - autorizar ou bloquear a irrigação automática;
-%  - acionar a irrigação manual com volume em litros;
-%  - cadastrar culturas e seus Kc por fase;
-%  - configurar os parâmetros agronômicos e a latitude;
-%  - exibir histórico em gráficos (24 h, 7 e 30 dias) e eventos de
-%    irrigação;
-%  - autenticar usuários e permitir que o administrador cadastre novos.
+\label{sec:rf}
 
+Os \sigla{RF}{requisitos funcionais} descrevem as funções que o sistema deve oferecer. Eles foram levantados a partir do problema descrito, das funcionalidades observadas nos trabalhos relacionados e das necessidades do manejo da irrigação apresentadas na fundamentação teórica. A Tabela~\ref{tab:rf} apresenta os requisitos agrupados por área, com o ator responsável e a prioridade de cada um.
+
+{\small
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{>{\raggedright\arraybackslash}p{1.1cm}
+                  >{\raggedright\arraybackslash}p{7.9cm}
+                  >{\raggedright\arraybackslash}p{3.1cm}
+                  >{\raggedright\arraybackslash}p{1.9cm}}
+  \caption{Requisitos funcionais do sistema}
+  \label{tab:rf} \\
+  \hline
+  \textbf{ID} & \textbf{Requisito} & \textbf{Ator} & \textbf{Prioridade} \\
+  \hline
+  \endfirsthead
+  \multicolumn{4}{l}{\textit{Continuação da Tabela~\ref{tab:rf}}} \\
+  \hline
+  \textbf{ID} & \textbf{Requisito} & \textbf{Ator} & \textbf{Prioridade} \\
+  \hline
+  \endhead
+  \hline
+  \multicolumn{4}{r}{\textit{Continua na próxima página}} \\
+  \endfoot
+  \hline
+  \endlastfoot
+  \multicolumn{4}{l}{\textbf{Autenticação e gestão de usuários}} \\
+  \hline
+  RF01 & Autenticar o usuário por e-mail e senha. & Administrador\slash Operador e Visualizador & Alta \\
+  RF02 & Encerrar a sessão do usuário autenticado. & Administrador\slash Operador e Visualizador & Média \\
+  RF03 & Restringir o acesso ao painel aos usuários cadastrados na lista de acesso do sistema. & Sistema & Alta \\
+  RF04 & Permitir que o administrador cadastre novos usuários, definindo seu perfil. & Administrador\slash Operador & Média \\
+  RF05 & Exibir o perfil do usuário autenticado. & Administrador\slash Operador e Visualizador & Média \\
+  RF06 & Diferenciar os perfis de acesso e aplicar as permissões correspondentes. & Sistema & Alta \\
+  \hline
+  \multicolumn{4}{l}{\textbf{Monitoramento}} \\
+  \hline
+  RF07 & Exibir o estado atual do dispositivo: modo, autorização, irrigação em andamento, volume de água, temperaturas mínima e máxima e latitude. & Administrador\slash Operador e Visualizador & Alta \\
+  RF08 & Exibir, em tempo quase real, a temperatura do ar, a umidade do ar e a umidade do solo. & Administrador\slash Operador e Visualizador & Alta \\
+  RF09 & Exibir os dados da última irrigação realizada. & Administrador\slash Operador e Visualizador & Média \\
+  RF10 & Apresentar gráficos do histórico de leituras nos períodos de 24 horas, 7 dias e 30 dias. & Administrador\slash Operador e Visualizador & Média \\
+  RF11 & Listar o histórico de irrigações, com data, hora, volume por planta, volume total, umidade e modo. & Administrador\slash Operador e Visualizador & Alta \\
+  \hline
+  \multicolumn{4}{l}{\textbf{Controle da irrigação}} \\
+  \hline
+  RF12 & Alternar o modo de operação entre manual e automático. & Administrador\slash Operador & Alta \\
+  RF13 & Autorizar ou bloquear a irrigação automática. & Administrador\slash Operador & Alta \\
+  RF14 & Iniciar a irrigação manual, informando o volume de água em litros. & Administrador\slash Operador & Alta \\
+  RF15 & Interromper a irrigação em andamento. & Administrador\slash Operador & Alta \\
+  RF16 & Definir a latitude da área de cultivo, usada no cálculo da ET$_0$. & Administrador\slash Operador & Média \\
+  RF17 & Garantir que haja no máximo uma irrigação em execução por vez. & Sistema e Dispositivo & Alta \\
+  \hline
+  \multicolumn{4}{l}{\textbf{Configuração agronômica}} \\
+  \hline
+  RF18 & Configurar os parâmetros de irrigação: cultura e fase, espaçamento entre plantas e entre linhas, vazão do gotejador, número de gotejadores por planta, número total de plantas e limiar mínimo de umidade do solo. & Administrador\slash Operador & Alta \\
+  RF19 & Consultar o catálogo de culturas e seus coeficientes de cultura. & Administrador\slash Operador e Visualizador & Média \\
+  RF20 & Cadastrar novas culturas, com o K$_c$ de cada fase de desenvolvimento. & Administrador\slash Operador & Média \\
+  RF21 & Aplicar o K$_c$ correspondente à cultura e à fase selecionadas. & Sistema & Média \\
+  \hline
+  \multicolumn{4}{l}{\textbf{Dispositivo}} \\
+  \hline
+  RF22 & Ler periodicamente o sensor DHT11 e o sensor de umidade do solo. & Dispositivo & Alta \\
+  RF23 & Enviar as leituras dos sensores à API. & Dispositivo & Alta \\
+  RF24 & Enviar periodicamente o estado do dispositivo à API. & Dispositivo & Alta \\
+  RF25 & Obter a configuração inicial ao ser ligado. & Dispositivo & Alta \\
+  RF26 & Receber os comandos enviados pelo painel: iniciar e interromper a irrigação, alterar o modo, a autorização, os parâmetros de irrigação e a latitude. & Dispositivo & Alta \\
+  RF27 & Calcular a ET$_0$ e a lâmina de irrigação, em volume e tempo, no modo automático. & Dispositivo & Alta \\
+  RF28 & Acionar o relé conforme o cálculo realizado ou o comando recebido. & Dispositivo & Alta \\
+  RF29 & Iniciar a irrigação automática quando a umidade do solo estiver abaixo do limiar, com o modo automático e a autorização ativos. & Dispositivo & Alta \\
+  RF30 & Registrar e enviar à API o histórico ao fim de cada irrigação. & Dispositivo & Alta \\
+  RF31 & Exibir informações no \textit{display} LCD. & Dispositivo & Baixa \\
+  RF32 & Operar com valores padrão caso a configuração da API esteja indisponível e repetir os envios que falharem. & Dispositivo & Média \\
+  \hline
+  \multicolumn{4}{l}{\textbf{Integração e persistência}} \\
+  \hline
+  RF33 & Enfileirar os comandos gerados no painel e entregá-los ao dispositivo. & Sistema & Alta \\
+  RF34 & Armazenar em nuvem os dados do dispositivo, as leituras, o histórico de irrigações, as culturas e os usuários. & Sistema & Alta \\
+\end{longtable}
+}
+\vspace{-0.8\baselineskip}
+\fonte{Elaborado pelo autor}
+
+% =====================================================================
 \section{Requisitos não funcionais}
-% DESCRIÇÃO: tabela com identificador (RNF01...), descrição e categoria
-% (segurança, desempenho, usabilidade, tecnologia). Exemplos:
-%  - autenticação de usuários pelo Firebase Authentication;
-%  - autenticação do dispositivo por chave (X-Device-Key);
-%  - armazenamento em nuvem (Firestore);
-%  - atualização do painel a cada 5 s (status) e 10 s (telemetria);
-%  - interface web responsiva;
-%  - comunicação do dispositivo por Wi-Fi e HTTPS.
+\label{sec:rnf}
 
+Os \sigla{RNF}{requisitos não funcionais} definem como o sistema deve operar, estabelecendo restrições de segurança, desempenho, confiabilidade, usabilidade e tecnologia. Eles estão listados na Tabela~\ref{tab:rnf}.
+
+{\small
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{>{\raggedright\arraybackslash}p{1.3cm}
+                  >{\raggedright\arraybackslash}p{3.0cm}
+                  >{\raggedright\arraybackslash}p{10.2cm}}
+  \caption{Requisitos não funcionais do sistema}
+  \label{tab:rnf} \\
+  \hline
+  \textbf{ID} & \textbf{Categoria} & \textbf{Requisito} \\
+  \hline
+  \endfirsthead
+  \multicolumn{3}{l}{\textit{Continuação da Tabela~\ref{tab:rnf}}} \\
+  \hline
+  \textbf{ID} & \textbf{Categoria} & \textbf{Requisito} \\
+  \hline
+  \endhead
+  \hline
+  \multicolumn{3}{r}{\textit{Continua na próxima página}} \\
+  \endfoot
+  \hline
+  \endlastfoot
+  RNF01 & Segurança & O dispositivo deve se autenticar em todas as requisições com uma chave enviada no cabeçalho \texttt{X-Device-Key}; requisições sem a chave devem ser rejeitadas. \\
+  RNF02 & Segurança & O acesso ao painel deve exigir um \textit{token} válido do Firebase Authentication e o cadastro do usuário na lista de acesso; as ações de escrita devem ser restritas ao perfil Administrador/Operador e verificadas pela API. \\
+  RNF03 & Segurança & A comunicação deve ocorrer por HTTPS, e as chaves e credenciais devem ser mantidas em variáveis de ambiente, fora do código-fonte. \\
+  RNF04 & Desempenho & O dispositivo deve ler os sensores a cada 10~s, enviar seu estado a cada 20~s e aguardar comandos por até 30~s a cada consulta. \\
+  RNF05 & Desempenho & O painel deve atualizar o estado do dispositivo a cada 5~s e as leituras dos sensores a cada 10~s. \\
+  RNF06 & Desempenho & Um comando enviado pelo painel deve chegar ao dispositivo em, no máximo, cerca de 30~s. \\
+  RNF07 & Confiabilidade & Os envios que falharem devem ser repetidos com intervalos crescentes, em até cinco tentativas; esgotadas as tentativas, a leitura pode ser descartada para não bloquear o dispositivo. \\
+  RNF08 & Confiabilidade & O estado compartilhado entre as tarefas concorrentes do \textit{firmware} deve ser protegido contra acessos simultâneos. \\
+  RNF09 & Disponibilidade & O dispositivo deve se reconectar automaticamente ao Wi-Fi e continuar operando com a configuração padrão caso a API esteja indisponível. \\
+  RNF10 & Segurança operacional & O relé deve iniciar sempre desligado, e a irrigação automática deve exigir autorização explícita do usuário. \\
+  RNF11 & Usabilidade & A interface deve ser responsiva, em português, e oferecer um modo com dados simulados para demonstração sem a API. \\
+  RNF12 & Manutenibilidade & O sistema deve ser organizado em camadas independentes (dispositivo, API e painel), e a API deve ter documentação gerada automaticamente. \\
+  RNF13 & Testabilidade & A API, o painel e o \textit{firmware} devem possuir testes automatizados. \\
+  RNF14 & Portabilidade & A API deve poder ser executada em contêiner, e o \textit{firmware} deve compilar na Arduino IDE e executar na ESP32. \\
+  RNF15 & Compatibilidade & A comunicação entre as partes deve seguir o estilo REST, com dados em JSON, e os registros de data e hora devem usar o fuso de Brasília (UTC$-$3), com relógio sincronizado pelo \sigla{NTP}{\textit{Network Time Protocol}}. \\
+  RNF16 & Tecnologia & Os dados devem ser armazenados no Cloud Firestore, e a autenticação de usuários deve ser feita pelo Firebase Authentication. \\
+  RNF17 & Escalabilidade & A identificação de cada dispositivo e o modelo de dados devem permitir a futura inclusão de vários dispositivos. \\
+\end{longtable}
+}
+\vspace{-0.8\baselineskip}
+\fonte{Elaborado pelo autor}
+
+% =====================================================================
 \section{Regras de negócio}
-% DESCRIÇÃO: as regras que o sistema segue para decidir. Ex.:
-%  - a irrigação automática só ocorre se o modo for automático, se
-%    estiver autorizada e se a umidade do solo estiver abaixo do limiar;
-%  - o Kc é definido pela cultura e pela fase escolhidas, não digitado;
-%  - o volume aplicado depende dos parâmetros agronômicos;
-%  - somente administradores alteram configurações e acionam comandos.
+\label{sec:regras-negocio}
 
+As \sigla{RN}{regras de negócio} definem as condições que o sistema segue para tomar decisões, independentemente da tecnologia usada para implementá-las. A Tabela~\ref{tab:rn} apresenta as regras agrupadas por tema. As regras de cálculo seguem o método FAO-56 \citeonline{allen1998}, descrito na fundamentação teórica.
+
+{\small
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{>{\raggedright\arraybackslash}p{1.2cm}
+                  >{\raggedright\arraybackslash}p{13.4cm}}
+  \caption{Regras de negócio do sistema}
+  \label{tab:rn} \\
+  \hline
+  \textbf{ID} & \textbf{Regra} \\
+  \hline
+  \endfirsthead
+  \multicolumn{2}{l}{\textit{Continuação da Tabela~\ref{tab:rn}}} \\
+  \hline
+  \textbf{ID} & \textbf{Regra} \\
+  \hline
+  \endhead
+  \hline
+  \multicolumn{2}{r}{\textit{Continua na próxima página}} \\
+  \endfoot
+  \hline
+  \endlastfoot
+  \multicolumn{2}{l}{\textbf{Operação e modos de irrigação}} \\
+  \hline
+  RN01 & A irrigação automática só é executada quando, ao mesmo tempo, o modo é automático, a autorização está ativa, a umidade do solo está abaixo do limiar e não há irrigação em andamento. \\
+  RN02 & A autorização da irrigação automática é desativada por padrão e precisa ser ativada explicitamente pelo usuário. \\
+  RN03 & O comando de iniciar a irrigação só é aceito com o dispositivo em modo manual e sem irrigação em andamento; o volume é informado pelo usuário. \\
+  RN04 & Só pode haver uma irrigação em execução por vez; novos acionamentos são ignorados enquanto houver uma em andamento. \\
+  RN05 & O comando de interromper encerra a irrigação em andamento e registra o tempo real decorrido. \\
+  RN06 & Um comando só é aplicado quando é válido para o estado atual do dispositivo. \\
+  RN07 & O relé inicia sempre desligado quando o dispositivo é ligado. \\
+  \hline
+  \multicolumn{2}{l}{\textbf{Cálculos agronômicos}} \\
+  \hline
+  RN08 & A ET$_0$ é calculada pelo método de Hargreaves-Samani, a partir das temperaturas mínima e máxima do dia e da latitude da área. \\
+  RN09 & A evapotranspiração da cultura é dada por ET$_c$ = K$_c$ $\times$ ET$_0$. \\
+  RN10 & O volume por planta é o produto da ET$_c$ pela área ocupada por planta (espaçamento entre plantas $\times$ espaçamento entre linhas). \\
+  RN11 & O tempo de irrigação é o volume por planta dividido pela vazão disponível por planta (vazão do gotejador $\times$ número de gotejadores por planta). \\
+  RN12 & O volume total é o volume por planta multiplicado pelo número total de plantas. \\
+  RN13 & O K$_c$ é definido pela cultura e pela fase de desenvolvimento selecionadas no catálogo, e não digitado pelo usuário. \\
+  RN14 & O limiar mínimo de umidade do solo é configurável, com valor padrão de 50\%. \\
+  RN15 & Se a vazão disponível for nula, nenhuma irrigação é executada. \\
+  \hline
+  \multicolumn{2}{l}{\textbf{Registro dos dados}} \\
+  \hline
+  RN16 & Ao fim de cada irrigação, são registrados a umidade do solo antes da irrigação, o tempo real, o volume por planta, o volume total, a data, a hora e o modo. \\
+  RN17 & As leituras dos sensores são enviadas a cada 10~s, e o estado do dispositivo, a cada 20~s. \\
+  RN18 & Os registros de data e hora usam o fuso de Brasília (UTC$-$3). \\
+  \hline
+  \multicolumn{2}{l}{\textbf{Acesso, integração e resiliência}} \\
+  \hline
+  RN19 & Somente administradores alteram configurações, enviam comandos ao dispositivo e cadastram culturas e usuários. \\
+  RN20 & Somente usuários cadastrados na lista de acesso, com \textit{token} válido, acessam o painel. \\
+  RN21 & Requisições do dispositivo sem a chave de autenticação são rejeitadas. \\
+  RN22 & Se a configuração não puder ser obtida da API ao ligar, o dispositivo opera com valores padrão. \\
+\end{longtable}
+}
+\vspace{-0.8\baselineskip}
+\fonte{Elaborado pelo autor}
+
+% =====================================================================
 \section{Modelagem do sistema}
-% DESCRIÇÃO: diagramas que ajudam a banca a entender o sistema antes da
-% implementação. Sugestões:
-%  - diagrama de casos de uso (perfis x funcionalidades);
-%  - diagrama de sequência de um fluxo principal (ex.: comando de
-%    irrigação manual saindo do painel até o ESP32).
+\label{sec:modelagem}
+
+Para representar o comportamento do sistema antes da descrição de sua implementação, foram elaborados um diagrama de casos de uso e um diagrama de sequência, ambos na notação \sigla{UML}{\textit{Unified Modeling Language}}.
+
+O diagrama de casos de uso (Figura~\ref{fig:casos-de-uso}) relaciona os atores às funcionalidades que cada um utiliza. O Visualizador acessa as funções de consulta, como acompanhar o painel, consultar o histórico e os gráficos e consultar o catálogo de culturas. O Administrador/Operador herda essas funções e acrescenta as de operação e configuração: alternar o modo, autorizar a irrigação automática, iniciar e interromper a irrigação, configurar os parâmetros, definir a latitude e gerenciar usuários. O Dispositivo ESP32 busca a configuração inicial, envia as leituras e o estado, recebe os comandos, executa a irrigação automática, que inclui o cálculo da lâmina, e registra o histórico de cada irrigação.
 
 \begin{figure}[htbp]
   \centering
-  % \includegraphics[width=\textwidth]{figuras/casos-de-uso}
+  \includegraphics[width=\textwidth]{figuras/Diagrama de Casos de Uso.png}
   \caption{Diagrama de casos de uso do sistema}
   \label{fig:casos-de-uso}
-  \fonte{Elaborado pelo autor.}
+  \fonte{Elaborado pelo autor}
 \end{figure}
 
+O diagrama de sequência (Figura~\ref{fig:sequencia-automatica}) detalha o fluxo principal do sistema: a irrigação automática. O administrador ativa o modo automático e autoriza a irrigação no painel, que envia as alterações à API. A API enfileira os comandos correspondentes e responde ao painel. O ESP32, que consulta a API continuamente à espera de comandos, recebe as alterações e as aplica. A partir daí, a cada leitura dos sensores, o dispositivo envia os dados à API e, quando a umidade do solo fica abaixo do limiar, calcula a ET$_0$ e a lâmina de irrigação, liga o relé pelo tempo calculado e informa que há uma irrigação em andamento. Ao término, desliga o relé e envia o registro da irrigação. O painel, por sua vez, consulta a API periodicamente e exibe as leituras, os gráficos e a última irrigação.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{figuras/Diagrama de Sequencia - Irrigacao Automatica.png}
+  \caption{Diagrama de sequência da irrigação automática}
+  \label{fig:sequencia-automatica}
+  \fonte{Elaborado pelo autor}
+\end{figure}

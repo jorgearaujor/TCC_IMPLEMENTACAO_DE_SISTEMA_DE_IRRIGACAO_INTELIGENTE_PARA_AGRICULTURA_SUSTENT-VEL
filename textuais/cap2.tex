@@ -8,30 +8,43 @@ desenvolvidos em pesquisas acadêmicas, uma vez que os primeiros mostram o que
 já está acessível ao produtor, enquanto os segundos indicam as abordagens
 técnicas mais recentes.
 
-O capítulo está organizado em duas seções. A
-Seção~\ref{sec:trabalhos-comerciais} descreve sistemas comerciais de irrigação
-inteligente, e a Seção~\ref{sec:trabalhos-academicos} apresenta trabalhos
-acadêmicos que utilizam sensores e plataformas de baixo custo no manejo da
-irrigação. Ao final, a Tabela~\ref{tab:comparativo-trabalhos} reúne as
-possibilidades oferecidas por cada solução e pelo sistema proposto.
+Cada solução é descrita em uma seção própria. As Seções~\ref{sec:hydrawise},
+\ref{sec:netbeat} e~\ref{sec:valley} apresentam três soluções comerciais, e a
+Seção~\ref{sec:campos} apresenta uma plataforma acadêmica de baixo custo. Por
+fim, a Seção~\ref{sec:comparativo-trabalhos} compara essas soluções com o
+sistema proposto.
 
-\section{Trabalhos comerciais}
-\label{sec:trabalhos-comerciais}
+% =====================================================================
+\section{Hydrawise}
+\label{sec:hydrawise}
 
-\subsection{Hydrawise}
+O Hydrawise é uma solução comercial da Hunter Industries: um software de
+gerenciamento de irrigação que funciona em conjunto com controladores
+conectados por Wi-Fi da própria fabricante. Seu principal recurso, chamado
+\textit{Predictive Watering}, ajusta automaticamente os programas de irrigação
+com base na previsão do tempo local, considerando temperatura, probabilidade de
+chuva, velocidade do vento e umidade do ar. Esses dados vêm de estações
+meteorológicas virtuais, que combinam informações de satélites, estações
+físicas e outras fontes \cite{hunterhydrawise}.
 
-O Hydrawise, da Hunter Industries, é um software de gerenciamento de irrigação que funciona em conjunto com controladores conectados por Wi-Fi da própria fabricante. Seu principal recurso, chamado \textit{Predictive Watering}, ajusta automaticamente os programas de irrigação com base na previsão do tempo local, considerando temperatura, probabilidade de chuva, velocidade do vento e umidade do ar. Esses dados vêm de estações meteorológicas virtuais, que combinam informações de satélites, estações físicas e outras fontes \cite{hunterhydrawise}.
+O sistema pode ser operado remotamente por aplicativo ou navegador, permite o
+acionamento manual de setores e emite alertas como os de vazamento. Segundo o
+fabricante, o ajuste preditivo pode economizar até 50\% de água. A solução é
+voltada principalmente a jardins residenciais e áreas paisagísticas
+comerciais, com um plano gratuito básico e planos pagos que ampliam o histórico
+de dados e o número de controladores \cite{hunterhydrawise}.
 
-O sistema pode ser operado remotamente por aplicativo ou navegador, permite o acionamento manual de setores e emite alertas como os de vazamento. Segundo o fabricante, o ajuste preditivo pode economizar até 50\% de água. A solução é voltada principalmente a jardins residenciais e áreas paisagísticas comerciais, com um plano gratuito básico e planos pagos que ampliam o histórico de dados e o número de controladores \cite{hunterhydrawise}.
+% =====================================================================
+\section{NetBeat}
+\label{sec:netbeat}
 
-\subsection{NetBeat}
-
-O NetBeat, da Netafim, foi apresentado em 2018 como uma plataforma que integra
-monitoramento, análise e automação da irrigação e da fertirrigação. O sistema
-reúne dados de sensores de solo, de planta e hidráulicos, além de informações
-climáticas, e os processa em nuvem por meio de modelos dinâmicos de cultura
-desenvolvidos pela empresa, que recomendam quando irrigar e fertirrigar ao longo
-do ciclo da cultura \cite{israelagri2018netbeat}.
+O NetBeat é uma solução comercial da Netafim, apresentada em 2018 como uma
+plataforma que integra monitoramento, análise e automação da irrigação e da
+fertirrigação. O sistema reúne dados de sensores de solo, de planta e
+hidráulicos, além de informações climáticas, e os processa em nuvem por meio de
+modelos dinâmicos de cultura desenvolvidos pela empresa, que recomendam quando
+irrigar e fertirrigar ao longo do ciclo da cultura
+\cite{israelagri2018netbeat}.
 
 Sua arquitetura é composta por uma unidade de controle principal e por unidades
 terminais remotas, que se comunicam por diferentes tecnologias, como Wi-Fi,
@@ -41,15 +54,17 @@ pode ser feito no local ou remotamente, por computador ou celular
 GrowSphere como a solução de agricultura digital da empresa
 \cite{netafimgrowsphere}.
 
-\subsection{Valley Scheduling}
+% =====================================================================
+\section{Valley Scheduling}
+\label{sec:valley}
 
-O Valley Scheduling, da Valmont Industries, é um software de programação da
-irrigação lançado inicialmente no mercado brasileiro e expandido para a América
-do Norte em 2018. Ele gera recomendações a partir do tipo de solo, da cultura,
-da fase de desenvolvimento e de dados meteorológicos, sendo compatível com
-pivôs centrais, sistemas lineares e gotejamento. Na época da expansão, a
-ferramenta já havia sido utilizada em cerca de 5 milhões de acres em 12 países
-\cite{valmont2018}.
+O Valley Scheduling é uma solução comercial da Valmont Industries: um software
+de programação da irrigação lançado inicialmente no mercado brasileiro e
+expandido para a América do Norte em 2018. Ele gera recomendações a partir do
+tipo de solo, da cultura, da fase de desenvolvimento e de dados meteorológicos,
+sendo compatível com pivôs centrais, sistemas lineares e gotejamento. Na época
+da expansão, a ferramenta já havia sido utilizada em cerca de 5 milhões de
+acres em 12 países \cite{valmont2018}.
 
 As recomendações podem ser modeladas, por meio de um algoritmo proprietário que
 dispensa sensores no campo, ou medidas, com dados de sondas de umidade do solo e
@@ -58,17 +73,19 @@ uma previsão de irrigação para cinco a sete dias, visualizada em listas ou ma
 pelo celular ou computador, com acompanhamento de um especialista em agronomia
 \cite{valleyscheduling}.
 
-\section{Trabalhos acadêmicos}
-\label{sec:trabalhos-academicos}
+% =====================================================================
+\section{Low-cost open-source platform for irrigation automation}
+\label{sec:campos}
 
-\citeonline{campos2021} desenvolveram, no Instituto Federal Goiano, uma
+Diferentemente das soluções anteriores, trata-se de um trabalho acadêmico.
+\citeonline{campos2021} desenvolveram, no Instituto Federal Goiano - Campus Ceres, uma
 plataforma de baixo custo e código aberto para automatizar a irrigação com base
 na umidade do solo. O sistema utilizou um Arduino Mega 2560 conectado a quatro
 sensores capacitivos de umidade do solo (10HS), a um sensor de temperatura e
-umidade do ar (DHT22), a um display LCD, a um módulo de relógio de tempo real, a
-um cartão de memória e a um módulo GSM para envio de mensagens SMS. Por meio de
-relés, o controlador acionava válvulas solenoides sempre que a umidade do solo
-ficava abaixo de um limiar predefinido.
+umidade do ar (DHT22), a um \textit{display} LCD, a um módulo de relógio de
+tempo real, a um cartão de memória e a um módulo GSM para envio de mensagens
+SMS. Por meio de relés, o controlador acionava válvulas solenoides sempre que a
+umidade do solo ficava abaixo de um limiar predefinido.
 
 O sistema foi avaliado no cultivo de tomate-cereja em casa de vegetação, com
 quatro limiares de umidade volumétrica (0,23 a 0,44~m$^3$~m$^{-3}$). Após a
@@ -85,16 +102,14 @@ e aumenta o risco de perdas, e os autores recomendam o uso de Wi-Fi para enviar
 os dados à nuvem e acompanhá-los em tempo real. Por fim, a plataforma exige mão
 de obra especializada para desenvolvimento e manutenção \cite{campos2021}.
 
+% =====================================================================
 \section{Comparativo entre os trabalhos}
+\label{sec:comparativo-trabalhos}
 
-A Tabela~\ref{tab:comparativo-trabalhos} reúne as possibilidades oferecidas por
-cada solução e pelo sistema proposto neste trabalho. As soluções comerciais
-oferecem modelos de decisão mais elaborados e suporte técnico, mas são
-proprietárias e voltadas a escalas específicas. A plataforma de
-\citeonline{campos2021} mostra a viabilidade do controle por limiar de umidade
-com hardware aberto, porém sem acesso remoto aos dados. O sistema proposto busca
-reunir o hardware de baixo custo, o acompanhamento remoto e o uso de parâmetros
-agronômicos da cultura em uma mesma solução.
+A Tabela~\ref{tab:comparativo-trabalhos} compara as soluções apresentadas e o
+sistema proposto neste trabalho a partir de oito critérios. Para o sistema
+proposto, a tabela indica as possibilidades previstas em seu projeto, e não
+resultados medidos em campo. Cada critério é explicado a seguir.
 
 \begin{table}[htbp]
   \centering
@@ -110,64 +125,55 @@ agronômicos da cultura em uma mesma solução.
                                 >{\raggedright\arraybackslash}X}
     \hline
     \textbf{Critério} & \textbf{Hydrawise} & \textbf{NetBeat} &
-    \textbf{Valley Scheduling} & \textbf{\citeonline{campos2021}} &
-    \textbf{Sistema proposto} \\
+    \textbf{Valley Scheduling} & \textbf{\citeonline{campos2021}}\\
     \hline
     Público-alvo &
     Residências e profissionais de paisagismo &
     Desde grandes áreas até pequenos produtores &
     Produtores rurais com pivô, linear ou gotejamento &
-    Pesquisa em casa de vegetação &
-    Pequenas áreas irrigadas por gotejamento \\
+    Pesquisa em casa de vegetação \\
     \hline
     Base para decidir a irrigação &
     Possibilita ajustar os programas pela previsão do tempo &
     Possibilita recomendações por modelos dinâmicos de cultura &
     Possibilita recomendações por algoritmo ou por dados medidos &
-    Aciona quando a umidade do solo cai abaixo do limiar &
-    Possibilita acionar pela umidade do solo e dimensionar a lâmina pela ET$_0$ e pelo K$_c$ da cultura \\
+    Aciona quando a umidade do solo cai abaixo do limiar \\
     \hline
     Variáveis consideradas &
     Dados meteorológicos externos; pode receber sensores &
     Solo, planta, clima e hidráulica &
     Solo, cultura, fase e clima &
-    Umidade do solo, temperatura e umidade do ar &
     Umidade do solo, temperatura e umidade do ar \\
     \hline
     Forma de atuação &
     Possibilita controle automático e manual dos setores &
     Possibilita controlar irrigação e fertirrigação &
     Fornece recomendação; a aplicação fica a cargo do produtor &
-    Acionamento de válvulas por relés &
-    Possibilita modo automático e manual, com acionamento de válvula por relé \\
+    Acionamento de válvulas por relés\\
     \hline
     Acesso remoto &
     Aplicativo e navegador &
     Computador e celular &
     Celular, \textit{tablet} e computador &
-    Apenas SMS com o estado da irrigação &
-    Possibilita acompanhar e comandar o sistema por painel web \\
+    Apenas SMS com o estado da irrigação \\
     \hline
     Histórico de dados &
     Varia conforme o plano contratado &
     Dados processados em nuvem &
     Relatório ao fim da safra &
-    Cartão de memória, com coleta manual &
-    Possibilita consultar em nuvem gráficos de leituras e eventos de irrigação \\
+    Cartão de memória, com coleta manual\\
     \hline
     Comunicação &
     Wi-Fi &
     Wi-Fi, celular, LoRa e outras &
     Internet, conforme os equipamentos integrados &
-    GSM (SMS) &
-    Wi-Fi e HTTP \\
+    GSM (SMS)\\
     \hline
     Abertura da solução &
     Proprietária &
     Proprietária &
     Proprietária &
-    Código aberto &
-    Código aberto \\
+    Código aberto\\
     \hline
   \end{tabularx}
   \fonte{Elaborado pelo autor com base em \citeonline{hunterhydrawise},
@@ -175,3 +181,65 @@ agronômicos da cultura em uma mesma solução.
   \citeonline{valmont2018}, \citeonline{valleyscheduling} e
   \citeonline{campos2021}.}
 \end{table}
+
+O \textbf{público-alvo} indica a quem cada solução se destina e em que escala
+ela opera. O Hydrawise atende residências e profissionais de paisagismo, o
+NetBeat abrange desde grandes áreas até pequenos produtores, e o Valley
+Scheduling é voltado a produtores rurais que irrigam por pivô, sistema linear ou
+gotejamento. A plataforma de \citeonline{campos2021} foi concebida para pesquisa
+em casa de vegetação, enquanto o sistema proposto se destina a pequenas áreas
+irrigadas por gotejamento.
+
+A \textbf{base para decidir a irrigação} corresponde ao critério usado para
+definir quando e quanto irrigar. O Hydrawise ajusta os programas pela previsão
+do tempo, o NetBeat recomenda a irrigação por modelos dinâmicos de cultura e o
+Valley Scheduling gera recomendações por algoritmo ou por dados medidos em
+campo. A plataforma de \citeonline{campos2021} apenas aciona a irrigação quando
+a umidade do solo cai abaixo de um limiar.
+
+As \textbf{variáveis consideradas} são as informações que alimentam essa
+decisão. As soluções comerciais utilizam um conjunto mais amplo de dados, que
+inclui informações de solo, de cultura, de clima e, no caso do NetBeat, de
+sensores de planta e hidráulicos. A plataforma de \citeonline{campos2021} e o
+sistema proposto medem as mesmas três variáveis: umidade do solo, temperatura e
+umidade do ar.
+
+A \textbf{forma de atuação} indica se a solução executa a irrigação ou apenas
+orienta o produtor. O Hydrawise e o NetBeat controlam diretamente os setores de
+irrigação, e o NetBeat também a fertirrigação. O Valley Scheduling apenas
+fornece recomendações, cabendo ao produtor aplicá-las. A plataforma de
+\citeonline{campos2021} aciona válvulas por meio de relés, e o sistema proposto
+possibilita operar nos modos automático e manual, também com acionamento de
+válvula por relé.
+
+O \textbf{acesso remoto} refere-se à possibilidade de acompanhar e comandar o
+sistema a distância. As três soluções comerciais oferecem acesso por aplicativo,
+navegador ou computador. A plataforma de \citeonline{campos2021} limita-se ao
+envio de mensagens SMS com o estado da irrigação, sem permitir comandos. 
+
+O \textbf{histórico de dados} indica como as informações ficam disponíveis para
+consulta posterior. No Hydrawise, a extensão do histórico depende do plano
+contratado; no NetBeat, os dados são processados em nuvem; e no Valley
+Scheduling, o produtor recebe um relatório ao fim da safra. Na plataforma de
+\citeonline{campos2021}, os dados ficam em um cartão de memória e precisam ser
+coletados manualmente. 
+
+A \textbf{comunicação} descreve a tecnologia usada para transmitir os dados. O
+Hydrawise utiliza Wi-Fi; o NetBeat combina Wi-Fi, redes celulares, LoRa e outras
+tecnologias; e o Valley Scheduling depende da conexão à internet dos
+equipamentos integrados. A plataforma de \citeonline{campos2021} usa a rede GSM
+para enviar SMS.
+
+Por fim, a \textbf{abertura da solução} indica se o código e o projeto estão
+disponíveis para adaptação. As três soluções comerciais são proprietárias,
+enquanto a plataforma de \citeonline{campos2021} e o sistema proposto são de
+código aberto, o que permite substituir sensores e ajustar a lógica de
+irrigação conforme a necessidade.
+
+Em síntese, as soluções comerciais oferecem modelos de decisão mais elaborados
+e suporte técnico, mas são proprietárias e voltadas a escalas específicas. A
+plataforma de \citeonline{campos2021} mostra a viabilidade do controle por
+limiar de umidade com \textit{hardware} aberto, porém sem acesso remoto aos
+dados. O sistema proposto busca reunir o \textit{hardware} de baixo custo, o
+acompanhamento remoto e o uso de parâmetros agronômicos da cultura em uma mesma
+solução.
