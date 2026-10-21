@@ -8,14 +8,14 @@ Este capítulo define o que o sistema deve fazer e sob quais condições. A part
 
 A irrigação feita sem controle, por tempo fixo ou pela percepção do produtor, tende a aplicar mais ou menos água do que a cultura necessita, o que gera desperdício ou estresse hídrico. As soluções comerciais que automatizam essa decisão, como as analisadas no Capítulo~\ref{textuais/cap2}, oferecem modelos de decisão elaborados, mas são proprietárias, têm custo elevado e, em geral, são voltadas a escalas diferentes daquelas observadas em pequenas áreas de cultivo.
 
-Para enfrentar esse problema, o sistema proposto monitora a umidade do solo, a temperatura e a umidade do ar, decide quando irrigar com base na umidade do solo e calcula quanto irrigar pelo método FAO-56, escrito por \citeonline{allen1998}, com a ET$_0$ estimada pelo método de Hargreaves-Samani. O acompanhamento e o controle são feitos a distância, por meio de um painel \textit{web}.
+Para enfrentar esse problema, o sistema proposto monitora a umidade do solo, a temperatura e a umidade do ar, decide quando irrigar com base na umidade do solo e calcula quanto irrigar pelo método FAO-56, escrito por \citeonline{allen1998}, com a ET$_0$ estimada pelo método de Hargreaves-Samani. O acompanhamento e o controle são feitos a distância, por meio de um painel web.
 
 O escopo do trabalho compreende:
 \begin{itemize}
-  \item Um único dispositivo de campo, um ESP32 identificado como \texttt{esp32-01}, com sensor de umidade do solo, sensor DHT11, relé e \textit{display} LCD;
+  \item Um único dispositivo de campo, um ESP32 identificado como \texttt{esp32-01}, com sensor de umidade do solo, sensor DHT11, relé e display LCD;
   \item Irrigação localizada por gotejamento em pequenas áreas, tendo a alface como cultura de referência;
-  \item Uma API \textit{web} que intermedeia a comunicação entre o dispositivo e o painel e armazena os dados em nuvem;
-  \item Um painel \textit{web} para monitoramento, configuração e acionamento da irrigação, com controle de acesso por perfil de usuário.
+  \item Uma API web que intermedeia a comunicação entre o dispositivo e o painel e armazena os dados em nuvem;
+  \item Um painel web para monitoramento, configuração e acionamento da irrigação, com controle de acesso por perfil de usuário.
 \end{itemize}
 
 Ficam fora do escopo: 
@@ -35,9 +35,9 @@ O sistema possui dois perfis de usuário humano e um ator de sistema. O perfil �
 
 O Administrador/Operador tem acesso completo. Além de acompanhar o sistema, ele altera o modo de operação, autoriza ou bloqueia a irrigação automática, inicia e interrompe a irrigação manual, configura os parâmetros agronômicos e a latitude, cadastra culturas e cadastra novos usuários.
 
-O \textbf{Visualizador} tem acesso apenas de leitura. Ele acompanha o estado do dispositivo, as leituras dos sensores, os gráficos e o histórico de irrigações, mas não altera configurações nem envia comandos.
+O Visualizador tem acesso apenas de leitura. Ele acompanha o estado do dispositivo, as leituras dos sensores, os gráficos e o histórico de irrigações, mas não altera configurações nem envia comandos.
 
-O \textbf{Dispositivo ESP32} é um ator de sistema, não humano. Ele envia as leituras dos sensores, o estado e o histórico de irrigações à API e recebe dela a configuração inicial e os comandos. Por não ser um usuário, autentica-se por uma chave própria, e não por \textit{login} e senha. A Tabela~\ref{tab:permissoes} resume as permissões de cada perfil.
+O Dispositivo ESP32 é um ator de sistema, não humano. Ele envia as leituras dos sensores, o estado e o histórico de irrigações à API e recebe dela a configuração inicial e os comandos. Por não ser um usuário, autentica-se por uma chave própria, e não por login e senha. A Tabela~\ref{tab:permissoes} resume as permissões de cada perfil.
 
 \begin{table}[htbp]
   \centering
@@ -267,7 +267,7 @@ As \sigla{RN}{regras de negócio} definem as condições que o sistema segue par
 \section{Modelagem do sistema}
 \label{sec:modelagem}
 
-Para representar o comportamento do sistema antes da descrição de sua implementação, foram elaborados um diagrama de casos de uso e um diagrama de sequência, ambos na notação \sigla{UML}{\textit{Unified Modeling Language}}.
+Para representar o comportamento do sistema antes da descrição de sua implementação, foram elaborados um diagrama de casos de uso e um diagrama de sequência, ambos na notação \sigla{UML}{Unified Modeling Language}.
 
 O diagrama de casos de uso (Figura~\ref{fig:casos-de-uso}) relaciona os atores às funcionalidades que cada um utiliza. O Visualizador acessa as funções de consulta, como acompanhar o painel, consultar o histórico e os gráficos e consultar o catálogo de culturas. O Administrador/Operador herda essas funções e acrescenta as de operação e configuração: alternar o modo, autorizar a irrigação automática, iniciar e interromper a irrigação, configurar os parâmetros, definir a latitude e gerenciar usuários. O Dispositivo ESP32 busca a configuração inicial, envia as leituras e o estado, recebe os comandos, executa a irrigação automática, que inclui o cálculo da lâmina, e registra o histórico de cada irrigação.
 
