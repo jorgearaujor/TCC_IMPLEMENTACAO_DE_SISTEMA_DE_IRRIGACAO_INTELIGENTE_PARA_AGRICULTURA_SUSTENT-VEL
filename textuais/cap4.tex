@@ -1,14 +1,12 @@
-% #####################################################################
 \chapter{Levantamento e análise de requisitos}
 \label{textuais/cap4}
 
 Este capítulo define o que o sistema deve fazer e sob quais condições. A partir da descrição do problema e da delimitação do escopo, são apresentados os perfis de usuário, os requisitos funcionais e não funcionais, as regras de negócio que orientam as decisões do sistema e, por fim, os diagramas que modelam seu comportamento.
 
-% =====================================================================
 \section{Descrição do problema e escopo}
 \label{sec:problema-escopo}
 
-A irrigação feita sem controle, por tempo fixo ou pela percepção do produtor, tende a aplicar mais ou menos água do que a cultura necessita, o que gera desperdício ou estresse hídrico. As soluções comerciais que automatizam essa decisão, como as analisadas no Capítulo~\ref{textuais/cap2}, oferecem modelos de decisão elaborados, mas são proprietárias, têm custo elevado e, em geral, são voltadas a escalas diferentes da de pequenas áreas de cultivo.
+A irrigação feita sem controle, por tempo fixo ou pela percepção do produtor, tende a aplicar mais ou menos água do que a cultura necessita, o que gera desperdício ou estresse hídrico. As soluções comerciais que automatizam essa decisão, como as analisadas no Capítulo~\ref{textuais/cap2}, oferecem modelos de decisão elaborados, mas são proprietárias, têm custo elevado e, em geral, são voltadas a escalas diferentes daquelas observadas em pequenas áreas de cultivo.
 
 Para enfrentar esse problema, o sistema proposto monitora a umidade do solo, a temperatura e a umidade do ar, decide quando irrigar com base na umidade do solo e calcula quanto irrigar pelo método FAO-56, escrito por \citeonline{allen1998}, com a ET$_0$ estimada pelo método de Hargreaves-Samani. O acompanhamento e o controle são feitos a distância, por meio de um painel \textit{web}.
 
@@ -20,15 +18,22 @@ O escopo do trabalho compreende:
   \item Um painel \textit{web} para monitoramento, configuração e acionamento da irrigação, com controle de acesso por perfil de usuário.
 \end{itemize}
 
-Ficam fora do escopo: o controle simultâneo de vários dispositivos, embora o modelo de dados já identifique cada um deles; a fertirrigação; o uso de previsão do tempo; o desenvolvimento de aplicativo móvel nativo; a medição de vento e radiação solar, necessária ao método de Penman-Monteith; e a avaliação da economia de água e da produtividade em campo, conforme delimitado na caracterização da pesquisa.
+Ficam fora do escopo: 
+\begin{itemize}
+    \item O controle simultâneo de vários dispositivos, embora o modelo de dados já identifique cada um deles; 
+    \item A fertirrigação; o uso de previsão do tempo;
+    \item O desenvolvimento de aplicativo móvel nativo; 
+    \item A medição de vento e radiação solar, necessária ao método de Penman-Monteith; 
+    \item E a avaliação da economia de água e da produtividade em campo,
+\end{itemize}
+Conforme delimitado na caracterização da pesquisa.
 
-% =====================================================================
 \section{Perfis de usuário}
 \label{sec:perfis}
 
 O sistema possui dois perfis de usuário humano e um ator de sistema. O perfil é definido no cadastro do usuário e verificado pela API a cada requisição, de modo que as restrições valem mesmo que alguém tente acessar as funções diretamente, sem passar pelo painel.
 
-O \textbf{Administrador/Operador} tem acesso completo. Além de acompanhar o sistema, ele altera o modo de operação, autoriza ou bloqueia a irrigação automática, inicia e interrompe a irrigação manual, configura os parâmetros agronômicos e a latitude, cadastra culturas e cadastra novos usuários.
+O Administrador/Operador tem acesso completo. Além de acompanhar o sistema, ele altera o modo de operação, autoriza ou bloqueia a irrigação automática, inicia e interrompe a irrigação manual, configura os parâmetros agronômicos e a latitude, cadastra culturas e cadastra novos usuários.
 
 O \textbf{Visualizador} tem acesso apenas de leitura. Ele acompanha o estado do dispositivo, as leituras dos sensores, os gráficos e o histórico de irrigações, mas não altera configurações nem envia comandos.
 
@@ -60,7 +65,6 @@ O \textbf{Dispositivo ESP32} é um ator de sistema, não humano. Ele envia as le
   \fonte{Elaborado pelo autor}
 \end{table}
 
-% =====================================================================
 \section{Requisitos funcionais}
 \label{sec:rf}
 
@@ -168,6 +172,7 @@ Os \sigla{RNF}{requisitos não funcionais} definem como o sistema deve operar, e
   \endhead
   \hline
   \multicolumn{3}{r}{\textit{Continua na próxima página}} \\
+  
   \endfoot
   \hline
   \endlastfoot
@@ -188,6 +193,7 @@ Os \sigla{RNF}{requisitos não funcionais} definem como o sistema deve operar, e
   RNF15 & Compatibilidade & A comunicação entre as partes deve seguir o estilo REST, com dados em JSON, e os registros de data e hora devem usar o fuso de Brasília (UTC$-$3), com relógio sincronizado pelo \sigla{NTP}{\textit{Network Time Protocol}}. \\
   RNF16 & Tecnologia & Os dados devem ser armazenados no Cloud Firestore, e a autenticação de usuários deve ser feita pelo Firebase Authentication. \\
   RNF17 & Escalabilidade & A identificação de cada dispositivo e o modelo de dados devem permitir a futura inclusão de vários dispositivos. \\
+  
 \end{longtable}
 }
 \vspace{-0.8\baselineskip}
