@@ -1,4 +1,4 @@
-\chapter{Fundamentação Teórica}
+\chapter{Fundamentação teórica}
 
 Neste capítulo, são apresentados os conceitos que fundamentam a implementação de um sistema inteligente na agricultura, abrangendo os métodos e o manejo da irrigação, a Internet das Coisas aplicada à agricultura, os sensores e atuadores, os microcontroladores, os protocolos de comunicação e o armazenamento de dados.
 
@@ -49,6 +49,8 @@ desenvolvimento, conforme a Equação~\ref{eq:etc} \cite{allen1998}.
   ET_c = K_c \cdot ET_0
   \label{eq:etc}
 \end{equation}
+ 
+A ampla adoção desse método deve-se à sua simplicidade, à robustez dos procedimentos e à possibilidade de transferir os coeficientes de cultura entre diferentes regiões \cite{pereira2015}.
  
 O mesmo boletim adota a equação de Penman-Monteith
 (Equação~\ref{eq:penman}) como método padrão para o cálculo da ET$_0$
@@ -131,10 +133,8 @@ Tabela~\ref{tab:et0} resume a comparação entre os dois métodos.
   \end{tabularx}
   \fonte{Elaborado pelo autor com base em \citeonline{allen1998},
     \citeonline{hargreaves1985}, \citeonline{venancio2019} e
-    \citeonline{ferreira2021}.}
+    \citeonline{ferreira2021}}
 \end{table}
-
-A ampla adoção desse método deve-se à sua simplicidade, à robustez dos procedimentos e à possibilidade de transferir os coeficientes de cultura entre diferentes regiões \cite{pereira2015}.
 
 \section{Internet das Coisas aplicada à agricultura}
 
@@ -155,9 +155,9 @@ Essa organização orienta as seções seguintes deste trabalho: os sensores e m
 
 \subsubsection{Sensor de umidade do solo}
 
-Um sensor de umidade do solo bastante utilizado em projetos IoT é do tipo resistivo, composto por duas hastes metálicas inseridas no solo e por um módulo eletrônico. Seu funcionamento baseia-se na condutividade elétrica do solo: quanto maior o teor de água, menor a resistência entre as hastes. O módulo converte essa variação em um sinal de tensão analógico, que é lido pelo Microcontrolador \cite{adla2020}.
+Um sensor de umidade do solo bastante utilizado em projetos IoT é do tipo resistivo, composto por duas hastes metálicas inseridas no solo e por um módulo eletrônico. Seu funcionamento baseia-se na condutividade elétrica do solo: quanto maior o teor de água, menor a resistência entre as hastes. O módulo converte essa variação em um sinal de tensão analógico, que é lido pelo microcontrolador \cite{adla2020}.
 
-Sensores resistivos têm custo muito baixo, mas são menos exatos e precisos que os capacitivos. Em laboratório, o modelo resistivo YL-69 apresentou erro (RMSE) de 5,54\% na estimativa do teor de água, contra 2,36\% a 2,88\% dos sensores capacitivos avaliados, desempenho considerado adequado para sua faixa de preço \cite{adla2020}.
+Sensores resistivos têm custo muito baixo, mas são menos exatos e precisos que os capacitivos. Em laboratório, o modelo resistivo YL-69 apresentou \sigla{RMSE}{raiz do erro quadrático médio} de 5,54\% na estimativa do teor de água, contra 2,36\% a 2,88\% dos sensores capacitivos avaliados, desempenho considerado adequado para sua faixa de preço \cite{adla2020}.
 
 A exatidão desses sensores depende da calibração para o solo e da resolução do conversor analógico digital. Usando apenas o conversor interno do Arduino, o erro de um sensor resistivo chegou a 4,79\%, caindo para 2,64\% com um conversor externo de 16 bits \cite{nandi2024}.
 
@@ -175,7 +175,7 @@ Essa configuração é comum em sistemas de irrigação automatizados. Em um sis
 
 \subsubsection{Display}
 
-Para exibir localmente as leituras dos sensores e o estado do sistema, são utilizados displays de cristal líquido (LCD) com módulo de interface I2C. Esse módulo utiliza o expansor de entradas e saídas PCF8574, que converte os comandos recebidos pelo barramento I2C em sinais paralelos para o display, reduzindo o número de pinos necessários no microcontrolador \cite{tipcf8574}.
+Para exibir localmente as leituras dos sensores e o estado do sistema, são utilizados \sigla{LCD}{\textit{displays} de cristal líquido} com módulo de interface \sigla{I2C}{\textit{Inter-Integrated Circuit}}. Esse módulo utiliza o expansor de entradas e saídas PCF8574, que converte os comandos recebidos pelo barramento I2C em sinais paralelos para o display, reduzindo o número de pinos necessários no microcontrolador \cite{tipcf8574}.
 
 O I2C é um barramento serial que utiliza apenas duas linhas, uma de dados (SDA) e outra de relógio (SCL), e permite conectar vários dispositivos ao mesmo barramento, com taxas de até 100~kbit/s no modo padrão e 400~kbit/s no modo rápido \cite{nxpi2c2021}.
 
@@ -185,7 +185,7 @@ Os microcontroladores e as plataformas embarcadas são responsáveis por ler os 
 
 \subsubsection{ESP32}
 
-O ESP32, desenvolvido pela Espressif Systems, é um \sigla{SoC}{sistema em chip} que integra um processador Xtensa LX6 de 32 bits, com até dois núcleos operando em até 240~MHz, e 520~KB de memória SRAM \cite{espressif}. Seu principal diferencial é a conectividade sem fio integrada, com Wi-Fi 802.11 b/g/n e Bluetooth, o que dispensa módulos externos de comunicação. O chip também possui conversores analógico-digitais de 12 bits com até 18 canais, permitindo a leitura direta de sensores analógicos, como o de umidade do solo \cite{espressif}.
+O ESP32, desenvolvido pela Espressif Systems, é um \sigla{SoC}{sistema em chip} que integra um processador Xtensa LX6 de 32 bits, com até dois núcleos operando em até 240~MHz, e 520~KB de memória SRAM \cite{espressif}. Seu principal diferencial é a conectividade sem fio integrada, com Wi-Fi 802.11 b/g/n e Bluetooth, o que dispensa módulos externos de comunicação. O chip também possui \sigla{ADC}{conversores analógico-digitais} de 12 bits com até 18 canais, permitindo a leitura direta de sensores analógicos, como o de umidade do solo \cite{espressif}.
 
 Por esse conjunto de características, o ESP32 tem sido amplamente adotado em estações agrometeorológicas de baixo custo baseadas em IoT, sendo preferido pelo custo acessível e pela modularidade \cite{alkalaany2025}.
 
@@ -256,11 +256,11 @@ Os protocolos da camada de aplicação definem como as mensagens são formatadas
  
 \subsubsection{HTTP}
  
-O \sigla{HTTP}{\textit{Hypertext Transfer Protocol}} é um protocolo da camada de aplicação, sem estado, que serve de base para a comunicação na \textit{web} \cite{rfc9110}. Ele funciona no modelo requisição-resposta: o cliente envia uma requisição a um recurso identificado por uma URI, indicando um método, como GET para obter dados ou POST para enviá-los, e o servidor devolve uma resposta com um código de \textit{status}, como 200 (sucesso) ou 404 (recurso não encontrado). Sua versão segura, o \sigla{HTTPS}{\textit{HyperText Transfer Protocol Secure}}, transmite as mensagens de forma criptografada por meio do protocolo \sigla{TLS}{\textit{Transport Layer Security}} \cite{rfc9110}.
+O \sigla{HTTP}{\textit{Hypertext Transfer Protocol}} é um protocolo da camada de aplicação, sem estado, que serve de base para a comunicação na \textit{web} \cite{rfc9110}. Ele funciona no modelo requisição-resposta: o cliente envia uma requisição a um recurso identificado por uma \sigla{URI}{\textit{Uniform Resource Identifier}}, indicando um método, como GET para obter dados ou POST para enviá-los, e o servidor devolve uma resposta com um código de \textit{status}, como 200 (sucesso) ou 404 (recurso não encontrado). Sua versão segura, o \sigla{HTTPS}{\textit{HyperText Transfer Protocol Secure}}, transmite as mensagens de forma criptografada por meio do protocolo \sigla{TLS}{\textit{Transport Layer Security}} \cite{rfc9110}.
  
 \subsubsection{MQTT}
  
-O \sigla{MQTT}{\textit{Message Queuing Telemetry Transport}} é um protocolo de mensagens do tipo publicação/assinatura (\textit{publish/subscribe}), leve, aberto e simples de implementar, o que o torna adequado para ambientes com recursos limitados, como a IoT \cite{mqtt5}. Nele, os dispositivos não se comunicam diretamente: um cliente publica mensagens em um tópico, como \texttt{irrigacao/umidade}, e um servidor intermediário, chamado \textit{broker}, as repassa a todos os clientes inscritos nesse tópico. O protocolo oferece três níveis de qualidade de serviço (QoS): 0, com no máximo uma entrega; 1, com pelo menos uma entrega; e 2, com exatamente uma entrega \cite{mqtt5}. 
+O \sigla{MQTT}{\textit{Message Queuing Telemetry Transport}} é um protocolo de mensagens do tipo publicação/assinatura (\textit{publish/subscribe}), leve, aberto e simples de implementar, o que o torna adequado para ambientes com recursos limitados, como a IoT \cite{mqtt5}. Nele, os dispositivos não se comunicam diretamente: um cliente publica mensagens em um tópico, como \texttt{irrigacao/umidade}, e um servidor intermediário, chamado \textit{broker}, as repassa a todos os clientes inscritos nesse tópico. O protocolo oferece três níveis de \sigla{QoS}{qualidade de serviço}: 0, com no máximo uma entrega; 1, com pelo menos uma entrega; e 2, com exatamente uma entrega \cite{mqtt5}. 
 
 \subsubsection{Comparação entre HTTP e MQTT}
  
@@ -284,7 +284,7 @@ No HTTP, cada envio exige uma requisição completa, com cabeçalhos em texto, o
     \hline
   \end{tabular}
   \fonte{Elaborado pelo autor com base em \citeonline{rfc9110},
-  \citeonline{mqtt5} e \citeonline{yokotani2016}.}
+  \citeonline{mqtt5} e \citeonline{yokotani2016}}
 \end{table}
 
 \section{Backend e armazenamento de dados}
@@ -293,14 +293,14 @@ O \textit{backend} é a parte do sistema executada no servidor, responsável por
 
 \subsection{API}
 
-Uma API é um conjunto de regras e pontos de acesso que permite a comunicação entre sistemas diferentes, sem que um precise conhecer a implementação interna do outro. Em aplicações web, é comum o uso do estilo arquitetural \sigla{REST}{Representational State Transfer}, proposto por \citeonline{fielding2000}, no qual cada recurso é identificado por uma URI e manipulado por meio dos métodos HTTP, em uma comunicação cliente-servidor sem estado. Os dados trocados costumam seguir o formato JSON, um padrão textual leve e independente de linguagem de programação \cite{rfc8259}.
+Uma API é um conjunto de regras e pontos de acesso que permite a comunicação entre sistemas diferentes, sem que um precise conhecer a implementação interna do outro. Em aplicações web, é comum o uso do estilo arquitetural \sigla{REST}{Representational State Transfer}, proposto por \citeonline{fielding2000}, no qual cada recurso é identificado por uma URI e manipulado por meio dos métodos HTTP, em uma comunicação cliente-servidor sem estado. Os dados trocados costumam seguir o formato \sigla{JSON}{\textit{JavaScript Object Notation}}, um padrão textual leve e independente de linguagem de programação \cite{rfc8259}.
 
 \subsection{Banco de dados}
 
-Um banco de dados é uma coleção de dados relacionados, organizada para atender a um propósito específico. O software que permite criá-lo, mantê-lo e consultá-lo é chamado de Sistema Gerenciador de Banco de Dados (SGBD) \cite{elmasri2018}. Nos bancos relacionais, os dados são organizados em tabelas com estrutura definida e consultados pela linguagem SQL, já os bancos NoSQL adotam modelos mais flexíveis, como documentos ou pares chave-valor, e são voltados a grandes volumes de dados e alta escalabilidade \cite{elmasri2018}. Em sistemas IoT, o banco de dados armazena o histórico das leituras dos sensores e dos acionamentos, permitindo acompanhar e analisar os dados ao longo do tempo \cite{chamara2022}. 
+Um banco de dados é uma coleção de dados relacionados, organizada para atender a um propósito específico. O software que permite criá-lo, mantê-lo e consultá-lo é chamado de \sigla{SGBD}{Sistema Gerenciador de Banco de Dados} \cite{elmasri2018}. Nos bancos relacionais, os dados são organizados em tabelas com estrutura definida e consultados pela linguagem \sigla{SQL}{\textit{Structured Query Language}}, já os bancos NoSQL adotam modelos mais flexíveis, como documentos ou pares chave-valor, e são voltados a grandes volumes de dados e alta escalabilidade \cite{elmasri2018}. Em sistemas IoT, o banco de dados armazena o histórico das leituras dos sensores e dos acionamentos, permitindo acompanhar e analisar os dados ao longo do tempo \cite{chamara2022}. 
 
 \subsubsection{Cloud Firestore}
 
-O Cloud Firestore, banco de dados da plataforma Firebase, do Google. Trata-se de um banco NoSQL orientado a documentos, hospedado em nuvem, no qual não existem tabelas nem linhas: os dados são armazenados em documentos, compostos por pares chave-valor e agrupados em coleções. Cada documento pode conter ainda subcoleções, o que permite organizar os dados de forma hierárquica \cite{firestore2026}. Essa estrutura se adapta bem a sistemas IoT, pois as leituras de cada dispositivo podem ser guardadas como documentos em uma subcoleção, sem a necessidade de definir previamente um esquema rígido.
+Neste trabalho, adota-se o Cloud Firestore, banco de dados da plataforma Firebase, do Google. Trata-se de um banco NoSQL orientado a documentos, hospedado em nuvem, no qual não existem tabelas nem linhas: os dados são armazenados em documentos, compostos por pares chave-valor e agrupados em coleções. Cada documento pode conter ainda subcoleções, o que permite organizar os dados de forma hierárquica \cite{firestore2026}. Essa estrutura se adapta bem a sistemas IoT, pois as leituras de cada dispositivo podem ser guardadas como documentos em uma subcoleção, sem a necessidade de definir previamente um esquema rígido.
 
 A mesma plataforma oferece o Firebase Authentication, serviço que fornece recursos prontos para autenticar usuários por meio de e-mail e senha, número de telefone ou provedores externos, como o Google, e que pode ser integrado a um \textit{backend} próprio \cite{firebaseauth2026}. Com isso, o controle de acesso ao sistema não precisa ser implementado do zero.

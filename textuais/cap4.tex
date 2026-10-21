@@ -13,7 +13,7 @@ Para enfrentar esse problema, o sistema proposto monitora a umidade do solo, a t
 O escopo do trabalho compreende:
 \begin{itemize}
   \item Um único dispositivo de campo, um ESP32 identificado como \texttt{esp32-01}, com sensor de umidade do solo, sensor DHT11, relé e \textit{display} LCD;
-  \item irrigação localizada por gotejamento em pequenas áreas, tendo a alface como cultura de referência;
+  \item Irrigação localizada por gotejamento em pequenas áreas, tendo a alface como cultura de referência;
   \item Uma API \textit{web} que intermedeia a comunicação entre o dispositivo e o painel e armazena os dados em nuvem;
   \item Um painel \textit{web} para monitoramento, configuração e acionamento da irrigação, com controle de acesso por perfil de usuário.
 \end{itemize}
@@ -21,12 +21,12 @@ O escopo do trabalho compreende:
 Ficam fora do escopo: 
 \begin{itemize}
     \item O controle simultâneo de vários dispositivos, embora o modelo de dados já identifique cada um deles; 
-    \item A fertirrigação; o uso de previsão do tempo;
+    \item A fertirrigação;
+    \item O uso de previsão do tempo;
     \item O desenvolvimento de aplicativo móvel nativo; 
     \item A medição de vento e radiação solar, necessária ao método de Penman-Monteith; 
-    \item E a avaliação da economia de água e da produtividade em campo,
+    \item A avaliação da economia de água e da produtividade em campo, conforme delimitado no Capítulo~\ref{textuais/cap3}.
 \end{itemize}
-Conforme delimitado na caracterização da pesquisa.
 
 \section{Perfis de usuário}
 \label{sec:perfis}
@@ -188,7 +188,7 @@ Os \sigla{RNF}{requisitos não funcionais} definem como o sistema deve operar, e
   RNF10 & Segurança operacional & O relé deve iniciar sempre desligado, e a irrigação automática deve exigir autorização explícita do usuário. \\
   RNF11 & Usabilidade & A interface deve ser responsiva, em português, e oferecer um modo com dados simulados para demonstração sem a API. \\
   RNF12 & Manutenibilidade & O sistema deve ser organizado em camadas independentes (dispositivo, API e painel), e a API deve ter documentação gerada automaticamente. \\
-  RNF13 & Testabilidade & A API, o painel e o \textit{firmware} devem possuir testes automatizados. \\
+  RNF13 & Testabilidade & A API deve possuir testes automatizados. \\
   RNF14 & Portabilidade & A API deve poder ser executada em contêiner, e o \textit{firmware} deve compilar na Arduino IDE e executar na ESP32. \\
   RNF15 & Compatibilidade & A comunicação entre as partes deve seguir o estilo REST, com dados em JSON, e os registros de data e hora devem usar o fuso de Brasília (UTC$-$3), com relógio sincronizado pelo \sigla{NTP}{\textit{Network Time Protocol}}. \\
   RNF16 & Tecnologia & Os dados devem ser armazenados no Cloud Firestore, e a autenticação de usuários deve ser feita pelo Firebase Authentication. \\
@@ -203,7 +203,7 @@ Os \sigla{RNF}{requisitos não funcionais} definem como o sistema deve operar, e
 \section{Regras de negócio}
 \label{sec:regras-negocio}
 
-As \sigla{RN}{regras de negócio} definem as condições que o sistema segue para tomar decisões, independentemente da tecnologia usada para implementá-las. A Tabela~\ref{tab:rn} apresenta as regras agrupadas por tema. As regras de cálculo seguem o método FAO-56 \citeonline{allen1998}, descrito na fundamentação teórica.
+As \sigla{RN}{regras de negócio} definem as condições que o sistema segue para tomar decisões, independentemente da tecnologia usada para implementá-las. A Tabela~\ref{tab:rn} apresenta as regras agrupadas por tema. As regras de cálculo seguem o método FAO-56 \cite{allen1998}, descrito na fundamentação teórica.
 
 {\small
 \renewcommand{\arraystretch}{1.15}

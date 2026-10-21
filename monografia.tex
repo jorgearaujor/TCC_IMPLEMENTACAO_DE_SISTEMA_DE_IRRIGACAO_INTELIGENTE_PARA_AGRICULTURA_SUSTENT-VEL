@@ -22,6 +22,8 @@
 \usetikzlibrary{positioning,arrows.meta}
 \usepackage{tabularx}
 \usepackage{booktabs}
+\hypersetup{hidelinks}                    % links sem contorno colorido no PDF
+\addto\captionsbrazil{\renewcommand{\bibname}{Referências}}
 \makenomenclature                          % construir lista de acronimos
 %
 %--------------------------------------------------------------------
@@ -131,7 +133,7 @@
 \newpage
 % \lstlistoflistings                              % lista de quadros - opcional
 \newpage
-\listofalgorithms                               %lista de algoritmos - opcional
+%\listofalgorithms                              %lista de algoritmos - opcional (vazia)
 \renewcommand{\nomname}{Lista de abreviaturas e siglas}     %renomeando lista de acronimos
 \renewcommand{\pagedeclaration}{Pag.}            %renomeando lista de acronimos
 \printnomenclature	\label{listaacronimos}						    %gerando a lista de acronimos
@@ -181,7 +183,7 @@
 %		mais de uma vez: NÃO SE ACANHE! SEJA INSISTENTE!
 % 		
 %--------------------------------------------------------------------
-\bibliographystyle{abntex2-num}
+\bibliographystyle{abntex2-alf}
 \bibliography{postextuais/bibliografia3}%inserindo a bibliografia
 %%--------------------------------------------------------------------
 %% ELEMENTOS POS-TEXTUAIS
