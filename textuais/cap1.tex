@@ -148,7 +148,7 @@ Para organizar seus componentes, os sistemas IoT costumam ser descritos por arqu
 
 Para a agricultura inteligente, \citeonline{morchid2024} propõem uma arquitetura de quatro camadas. A camada de percepção reúne os sensores e atuadores que coletam dados do ambiente e agem sobre ele, como sensores de umidade do solo e válvulas de irrigação. A camada de rede transmite esses dados; a camada de nuvem os armazena e processa; e a camada de aplicação apresenta as informações ao usuário, por meio de painéis ou aplicativos.
 
-Essa organização orienta as seções seguintes deste trabalho: os sensores e microcontroladores correspondem à camada de percepção, os protocolos de comunicação à camada de rede, e o \textit{backend} com banco de dados às camadas de nuvem e de aplicação.
+Essa organização orienta as seções seguintes deste trabalho: os sensores e microcontroladores correspondem à camada de percepção, os protocolos de comunicação à camada de rede, e o backend com banco de dados às camadas de nuvem e de aplicação.
 
 
 \subsection{Sensores e atuadores}
@@ -175,7 +175,7 @@ Essa configuração é comum em sistemas de irrigação automatizados. Em um sis
 
 \subsubsection{Display}
 
-Para exibir localmente as leituras dos sensores e o estado do sistema, são utilizados \sigla{LCD}{\textit{displays} de cristal líquido} com módulo de interface \sigla{I2C}{\textit{Inter-Integrated Circuit}}. Esse módulo utiliza o expansor de entradas e saídas PCF8574, que converte os comandos recebidos pelo barramento I2C em sinais paralelos para o display, reduzindo o número de pinos necessários no microcontrolador \cite{tipcf8574}.
+Para exibir localmente as leituras dos sensores e o estado do sistema, são utilizados \sigla{LCD}{displays de cristal líquido} com módulo de interface \sigla{I2C}{Inter-Integrated Circuit}. Esse módulo utiliza o expansor de entradas e saídas PCF8574, que converte os comandos recebidos pelo barramento I2C em sinais paralelos para o display, reduzindo o número de pinos necessários no microcontrolador \cite{tipcf8574}.
 
 O I2C é um barramento serial que utiliza apenas duas linhas, uma de dados (SDA) e outra de relógio (SCL), e permite conectar vários dispositivos ao mesmo barramento, com taxas de até 100~kbit/s no modo padrão e 400~kbit/s no modo rápido \cite{nxpi2c2021}.
 
@@ -244,11 +244,11 @@ Wi-Fi é o nome pelo qual são conhecidas as redes locais sem fio baseadas no pa
  
 \subsubsection{LoRa}
  
-O \sigla{LoRa}{\textit{Long Range}} é uma tecnologia de comunicação sem fio de longo alcance, baixo consumo de energia e baixa taxa de transmissão. Nela, os dispositivos enviam os dados diretamente a um \textit{gateway}, que está conectado à internet e repassa as mensagens a um servidor central \cite{augustin2016}. Em um sistema de irrigação inteligente, uma rede LoRa transmitiu dados de forma estável a até 4~km de distância, mas, na menor taxa de transmissão, levou 6~s para enviar apenas 100 \textit{bytes} \cite{zhang2025}. Por isso, o LoRa é indicado para áreas extensas e para o envio de pequenas quantidades de dados, sendo aplicado em sistemas de irrigação e no monitoramento de culturas e de animais \cite{pagano2023}.
+O \sigla{LoRa}{Long Range} é uma tecnologia de comunicação sem fio de longo alcance, baixo consumo de energia e baixa taxa de transmissão. Nela, os dispositivos enviam os dados diretamente a um gateway, que está conectado à internet e repassa as mensagens a um servidor central \cite{augustin2016}. Em um sistema de irrigação inteligente, uma rede LoRa transmitiu dados de forma estável a até 4~km de distância, mas, na menor taxa de transmissão, levou 6~s para enviar apenas 100 bytes \cite{zhang2025}. Por isso, o LoRa é indicado para áreas extensas e para o envio de pequenas quantidades de dados, sendo aplicado em sistemas de irrigação e no monitoramento de culturas e de animais \cite{pagano2023}.
  
 \subsubsection{Bluetooth}
  
-O Bluetooth é uma tecnologia de comunicação sem fio de curto alcance. Sua versão \sigla{BLE}{\textit{Bluetooth Low Energy}} foi desenvolvida para aplicações de controle e monitoramento de baixo consumo de energia, nas quais os dispositivos trocam pequenas quantidades de dados \cite{gomez2012}. Por causa do alcance limitado, costuma ser usado na comunicação entre dispositivos próximos, como na configuração de um equipamento a partir do celular, e não na transmissão de dados do campo até a internet. O ESP32, por exemplo, integra Wi-Fi e Bluetooth no mesmo \textit{chip} \cite{espressif}.
+O Bluetooth é uma tecnologia de comunicação sem fio de curto alcance. Sua versão \sigla{BLE}{Bluetooth Low Energy} foi desenvolvida para aplicações de controle e monitoramento de baixo consumo de energia, nas quais os dispositivos trocam pequenas quantidades de dados \cite{gomez2012}. Por causa do alcance limitado, costuma ser usado na comunicação entre dispositivos próximos, como na configuração de um equipamento a partir do celular, e não na transmissão de dados do campo até a internet. O ESP32, por exemplo, integra Wi-Fi e Bluetooth no mesmo chip \cite{espressif}.
  
 \subsection{Protocolos da camada de aplicação}
  
@@ -256,15 +256,15 @@ Os protocolos da camada de aplicação definem como as mensagens são formatadas
  
 \subsubsection{HTTP}
  
-O \sigla{HTTP}{\textit{Hypertext Transfer Protocol}} é um protocolo da camada de aplicação, sem estado, que serve de base para a comunicação na \textit{web} \cite{rfc9110}. Ele funciona no modelo requisição-resposta: o cliente envia uma requisição a um recurso identificado por uma \sigla{URI}{\textit{Uniform Resource Identifier}}, indicando um método, como GET para obter dados ou POST para enviá-los, e o servidor devolve uma resposta com um código de \textit{status}, como 200 (sucesso) ou 404 (recurso não encontrado). Sua versão segura, o \sigla{HTTPS}{\textit{HyperText Transfer Protocol Secure}}, transmite as mensagens de forma criptografada por meio do protocolo \sigla{TLS}{\textit{Transport Layer Security}} \cite{rfc9110}.
+O \sigla{HTTP}{Hypertext Transfer Protocol} é um protocolo da camada de aplicação, sem estado, que serve de base para a comunicação na web \cite{rfc9110}. Ele funciona no modelo requisição-resposta: o cliente envia uma requisição a um recurso identificado por uma \sigla{URI}{Uniform Resource Identifier}, indicando um método, como GET para obter dados ou POST para enviá-los, e o servidor devolve uma resposta com um código de status, como 200 (sucesso) ou 404 (recurso não encontrado). Sua versão segura, o \sigla{HTTPS}{HyperText Transfer Protocol Secure}, transmite as mensagens de forma criptografada por meio do protocolo \sigla{TLS}{Transport Layer Security} \cite{rfc9110}.
  
 \subsubsection{MQTT}
  
-O \sigla{MQTT}{\textit{Message Queuing Telemetry Transport}} é um protocolo de mensagens do tipo publicação/assinatura (\textit{publish/subscribe}), leve, aberto e simples de implementar, o que o torna adequado para ambientes com recursos limitados, como a IoT \cite{mqtt5}. Nele, os dispositivos não se comunicam diretamente: um cliente publica mensagens em um tópico, como \texttt{irrigacao/umidade}, e um servidor intermediário, chamado \textit{broker}, as repassa a todos os clientes inscritos nesse tópico. O protocolo oferece três níveis de \sigla{QoS}{qualidade de serviço}: 0, com no máximo uma entrega; 1, com pelo menos uma entrega; e 2, com exatamente uma entrega \cite{mqtt5}. 
+O \sigla{MQTT}{Message Queuing Telemetry Transport} é um protocolo de mensagens do tipo publicação/assinatura (publish/subscribe), leve, aberto e simples de implementar, o que o torna adequado para ambientes com recursos limitados, como a IoT \cite{mqtt5}. Nele, os dispositivos não se comunicam diretamente: um cliente publica mensagens em um tópico, como \texttt{irrigacao/umidade}, e um servidor intermediário, chamado broker, as repassa a todos os clientes inscritos nesse tópico. O protocolo oferece três níveis de \sigla{QoS}{qualidade de serviço}: 0, com no máximo uma entrega; 1, com pelo menos uma entrega; e 2, com exatamente uma entrega \cite{mqtt5}. 
 
 \subsubsection{Comparação entre HTTP e MQTT}
  
-No HTTP, cada envio exige uma requisição completa, com cabeçalhos em texto, o que gera uma sobrecarga elevada nas redes IoT. O MQTT, por manter uma conexão aberta com o \textit{broker} e usar cabeçalhos compactos, exige menos recursos de rede \cite{yokotani2016}. Em uma plataforma IoT baseada no módulo NodeMCU, o uso do MQTT com QoS 0 e 1 reduziu o consumo de energia em 6,03\% e 8,33\%, respectivamente, em relação ao HTTP \cite{jaraochoa2023}. Os dois protocolos também podem ser usados de forma complementar: o MQTT no envio contínuo das leituras dos sensores e o HTTP na comunicação entre o servidor e a aplicação do usuário. A Tabela~\ref{tab:http-mqtt} resume as principais diferenças.
+No HTTP, cada envio exige uma requisição completa, com cabeçalhos em texto, o que gera uma sobrecarga elevada nas redes IoT. O MQTT, por manter uma conexão aberta com o broker e usar cabeçalhos compactos, exige menos recursos de rede \cite{yokotani2016}. Em uma plataforma IoT baseada no módulo NodeMCU, o uso do MQTT com QoS 0 e 1 reduziu o consumo de energia em 6,03\% e 8,33\%, respectivamente, em relação ao HTTP \cite{jaraochoa2023}. Os dois protocolos também podem ser usados de forma complementar: o MQTT no envio contínuo das leituras dos sensores e o HTTP na comunicação entre o servidor e a aplicação do usuário. A Tabela~\ref{tab:http-mqtt} resume as principais diferenças.
 
 \begin{table}[htbp]
   \centering
@@ -289,18 +289,18 @@ No HTTP, cada envio exige uma requisição completa, com cabeçalhos em texto, o
 
 \section{Backend e armazenamento de dados}
 
-O \textit{backend} é a parte do sistema executada no servidor, responsável por receber os dados dos dispositivos, aplicar as regras do sistema, armazenar as informações e disponibilizá-las às aplicações do usuário. Em sistemas de IoT agrícola, ele completa o fluxo que vai da coleta e transmissão dos dados ao armazenamento, à visualização, à análise e à tomada de decisão \cite{chamara2022}. 
+O backend é a parte do sistema executada no servidor, responsável por receber os dados dos dispositivos, aplicar as regras do sistema, armazenar as informações e disponibilizá-las às aplicações do usuário. Em sistemas de IoT agrícola, ele completa o fluxo que vai da coleta e transmissão dos dados ao armazenamento, à visualização, à análise e à tomada de decisão \cite{chamara2022}. 
 
 \subsection{API}
 
-Uma API é um conjunto de regras e pontos de acesso que permite a comunicação entre sistemas diferentes, sem que um precise conhecer a implementação interna do outro. Em aplicações web, é comum o uso do estilo arquitetural \sigla{REST}{Representational State Transfer}, proposto por \citeonline{fielding2000}, no qual cada recurso é identificado por uma URI e manipulado por meio dos métodos HTTP, em uma comunicação cliente-servidor sem estado. Os dados trocados costumam seguir o formato \sigla{JSON}{\textit{JavaScript Object Notation}}, um padrão textual leve e independente de linguagem de programação \cite{rfc8259}.
+Uma API é um conjunto de regras e pontos de acesso que permite a comunicação entre sistemas diferentes, sem que um precise conhecer a implementação interna do outro. Em aplicações web, é comum o uso do estilo arquitetural \sigla{REST}{Representational State Transfer}, proposto por \citeonline{fielding2000}, no qual cada recurso é identificado por uma URI e manipulado por meio dos métodos HTTP, em uma comunicação cliente-servidor sem estado. Os dados trocados costumam seguir o formato \sigla{JSON}{JavaScript Object Notation}, um padrão textual leve e independente de linguagem de programação \cite{rfc8259}.
 
 \subsection{Banco de dados}
 
-Um banco de dados é uma coleção de dados relacionados, organizada para atender a um propósito específico. O software que permite criá-lo, mantê-lo e consultá-lo é chamado de \sigla{SGBD}{Sistema Gerenciador de Banco de Dados} \cite{elmasri2018}. Nos bancos relacionais, os dados são organizados em tabelas com estrutura definida e consultados pela linguagem \sigla{SQL}{\textit{Structured Query Language}}, já os bancos NoSQL adotam modelos mais flexíveis, como documentos ou pares chave-valor, e são voltados a grandes volumes de dados e alta escalabilidade \cite{elmasri2018}. Em sistemas IoT, o banco de dados armazena o histórico das leituras dos sensores e dos acionamentos, permitindo acompanhar e analisar os dados ao longo do tempo \cite{chamara2022}. 
+Um banco de dados é uma coleção de dados relacionados, organizada para atender a um propósito específico. O software que permite criá-lo, mantê-lo e consultá-lo é chamado de \sigla{SGBD}{Sistema Gerenciador de Banco de Dados} \cite{elmasri2018}. Nos bancos relacionais, os dados são organizados em tabelas com estrutura definida e consultados pela linguagem \sigla{SQL}{Structured Query Language}, já os bancos NoSQL adotam modelos mais flexíveis, como documentos ou pares chave-valor, e são voltados a grandes volumes de dados e alta escalabilidade \cite{elmasri2018}. Em sistemas IoT, o banco de dados armazena o histórico das leituras dos sensores e dos acionamentos, permitindo acompanhar e analisar os dados ao longo do tempo \cite{chamara2022}. 
 
 \subsubsection{Cloud Firestore}
 
 Neste trabalho, adota-se o Cloud Firestore, banco de dados da plataforma Firebase, do Google. Trata-se de um banco NoSQL orientado a documentos, hospedado em nuvem, no qual não existem tabelas nem linhas: os dados são armazenados em documentos, compostos por pares chave-valor e agrupados em coleções. Cada documento pode conter ainda subcoleções, o que permite organizar os dados de forma hierárquica \cite{firestore2026}. Essa estrutura se adapta bem a sistemas IoT, pois as leituras de cada dispositivo podem ser guardadas como documentos em uma subcoleção, sem a necessidade de definir previamente um esquema rígido.
 
-A mesma plataforma oferece o Firebase Authentication, serviço que fornece recursos prontos para autenticar usuários por meio de e-mail e senha, número de telefone ou provedores externos, como o Google, e que pode ser integrado a um \textit{backend} próprio \cite{firebaseauth2026}. Com isso, o controle de acesso ao sistema não precisa ser implementado do zero.
+A mesma plataforma oferece o Firebase Authentication, serviço que fornece recursos prontos para autenticar usuários por meio de e-mail e senha, número de telefone ou provedores externos, como o Google, e que pode ser integrado a um backend próprio \cite{firebaseauth2026}. Com isso, o controle de acesso ao sistema não precisa ser implementado do zero.
