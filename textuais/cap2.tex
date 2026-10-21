@@ -73,7 +73,7 @@ pelo celular ou computador, com acompanhamento de um especialista em agronomia
 \cite{valleyscheduling}.
 
 % =====================================================================
-\section{Low-cost open-source platform for irrigation automation}
+\section{Plataforma de baixo custo e código aberto para automação da irrigação}
 \label{sec:campos}
 
 Diferentemente das soluções anteriores, trata-se de um trabalho acadêmico.
@@ -82,8 +82,8 @@ plataforma de baixo custo e código aberto para automatizar a irrigação com ba
 na umidade do solo. O sistema utilizou um Arduino Mega 2560 conectado a quatro
 sensores capacitivos de umidade do solo (10HS), a um sensor de temperatura e
 umidade do ar (DHT22), a um \textit{display} LCD, a um módulo de relógio de
-tempo real, a um cartão de memória e a um módulo GSM para envio de mensagens
-SMS. Por meio de relés, o controlador acionava válvulas solenoides sempre que a
+tempo real, a um cartão de memória e a um módulo \sigla{GSM}{\textit{Global System for Mobile Communications}} para envio de mensagens
+\sigla{SMS}{\textit{Short Message Service}}. Por meio de relés, o controlador acionava válvulas solenoides sempre que a
 umidade do solo ficava abaixo de um limiar predefinido.
 
 O sistema foi avaliado no cultivo de tomate-cereja em casa de vegetação, com
@@ -105,10 +105,8 @@ de obra especializada para desenvolvimento e manutenção \cite{campos2021}.
 \section{Comparativo entre os trabalhos}
 \label{sec:comparativo-trabalhos}
 
-A Tabela~\ref{tab:comparativo-trabalhos} compara as soluções apresentadas e o
-sistema proposto neste trabalho a partir de oito critérios. Para o sistema
-proposto, a tabela indica as possibilidades previstas em seu projeto, e não
-resultados medidos em campo. Cada critério é explicado a seguir.
+A Tabela~\ref{tab:comparativo-trabalhos} compara as soluções apresentadas a
+partir de oito critérios. Cada critério é explicado a seguir.
 
 \begin{table}[htbp]
   \centering
@@ -117,7 +115,6 @@ resultados medidos em campo. Cada critério é explicado a seguir.
   \scriptsize
   \renewcommand{\arraystretch}{1.25}
   \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.1cm}
-                                >{\raggedright\arraybackslash}X
                                 >{\raggedright\arraybackslash}X
                                 >{\raggedright\arraybackslash}X
                                 >{\raggedright\arraybackslash}X
@@ -178,7 +175,7 @@ resultados medidos em campo. Cada critério é explicado a seguir.
   \fonte{Elaborado pelo autor com base em \citeonline{hunterhydrawise},
   \citeonline{israelagri2018netbeat}, \citeonline{e4cnetbeat},
   \citeonline{valmont2018}, \citeonline{valleyscheduling} e
-  \citeonline{campos2021}.}
+  \citeonline{campos2021}}
 \end{table}
 
 O \textbf{público-alvo} indica a quem cada solução se destina e em que escala
@@ -188,7 +185,7 @@ Scheduling é voltado a produtores rurais que irrigam por pivô, sistema linear 
 gotejamento. A plataforma de \citeonline{campos2021} foi concebida para pesquisa
 em casa de vegetação e estufas.
 
-A base para decidir a irrigação corresponde ao critério usado para
+A \textbf{base para decidir a irrigação} corresponde ao critério usado para
 definir quando e quanto irrigar. O Hydrawise ajusta os programas pela previsão
 do tempo, o NetBeat recomenda a irrigação por modelos dinâmicos de cultura e o
 Valley Scheduling gera recomendações por algoritmo ou por dados medidos em
@@ -198,17 +195,14 @@ a umidade do solo cai abaixo de um limiar.
 As \textbf{variáveis consideradas} são as informações que alimentam essa
 decisão. As soluções comerciais utilizam um conjunto mais amplo de dados, que
 inclui informações de solo, de cultura, de clima e, no caso do NetBeat, de
-sensores de planta e hidráulicos. A plataforma de \citeonline{campos2021} e o
-sistema proposto medem as mesmas três variáveis: umidade do solo, temperatura e
-umidade do ar.
+sensores de planta e hidráulicos. A plataforma de \citeonline{campos2021} mede apenas três variáveis: umidade do
+solo, temperatura e umidade do ar.
 
 A \textbf{forma de atuação} indica se a solução executa a irrigação ou apenas
 orienta o produtor. O Hydrawise e o NetBeat controlam diretamente os setores de
 irrigação, e o NetBeat também a fertirrigação. O Valley Scheduling apenas
 fornece recomendações, cabendo ao produtor aplicá-las. A plataforma de
-\citeonline{campos2021} aciona válvulas por meio de relés, e o sistema proposto
-possibilita operar nos modos automático e manual, também com acionamento de
-válvula por relé.
+\citeonline{campos2021} aciona válvulas por meio de relés.
 
 O \textbf{acesso remoto} refere-se à possibilidade de acompanhar e comandar o
 sistema a distância. As três soluções comerciais oferecem acesso por aplicativo,
@@ -230,14 +224,12 @@ para enviar SMS.
 
 Por fim, a \textbf{abertura da solução} indica se o código e o projeto estão
 disponíveis para adaptação. As três soluções comerciais são proprietárias,
-enquanto a plataforma de \citeonline{campos2021} e o sistema proposto são de
-código aberto, o que permite substituir sensores e ajustar a lógica de
+enquanto a plataforma de \citeonline{campos2021} é de código aberto, o que
+permite substituir sensores e ajustar a lógica de
 irrigação conforme a necessidade.
 
 Em síntese, as soluções comerciais oferecem modelos de decisão mais elaborados
 e suporte técnico, mas são proprietárias e voltadas a escalas específicas. A
 plataforma de \citeonline{campos2021} mostra a viabilidade do controle por
 limiar de umidade com \textit{hardware} aberto, porém sem acesso remoto aos
-dados. O sistema proposto busca reunir o \textit{hardware} de baixo custo, o
-acompanhamento remoto e o uso de parâmetros agronômicos da cultura em uma mesma
-solução.
+dados.
