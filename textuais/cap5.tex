@@ -110,7 +110,7 @@ O dispositivo de campo é formado pelos componentes descritos na fundamentação
   \fonte{Elaborado pelo autor, com preços consultados em lojas nacionais em outubro de 2026}
 \end{table}
 
-A Tabela~\ref{tab:ligacoes} indica os pinos do ESP32 usados por cada componente, e a Figura~\ref{fig:esquema} apresenta o esquema de ligação. A válvula e o ESP32 trabalham com tensões diferentes, por isso a válvula é alimentada por uma fonte própria de 12~V, e apenas o sinal de controle do relé sai do ESP32.
+A Tabela~\ref{tab:ligacoes} indica os pinos do ESP32 usados por cada componente, e a Figura~\ref{fig:esquema} apresenta o esquema de ligação. O sensor de umidade do solo foi ligado ao GPIO 34, que pertence ao primeiro conversor analógico-digital (ADC1) do ESP32, porque o segundo conversor (ADC2) não pode ser usado enquanto o Wi-Fi está ativo. O display usa os pinos padrão do barramento I2C no ESP32, e o relé começa desligado assim que o pino é configurado. A válvula e o ESP32 trabalham com tensões diferentes, por isso a válvula é alimentada por uma fonte própria de 12~V, e apenas o sinal de controle do relé sai do ESP32.
 
 \begin{table}[htbp]
   \centering
@@ -124,10 +124,10 @@ A Tabela~\ref{tab:ligacoes} indica os pinos do ESP32 usados por cada componente,
     \hline
     \textbf{Componente} & \textbf{Pino do ESP32} & \textbf{Tipo de sinal} \\
     \hline
-    Sensor de umidade do solo & \preencher{GPIO} & Analógico (ADC de 12 bits) \\
-    DHT11 & \preencher{GPIO} & Digital, um fio \\
-    Display LCD (SDA / SCL) & \preencher{GPIO / GPIO} & I2C \\
-    Módulo relé & \preencher{GPIO} & Saída digital \\
+    Sensor de umidade do solo & GPIO 34 & Analógico (ADC1, 12 bits) \\
+    DHT11 & GPIO 27 & Digital, um fio \\
+    Display LCD (SDA / SCL) & GPIO 21 / GPIO 22 & I2C, endereço 0x27 \\
+    Módulo relé & GPIO 26 & Saída digital \\
     \hline
   \end{tabularx}
   \fonte{Elaborado pelo autor}
@@ -146,23 +146,14 @@ A Tabela~\ref{tab:ligacoes} indica os pinos do ESP32 usados por cada componente,
 \section{Firmware e lógica de irrigação}
 \label{sec:firmware}
 
-O firmware foi escrito em C++ com o framework Arduino para o ESP32. Ele preserva a lógica de cálculo do primeiro protótipo e a organiza em classes com responsabilidades separadas, como mostra o diagrama de classes da Figura~\ref{fig:classes}. A classe IrrigationState guarda o estado do dispositivo (modo, autorização, volume de água, temperaturas mínima e máxima, irrigação em andamento e latitude) e os parâmetros agronômicos (ConfigIrrigacao). A classe IrrigationService concentra as regras de irrigação; a IrrigationRunner controla o relé durante uma irrigação; a CommandPoller recebe os comandos da API; e a ApiClient faz todas as chamadas HTTP. As classes SoilSensor, DhtSensor, Relay e Display encapsulam o acesso ao hardware.
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=\textwidth]{figuras/Diagrama de Classes.png}
-  \caption{Diagrama de classes do firmware}
-  \label{fig:classes}
-  \fonte{Elaborado pelo autor}
-\end{figure}
+O firmware foi escrito em C++ com o framework Arduino para o ESP32, usando as bibliotecas DHT sensor library, LiquidCrystal\_I2C e ArduinoJson. Ele preserva a lógica de cálculo do primeiro protótipo e a organiza em módulos com responsabilidades separadas. A classe IrrigationState guarda o estado do dispositivo (modo, autorização, volume de água, temperaturas mínima e máxima, irrigação em andamento e latitude) e os parâmetros agronômicos (ConfigIrrigacao). O módulo IrrigationService concentra as regras de irrigação; o IrrigationRunner controla o relé durante uma irrigação; o CommandPoller recebe os comandos da API; e o ApiClient faz todas as chamadas HTTP. Os módulos SoilSensor, DhtSensor, Relay e Display encapsulam o acesso ao hardware.
 
 \subsection{Funcionamento geral}
 \label{subsec:firmware-ciclo}
 
-Ao ser ligado, o dispositivo mantém o relé desligado, conecta-se ao Wi-Fi, sincroniza o relógio por NTP no fuso de Brasília e busca na API a sua configuração inicial: modo, autorização, latitude e parâmetros agronômicos. Se a API não responder, o firmware segue com valores padrão locais, conforme a regra RN22. A partir daí, o trabalho é dividido entre tarefas concorrentes do FreeRTOS, sistema operacional de tempo real usado pelo ESP32: uma tarefa lê os sensores e envia os dados, outra aguarda os comandos da API e uma terceira executa a irrigação. % CONFERIR: nomes e número de tarefas no código do firmware
-Como as três tarefas leem e alteram o mesmo estado, o acesso a ele é protegido por um mutex, que impede que duas tarefas o modifiquem ao mesmo tempo (RNF08).
+Ao ser ligado, o dispositivo mantém o relé desligado, conecta-se ao Wi-Fi, sincroniza o relógio por NTP no fuso de Brasília e busca na API a sua configuração inicial: modo, autorização, latitude e parâmetros agronômicos. Se a API não responder, o firmware segue com valores padrão locais, conforme a regra RN22. A partir daí, o trabalho é dividido entre tarefas concorrentes do FreeRTOS, sistema operacional de tempo real usado pelo ESP32. Três tarefas ficam ativas o tempo todo: a sensorTask lê os sensores e envia os dados, a statusSyncTask envia o estado do dispositivo e a commandPollTask aguarda os comandos da API. Uma quarta tarefa, a irrigationTask, é criada no início de cada irrigação e encerrada ao fim dela, o que garante que só exista uma irrigação por vez. Como as tarefas leem e alteram o mesmo estado, o acesso a ele é protegido por um mutex, que impede que duas tarefas o modifiquem ao mesmo tempo (RNF08).
 
-A tarefa de leitura lê os sensores a cada 10~s, atualiza as temperaturas mínima e máxima do dia, mostra os valores no display e envia a telemetria à API. A cada 20~s, o dispositivo também envia o seu estado completo. Quando um envio falha, a classe ApiClient repete a tentativa com intervalos crescentes, até cinco vezes; esgotadas as tentativas, a leitura é descartada para não travar a tarefa (RNF07). A Figura~\ref{fig:fluxograma} resume o ciclo de funcionamento e a decisão de irrigar.
+A tarefa de leitura lê os sensores a cada 10~s, atualiza as temperaturas mínima e máxima do dia, mostra os valores no display e envia a telemetria à API. A cada 20~s, a statusSyncTask envia o estado completo do dispositivo. Quando um envio falha, o módulo ApiClient repete a tentativa com intervalos crescentes, até cinco vezes; esgotadas as tentativas, a leitura é descartada para não travar a tarefa (RNF07). A Figura~\ref{fig:fluxograma} resume o ciclo de funcionamento e a decisão de irrigar.
 
 \begin{figure}[htbp]
   \centering
@@ -201,14 +192,14 @@ A tarefa de leitura lê os sensores a cada 10~s, atualiza as temperaturas mínim
 
 \subsection{Leitura da umidade do solo}
 
-O conversor analógico-digital do ESP32 tem 12 bits e entrega valores entre 0 e 4095. No sensor resistivo, quanto mais úmido o solo, menor a tensão de saída e, portanto, menor a leitura. A umidade percentual $U$ é obtida por interpolação linear entre duas leituras de calibração, uma com o solo seco ($L_{seco}$) e outra com o solo saturado ($L_{sat}$), conforme a Equação~\ref{eq:umidade}, e o resultado é limitado ao intervalo de 0 a 100\%. Os valores de calibração são obtidos no procedimento descrito no Capítulo~\ref{textuais/cap3}.
+O conversor analógico-digital do ESP32 tem 12 bits e entrega valores entre 0 e 4095. Para reduzir o ruído, o firmware faz 16 leituras seguidas, converte cada uma em tensão com a curva de calibração de fábrica do conversor e usa a média, em volts. No sensor resistivo, quanto mais úmido o solo, menor a tensão de saída. A umidade percentual $U$ é obtida por interpolação linear entre duas tensões de calibração, uma com o sensor seco ($L_{seco}$) e outra com o sensor imerso em água ($L_{sat}$), conforme a Equação~\ref{eq:umidade}, e o resultado é limitado ao intervalo de 0 a 100\%. No firmware, esses valores estão configurados em 2,8~V e 1,2~V, respectivamente, e devem ser ajustados após a montagem, pelo procedimento descrito no Capítulo~\ref{textuais/cap3}.
 
 \begin{equation}
   U = \frac{L_{seco} - L}{L_{seco} - L_{sat}} \times 100
   \label{eq:umidade}
 \end{equation}
 
-\noindent em que $L$ é a leitura atual do conversor.
+\noindent em que $L$ é a tensão média lida no momento.
 
 \subsection{Cálculo da irrigação}
 \label{subsec:calculo}
@@ -280,7 +271,7 @@ A autorização vem desativada por padrão e funciona como uma trava de seguran�
 
 No modo manual, o usuário informa no painel o volume total de água, em litros, e o dispositivo calcula o tempo de abertura com a mesma vazão total das plantas, isto é, $t = V_t / (q_g \cdot n_g \cdot N) \cdot 3600$. O comando de iniciar só é aceito com o dispositivo em modo manual e sem irrigação em andamento (RN03), e o comando de interromper desliga o relé e registra o tempo real decorrido (RN05).
 
-Os comandos chegam pela classe CommandPoller, que mantém uma consulta aberta à API (Subseção~\ref{subsec:endpoints}) e repassa cada comando recebido à rotina responsável. A Tabela~\ref{tab:comandos} relaciona os comandos tratados pelo firmware. Ao fim de cada irrigação, automática ou manual, o dispositivo envia à API um registro com a umidade do solo antes da irrigação, o tempo real, o volume por planta, o volume total, a data, a hora e o modo (RN16).
+Os comandos chegam pelo módulo CommandPoller, que mantém uma consulta aberta à API (Subseção~\ref{subsec:endpoints}) e repassa cada comando recebido à rotina responsável. A Tabela~\ref{tab:comandos} relaciona os comandos tratados pelo firmware. Ao fim de cada irrigação, automática ou manual, o dispositivo envia à API um registro com a umidade do solo antes da irrigação, o tempo real, o volume por planta, o volume total, a data, a hora e o modo (RN16).
 
 \begin{table}[htbp]
   \centering
@@ -313,6 +304,22 @@ A API foi desenvolvida em Java 17 com o framework Spring Boot. Ela atende a dois
 \subsection{Organização em camadas}
 
 O código segue a divisão em camadas mostrada na Figura~\ref{fig:pacotes}. Os controladores (pacote controller) recebem as requisições HTTP e são separados em dois grupos, um para o dispositivo e outro para o painel. Os serviços (service) concentram as regras do sistema, como impedir a troca de modo durante uma irrigação. Os repositórios (repository) são a única camada que acessa o Firestore. Os modelos (model) representam os documentos gravados, e os objetos de transferência de dados (dto) definem o formato do JSON de entrada e de saída de cada rota. Completam a organização os pacotes security, com os filtros de autenticação; config, com a configuração do Firebase, do CORS e do Swagger; e exception, que converte os erros em respostas padronizadas, como 404 para recurso inexistente e 409 para conflito de estado.
+
+A Figura~\ref{fig:classes-backend} apresenta o diagrama de classes da API, organizado da esquerda para a direita na mesma ordem das camadas: controladores e filtros de segurança, serviços, repositórios e modelos. Para manter a legibilidade, o diagrama omite os DTOs, as classes de configuração e de tratamento de erros, e os métodos de acesso (get e set) dos modelos; os métodos dos controladores correspondem às rotas listadas na Tabela~\ref{tab:endpoints}. As setas tracejadas indicam dependência, isto é, a classe de origem recebe a de destino pelo construtor e chama os seus métodos, e os losangos indicam composição.
+
+A classe DeviceService concentra a maior parte das regras, pois atende tanto aos dados enviados pelo dispositivo quanto às ações do painel, e por isso depende de três repositórios e do CommandDispatchService. Este último é o único serviço que não acessa o Firestore: ele mantém em memória as consultas abertas e os comandos pendentes de cada dispositivo, representados pelo registro Command. O FirebaseAuthFilter é o único elemento fora das camadas de negócio que usa um repositório, já que precisa consultar a coleção usuarios para definir o papel de quem faz a requisição. Do lado dos modelos, um Device é composto por uma ConfigIrrigacao e possui as suas leituras (Telemetry) e irrigações (IrrigationHistoryRecord), que correspondem às subcoleções do Firestore descritas na Subseção~\ref{subsec:modelo-dados}.
+
+\afterpage{%
+\begin{landscape}
+\begin{figure}[p]
+  \centering
+  \includegraphics[width=\linewidth]{figuras/diagrama-classes-backend.pdf}
+  \caption{Diagrama de classes do backend}
+  \label{fig:classes-backend}
+  \fonte{Elaborado pelo autor}
+\end{figure}
+\end{landscape}
+}
 
 \subsection{Endpoints e comunicação com o dispositivo}
 \label{subsec:endpoints}
@@ -456,6 +463,7 @@ A autenticação do painel pode ser desligada pela variável de ambiente DASHBOA
 O cadastro de novos usuários também passa pela API: o administrador preenche o formulário no painel, e a API cria a conta no Firebase Authentication e o registro correspondente na coleção usuarios, sem encerrar a sessão de quem está cadastrando.
 
 \subsection{Modelo de dados}
+\label{subsec:modelo-dados}
 
 Os dados são armazenados no Cloud Firestore, banco NoSQL orientado a documentos \cite{firestore2026}. A Tabela~\ref{tab:colecoes} apresenta as coleções criadas. Cada dispositivo é um documento da coleção devices, identificado pelo seu nome (esp32-01), e as suas leituras e irrigações ficam em subcoleções desse documento. Essa organização acompanha a forma como os dados são consultados, sempre por dispositivo e por período, e permite incluir novos dispositivos sem alterar a estrutura (RNF17).
 
