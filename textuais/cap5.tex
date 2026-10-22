@@ -178,7 +178,7 @@ A tarefa de leitura lê os sensores a cada 10~s, atualiza as temperaturas mínim
     \node[passo, below=of ini] (boot) {Relé desligado, conexão Wi-Fi e sincronização do relógio (NTP)};
     \node[passo, below=of boot] (cfg) {Buscar configuração na API\\ (falha: valores padrão)};
     \node[passo, below=of cfg] (ler) {Ler sensores, atualizar o display e enviar telemetria};
-    \node[decisao, below=of ler] (cond) {Automático, autorizado, sem irrigação e umidade abaixo do limiar?};
+    \node[decisao, below=of ler] (cond) {Modo automático, autorizado, sem irrigação e umidade abaixo do limiar?};
     \node[passo, below=of cond] (calc) {Calcular ET$_0$, ET$_c$, volume e tempo de irrigação};
     \node[passo, below=of calc] (liga) {Ligar o relé pelo tempo calculado\\ e informar irrigação em andamento};
     \node[passo, below=of liga] (fim) {Desligar o relé e enviar o histórico};
@@ -268,7 +268,15 @@ Se a vazão disponível for nula, a irrigação não é executada, o que evita u
 
 \subsection{Modos de operação e comandos}
 
-A irrigação automática só começa quando quatro condições são verdadeiras ao mesmo tempo: o modo é automático, o usuário autorizou a irrigação automática, a umidade do solo está abaixo do limiar configurado e não há outra irrigação em andamento (RN01). A autorização vem desativada por padrão e funciona como uma trava de segurança contra acionamentos indesejados (RN02).
+A irrigação automática só começa quando as quatro condições a seguir são verdadeiras ao mesmo tempo: 
+\begin{itemize}
+    \item O modo esteja no automático
+    \item O usuário autorizou a irrigação automática
+    \item A umidade do solo está abaixo do limiar configurado
+    \item Se não há outra irrigação em andamento (RN01)
+\end{itemize}
+
+A autorização vem desativada por padrão e funciona como uma trava de segurança contra acionamentos indesejados (RN02)
 
 No modo manual, o usuário informa no painel o volume total de água, em litros, e o dispositivo calcula o tempo de abertura com a mesma vazão total das plantas, isto é, $t = V_t / (q_g \cdot n_g \cdot N) \cdot 3600$. O comando de iniciar só é aceito com o dispositivo em modo manual e sem irrigação em andamento (RN03), e o comando de interromper desliga o relé e registra o tempo real decorrido (RN05).
 
@@ -300,7 +308,7 @@ Os comandos chegam pela classe CommandPoller, que mantém uma consulta aberta à
 \section{Backend}
 \label{sec:backend}
 
-A API foi desenvolvida em Java 17 com o framework Spring Boot. Ela atende a dois clientes com necessidades diferentes: o ESP32, que envia dados e busca comandos, e o painel web, que consulta os dados e envia as ações do usuário. O acesso ao Firestore e ao Firebase Authentication é feito pelo Firebase Admin SDK, a documentação das rotas é gerada automaticamente pelo springdoc-openapi, que publica uma interface Swagger, e a aplicação é empacotada em uma imagem Docker, executada na plataforma Render.
+A API foi desenvolvida em Java 17 com o framework Spring Boot. Ela atende a dois clientes com necessidades diferentes: o ESP32, que envia dados e busca comandos, e o painel web, que consulta os dados e envia as ações do usuário. O acesso ao Firestore e ao Firebase Authentication é feito pelo Firebase Admin SDK, a documentação das rotas é gerada automaticamente pelo springdoc-openapi, que publica uma interface Swagger, e a aplicação é empacotada em uma imagem Docker, executada na plataforma hospedagem Render.
 
 \subsection{Organização em camadas}
 
