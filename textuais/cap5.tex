@@ -1,18 +1,11 @@
 \chapter{Implementação}
 \label{textuais/cap5}
 
-% ---------------------------------------------------------------------
-% Marcadores usados neste capítulo:
-%  \preencher{...}            -> dado que só o autor tem (aparece em vermelho no PDF)
-%  \figuraprovisoria{alt}{..} -> espaço reservado para foto ou captura de tela;
-%                                troque pela linha \includegraphics indicada no comentário
-% ---------------------------------------------------------------------
 \providecommand{\preencher}[1]{\textcolor{red}{[#1]}}
 \providecommand{\figuraprovisoria}[2]{\fbox{\parbox[c][#1][c]{0.9\textwidth}{\centering\textcolor{red}{#2}}}}
 
 Este capítulo descreve como o sistema especificado no Capítulo~\ref{textuais/cap4} foi construído. A Seção~\ref{sec:arquitetura} apresenta a arquitetura geral e a divisão do código entre as três aplicações. As seções seguintes detalham cada camada: o hardware do dispositivo de campo (Seção~\ref{sec:hardware}), o firmware e a lógica de irrigação (Seção~\ref{sec:firmware}), a API (Seção~\ref{sec:backend}) e o painel web (Seção~\ref{sec:frontend}).
 
-% =====================================================================
 \section{Arquitetura do sistema}
 \label{sec:arquitetura}
 
@@ -65,8 +58,14 @@ O sistema segue a arquitetura em quatro camadas apresentada na fundamentação t
 
 Os dados circulam em dois sentidos. No sentido do campo para o painel, o ESP32 envia as leituras, o seu estado e o registro de cada irrigação à API, que os grava no Firestore; o painel consulta a API periodicamente e exibe os dados atualizados. No sentido inverso, cada ação do usuário no painel, como trocar o modo ou iniciar uma irrigação, é enviada à API, que a transforma em um comando e o entrega ao ESP32 na próxima consulta do dispositivo. Assim, o dispositivo nunca recebe conexões de fora: ele sempre inicia a comunicação, o que dispensa configurar a rede local para aceitar acessos externos.
 
-O código está dividido em três aplicações independentes, cada uma organizada em pacotes, como mostra a Figura~\ref{fig:pacotes}. O firmware separa a leitura dos sensores, o acionamento dos atuadores, as regras de irrigação e a comunicação; a API separa controladores, serviços, repositórios, modelos e segurança; e o painel separa os serviços e modelos compartilhados das telas. Essa divisão atende ao requisito de manutenibilidade (RNF12) e permite alterar uma parte sem modificar as demais.
-
+O código está dividido em três aplicações independentes, cada uma organizada em pacotes, como mostra a Figura~\ref{fig:pacotes}. 
+\begin{itemize}
+    \item O firmware separa a leitura dos sensores, o acionamento dos atuadores, as regras de irrigação e a comunicação
+    \item A API separa controladores, serviços, repositórios, modelos e segurança
+    \item O Painel(Dahsboard) separa os serviços e modelos compartilhados das telas.
+\end{itemize}
+ Essa divisão atende ao requisito de manutenibilidade (RNF12) e permite alterar uma parte sem modificar as demais.
+ 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\textwidth]{figuras/Diagrama de Pacotes.png}
@@ -94,21 +93,21 @@ O dispositivo de campo é formado pelos componentes descritos na fundamentação
     \hline
     \textbf{Componente} & \textbf{Função} & \textbf{Qtd.} & \textbf{Custo (R\$)} \\
     \hline
-    ESP32 DevKit & Leitura dos sensores, cálculo e comunicação Wi-Fi & 1 & \preencher{valor} \\
-    Sensor de umidade do solo resistivo & Umidade do solo, por entrada analógica & 1 & \preencher{valor} \\
-    DHT11 & Temperatura e umidade do ar & 1 & \preencher{valor} \\
-    Módulo relé & Acionamento da válvula & 1 & \preencher{valor} \\
-    Válvula solenoide 12~V & Liberação da água para o gotejamento & 1 & \preencher{valor} \\
-    Display LCD 16x2 com módulo I2C & Exibição local das leituras e do estado & 1 & \preencher{valor} \\
-    Fonte de 12~V & Alimentação da válvula & 1 & \preencher{valor} \\
-    \preencher{alimentação do ESP32} & \preencher{ex.: regulador de tensão ou fonte USB de 5~V} & 1 & \preencher{valor} \\
-    Fios, conectores e protoboard & Ligações & -- & \preencher{valor} \\
-    Mangueira e gotejadores & Distribuição da água & \preencher{qtd.} & \preencher{valor} \\
+    ESP32 DevKit & Leitura dos sensores, cálculo e comunicação Wi-Fi & 1 &  35-50 \\
+    Sensor de umidade do solo resistivo & Umidade do solo, por entrada analógica & 1 & 15-50 \\
+    DHT11 & Temperatura e umidade do ar & 1 & 10-20 \\
+    Módulo relé & Acionamento da válvula & 1 & 10-20 \\
+    Válvula solenoide 12~V & Liberação da água para o gotejamento & 1 & 50-80\\
+    Display LCD 16x2 com módulo I2C & Exibição local das leituras e do estado & 1 & 20-30 \\
+    Fonte de 12~V & Alimentação da válvula & 1 & 10-20 \\
+    Fonte de alimentação ESP32 & Fonte USB de 5~V & 1 & 15-25 \\
+    Fios, conectores e protoboard & Ligações & -- & 35-50 \\
+    
     \hline
-    \multicolumn{3}{r}{\textbf{Total}} & \preencher{valor} \\
+    \multicolumn{3}{r}{\textbf{Total}} & 200-345 \\
     \hline
   \end{tabularx}
-  \fonte{Elaborado pelo autor, com preços consultados em \preencher{lojas} em \preencher{mês/ano}}
+  \fonte{Elaborado pelo autor, com preços consultados em lojas nacionais em outubro de 2026}
 \end{table}
 
 A Tabela~\ref{tab:ligacoes} indica os pinos do ESP32 usados por cada componente, e a Figura~\ref{fig:esquema} apresenta o esquema de ligação. A válvula e o ESP32 trabalham com tensões diferentes, por isso a válvula é alimentada por uma fonte própria de 12~V, e apenas o sinal de controle do relé sai do ESP32.
@@ -136,8 +135,8 @@ A Tabela~\ref{tab:ligacoes} indica os pinos do ESP32 usados por cada componente,
 
 \begin{figure}[htbp]
   \centering
-  % Troque a linha abaixo por: \includegraphics[width=\textwidth]{figuras/esquema-eletrico}
-  \figuraprovisoria{7cm}{Inserir o esquema de ligação dos componentes ao ESP32 (ex.: feito no Fritzing)}
+  \includegraphics[width=0.5\textwidth]{figuras/Circuito Esp32_bb.png}
+  
   \caption{Esquema de ligação do dispositivo de campo}
   \label{fig:esquema}
   \fonte{Elaborado pelo autor}
