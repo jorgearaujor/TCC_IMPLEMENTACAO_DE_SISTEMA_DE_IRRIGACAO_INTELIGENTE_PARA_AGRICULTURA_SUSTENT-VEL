@@ -19,7 +19,15 @@
 \usepackage{tabularx}
 \usepackage{array}
 \usepackage{tikz}
-\usetikzlibrary{positioning,arrows.meta,fit,calc,shapes.geometric}
+\usetikzlibrary{positioning,arrows.meta,fit,calc,shapes.geometric,shadows}
+% Imagem com borda fina e sombra (usado nas capturas de tela do painel).
+% Uso: \imagemsombra[width=0.97\textwidth]{figuras/arquivo}
+\newcommand{\imagemsombra}[2][]{%
+  \begin{tikzpicture}
+    \node[inner sep=0.6pt, fill=white, draw=black!50, line width=0.5pt,
+          drop shadow={opacity=0.35, shadow xshift=1.2mm, shadow yshift=-1.2mm}]
+      {\includegraphics[#1]{#2}};
+  \end{tikzpicture}}
 \usepackage{pdflscape} % páginas em paisagem (diagrama de classes do backend)
 \usepackage{afterpage}
 \usepackage{tabularx}
