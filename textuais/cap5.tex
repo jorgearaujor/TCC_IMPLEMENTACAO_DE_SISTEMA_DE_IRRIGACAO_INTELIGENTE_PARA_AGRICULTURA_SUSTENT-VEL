@@ -58,21 +58,13 @@ O sistema segue a arquitetura em quatro camadas apresentada na fundamentação t
 
 Os dados circulam em dois sentidos. No sentido do campo para o painel, o ESP32 envia as leituras, o seu estado e o registro de cada irrigação à API, que os grava no Firestore; o painel consulta a API periodicamente e exibe os dados atualizados. No sentido inverso, cada ação do usuário no painel, como trocar o modo ou iniciar uma irrigação, é enviada à API, que a transforma em um comando e o entrega ao ESP32 na próxima consulta do dispositivo. Assim, o dispositivo nunca recebe conexões de fora: ele sempre inicia a comunicação, o que dispensa configurar a rede local para aceitar acessos externos.
 
-O código está dividido em três aplicações independentes, cada uma organizada em pacotes, como mostra a Figura~\ref{fig:pacotes}. 
+O código está dividido em três aplicações independentes, cada uma organizada em pacotes.
 \begin{itemize}
     \item O firmware separa a leitura dos sensores, o acionamento dos atuadores, as regras de irrigação e a comunicação
     \item A API separa controladores, serviços, repositórios, modelos e segurança
     \item O Painel(Dahsboard) separa os serviços e modelos compartilhados das telas.
 \end{itemize}
  Essa divisão atende ao requisito de manutenibilidade (RNF12) e permite alterar uma parte sem modificar as demais.
- 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=\textwidth]{figuras/Diagrama de Pacotes.png}
-  \caption{Diagrama de pacotes do sistema}
-  \label{fig:pacotes}
-  \fonte{Elaborado pelo autor}
-\end{figure}
 
 % =====================================================================
 \section{Hardware}
@@ -146,16 +138,7 @@ A Tabela~\ref{tab:ligacoes} indica os pinos do ESP32 usados por cada componente,
 \section{Firmware e lógica de irrigação}
 \label{sec:firmware}
 
-O firmware foi escrito em C++ com o framework Arduino para o ESP32, usando as bibliotecas DHT sensor library, LiquidCrystal\_I2C e ArduinoJson. Ele preserva a lógica de cálculo do primeiro protótipo e a organiza em módulos com responsabilidades separadas, como mostra o diagrama de classes da Figura~\ref{fig:classes-firmware}. A classe IrrigationState guarda o estado do dispositivo (modo, autorização, volume de água, temperaturas mínima e máxima, irrigação em andamento e latitude) e os parâmetros agronômicos (ConfigIrrigacao). O módulo IrrigationService concentra as regras de irrigação; o IrrigationRunner controla o relé durante uma irrigação; o CommandPoller recebe os comandos da API; e o ApiClient faz todas as chamadas HTTP. Os módulos SoilSensor, DhtSensor, Relay e Display encapsulam o acesso ao hardware.
-
-\begin{figure}[htbp]
-  \centering
-  % Troque a linha abaixo por: \includegraphics[width=\textwidth]{figuras/diagrama-classes-firmware}
-  \figuraprovisoria{9cm}{Inserir o diagrama de classes do firmware}
-  \caption{Diagrama de classes do firmware}
-  \label{fig:classes-firmware}
-  \fonte{Elaborado pelo autor}
-\end{figure}
+O firmware foi escrito em C++ com o framework Arduino para o ESP32, usando as bibliotecas DHT sensor library, LiquidCrystal\_I2C e ArduinoJson. Ele preserva a lógica de cálculo do primeiro protótipo e a organiza em módulos com responsabilidades separadas. A classe IrrigationState guarda o estado do dispositivo (modo, autorização, volume de água, temperaturas mínima e máxima, irrigação em andamento e latitude) e os parâmetros agronômicos (ConfigIrrigacao). O módulo IrrigationService concentra as regras de irrigação; o IrrigationRunner controla o relé durante uma irrigação; o CommandPoller recebe os comandos da API; e o ApiClient faz todas as chamadas HTTP. Os módulos SoilSensor, DhtSensor, Relay e Display encapsulam o acesso ao hardware.
 
 \subsection{Funcionamento geral}
 \label{subsec:firmware-ciclo}
@@ -312,16 +295,7 @@ A API foi desenvolvida em Java 17 com o framework Spring Boot. Ela atende a dois
 
 \subsection{Organização em camadas}
 
-O código segue a divisão em camadas mostrada na Figura~\ref{fig:pacotes}. Os controladores (pacote controller) recebem as requisições HTTP e são separados em dois grupos, um para o dispositivo e outro para o painel. Os serviços (service) concentram as regras do sistema, como impedir a troca de modo durante uma irrigação. Os repositórios (repository) são a única camada que acessa o Firestore. Os modelos (model) representam os documentos gravados, e os objetos de transferência de dados (dto) definem o formato do JSON de entrada e de saída de cada rota. Completam a organização os pacotes security, com os filtros de autenticação; config, com a configuração do Firebase, do CORS e do Swagger; e exception, que converte os erros em respostas padronizadas, como 404 para recurso inexistente e 409 para conflito de estado.
-
-\begin{figure}[htbp]
-  \centering
-  % Troque a linha abaixo por: \includegraphics[width=\textwidth]{figuras/diagrama-pacotes-backend}
-  \figuraprovisoria{8cm}{Inserir o diagrama de pacotes do backend}
-  \caption{Diagrama de pacotes do backend}
-  \label{fig:pacotes}
-  \fonte{Elaborado pelo autor}
-\end{figure}
+O código da API é dividido em camadas, cada uma em um pacote. Os controladores (pacote controller) recebem as requisições HTTP e são separados em dois grupos, um para o dispositivo e outro para o painel. Os serviços (service) concentram as regras do sistema, como impedir a troca de modo durante uma irrigação. Os repositórios (repository) são a única camada que acessa o Firestore. Os modelos (model) representam os documentos gravados, e os objetos de transferência de dados (dto) definem o formato do JSON de entrada e de saída de cada rota. Completam a organização os pacotes security, com os filtros de autenticação; config, com a configuração do Firebase, do CORS e do Swagger; e exception, que converte os erros em respostas padronizadas, como 404 para recurso inexistente e 409 para conflito de estado.
 
 A Figura~\ref{fig:classes-backend} apresenta o diagrama de classes da API, com as principais classes de cada camada e as dependências entre elas. % CONFERIR: ajustar esta frase ao que o diagrama final mostrar (ex.: se omite DTOs e métodos get/set)
 
