@@ -139,16 +139,7 @@ A Tabela~\ref{tab:ligacoes} indica os pinos do ESP32 usados por cada componente,
 \section{Firmware e lógica de irrigação}
 \label{sec:firmware}
 
-O firmware foi escrito em C++ com o framework Arduino para o ESP32, usando as bibliotecas DHT sensor library, LiquidCrystal\_I2C e ArduinoJson. Ele preserva a lógica de cálculo do primeiro protótipo e a organiza em módulos com responsabilidades separadas, como mostra o diagrama de classes da Figura~\ref{fig:classes-firmware}. A classe IrrigationState guarda o estado do dispositivo (modo, autorização, volume de água, temperaturas mínima e máxima, irrigação em andamento e latitude) e os parâmetros agronômicos (ConfigIrrigacao). O módulo IrrigationService concentra as regras de irrigação; o IrrigationRunner controla o relé durante uma irrigação; o CommandPoller recebe os comandos da API; e o ApiClient faz todas as chamadas HTTP. Os módulos SoilSensor, DhtSensor, Relay e Display encapsulam o acesso ao hardware.
-
-\begin{figure}[htbp]
-  \centering
-  % Troque a linha abaixo por: \includegraphics[width=\textwidth]{figuras/diagrama-classes-firmware}
-  \figuraprovisoria{9cm}{Inserir o diagrama de classes do firmware}
-  \caption{Diagrama de classes do firmware}
-  \label{fig:classes-firmware}
-  \fonte{Elaborado pelo autor}
-\end{figure}
+O firmware foi escrito em C++ com o framework Arduino para o ESP32, usando as bibliotecas DHT sensor library, LiquidCrystal\_I2C e ArduinoJson. Ele preserva a lógica de cálculo do primeiro protótipo e a organiza em módulos com responsabilidades separadas. A classe IrrigationState guarda o estado do dispositivo (modo, autorização, volume de água, temperaturas mínima e máxima, irrigação em andamento e latitude) e os parâmetros agronômicos (ConfigIrrigacao). O módulo IrrigationService concentra as regras de irrigação; o IrrigationRunner controla o relé durante uma irrigação; o CommandPoller recebe os comandos da API; e o ApiClient faz todas as chamadas HTTP. Os módulos SoilSensor, DhtSensor, Relay e Display encapsulam o acesso ao hardware.
 
 \subsection{Funcionamento geral}
 \label{subsec:firmware-ciclo}
@@ -297,16 +288,7 @@ A API foi desenvolvida em Java 17 com o framework Spring Boot. Ela atende a dois
 
 \subsection{Organização em camadas}
 
-O código segue a divisão em camadas mostrada na Figura~\ref{fig:pacotes}. Os controladores (pacote controller) recebem as requisições HTTP e são separados em dois grupos, um para o dispositivo e outro para o painel. Os serviços (service) concentram as regras do sistema, como impedir a troca de modo durante uma irrigação. Os repositórios (repository) são a única camada que acessa o Firestore. Os modelos (model) representam os documentos gravados, e os objetos de transferência de dados (dto) definem o formato do JSON de entrada e de saída de cada rota. Completam a organização os pacotes security, com os filtros de autenticação; config, com a configuração do Firebase, do CORS e do Swagger; e exception, que converte os erros em respostas padronizadas, como 404 para recurso inexistente e 409 para conflito de estado.
-
-\begin{figure}[htbp]
-  \centering
-  % Troque a linha abaixo por: \includegraphics[width=\textwidth]{figuras/diagrama-pacotes-backend}
-  \figuraprovisoria{8cm}{Inserir o diagrama de pacotes do backend}
-  \caption{Diagrama de pacotes do backend}
-  \label{fig:pacotes}
-  \fonte{Elaborado pelo autor}
-\end{figure}
+O código da API é dividido em camadas, cada uma em um pacote. Os controladores (pacote controller) recebem as requisições HTTP e são separados em dois grupos, um para o dispositivo e outro para o painel. Os serviços (service) concentram as regras do sistema, como impedir a troca de modo durante uma irrigação. Os repositórios (repository) são a única camada que acessa o Firestore. Os modelos (model) representam os documentos gravados, e os objetos de transferência de dados (dto) definem o formato do JSON de entrada e de saída de cada rota. Completam a organização os pacotes security, com os filtros de autenticação; config, com a configuração do Firebase, do CORS e do Swagger; e exception, que converte os erros em respostas padronizadas, como 404 para recurso inexistente e 409 para conflito de estado.
 
 A Figura~\ref{fig:classes-backend} apresenta o diagrama de classes da API, com as principais classes de cada camada e as dependências entre elas. % CONFERIR: ajustar esta frase ao que o diagrama final mostrar (ex.: se omite DTOs e métodos get/set)
 
