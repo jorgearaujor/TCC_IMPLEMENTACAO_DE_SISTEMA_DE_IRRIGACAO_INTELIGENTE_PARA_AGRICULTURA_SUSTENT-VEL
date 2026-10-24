@@ -296,20 +296,7 @@ A API foi desenvolvida em Java 17 com o framework Spring Boot. Ela atende a dois
 
 O código da API é dividido em camadas, cada uma em um pacote. Os controladores (pacote controller) recebem as requisições HTTP e são separados em dois grupos, um para o dispositivo e outro para o painel. Os serviços (service) concentram as regras do sistema, como impedir a troca de modo durante uma irrigação. Os repositórios (repository) são a única camada que acessa o Firestore. Os modelos (model) representam os documentos gravados, e os objetos de transferência de dados (dto) definem o formato do JSON de entrada e de saída de cada rota. Completam a organização os pacotes security, com os filtros de autenticação; config, com a configuração do Firebase, do CORS e do Swagger; e exception, que converte os erros em respostas padronizadas, como 404 para recurso inexistente e 409 para conflito de estado.
 
-A Figura~\ref{fig:classes-backend} apresenta o diagrama de classes da API, com as principais classes de cada camada e as dependências entre elas. % CONFERIR: ajustar esta frase ao que o diagrama final mostrar (ex.: se omite DTOs e métodos get/set)
-
 A classe DeviceService concentra a maior parte das regras, pois atende tanto aos dados enviados pelo dispositivo quanto às ações do painel, e por isso depende de três repositórios e do CommandDispatchService. Este último é o único serviço que não acessa o Firestore: ele mantém em memória as consultas abertas e os comandos pendentes de cada dispositivo, representados pelo registro Command. O FirebaseAuthFilter é o único elemento fora das camadas de negócio que usa um repositório, já que precisa consultar a coleção usuarios para definir o papel de quem faz a requisição. Do lado dos modelos, um Device é composto por uma ConfigIrrigacao e possui as suas leituras (Telemetry) e irrigações (IrrigationHistoryRecord), que correspondem às subcoleções do Firestore descritas na Subseção~\ref{subsec:modelo-dados}.
-
-\begin{figure}[htbp]
-  \centering
-  % Troque a linha abaixo por: \includegraphics[width=\textwidth]{figuras/diagrama-classes-backend}
-  % Se o diagrama ficar muito largo, ele pode ir em uma página deitada: envolva
-  % todo este bloco figure com \afterpage{\begin{landscape} ... \end{landscape}}
-  \figuraprovisoria{11cm}{Inserir o diagrama de classes do backend}
-  \caption{Diagrama de classes do backend}
-  \label{fig:classes-backend}
-  \fonte{Elaborado pelo autor}
-\end{figure}
 
 \subsection{Endpoints e comunicação com o dispositivo}
 \label{subsec:endpoints}
@@ -524,8 +511,7 @@ A tela de login (Figura~\ref{fig:tela-login}) recebe o e-mail e a senha e autent
 
 \begin{figure}[htbp]
   \centering
-  % Troque a linha abaixo por: \imagemsombra[width=0.8\textwidth]{figuras/tela-login}
-  \figuraprovisoria{6cm}{Inserir captura da tela de login}
+  \imagemsombra[width=0.8\textwidth]{figuras/Tela_Login.png}
   \caption{Tela de login}
   \label{fig:tela-login}
   \fonte{Elaborado pelo autor}
@@ -535,8 +521,7 @@ O dashboard (Figura~\ref{fig:tela-dashboard}) é a tela principal. Ele mostra o 
 
 \begin{figure}[htbp]
   \centering
-  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/tela-dashboard}
-  \figuraprovisoria{8cm}{Inserir captura do dashboard}
+  \imagemsombra[width=\textwidth]{figuras/Tela_Dashboard.png}
   \caption{Tela principal (dashboard)}
   \label{fig:tela-dashboard}
   \fonte{Elaborado pelo autor}
@@ -546,8 +531,7 @@ A tela de histórico (Figura~\ref{fig:tela-historico}) apresenta gráficos da te
 
 \begin{figure}[htbp]
   \centering
-  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/tela-historico}
-  \figuraprovisoria{8cm}{Inserir captura da tela de histórico}
+  \imagemsombra[width=\textwidth]{figuras/Tela_Historico.png}
   \caption{Tela de histórico}
   \label{fig:tela-historico}
   \fonte{Elaborado pelo autor}
@@ -557,8 +541,7 @@ A tela de configurações (Figura~\ref{fig:tela-configuracoes}) reúne a latitud
 
 \begin{figure}[htbp]
   \centering
-  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/tela-configuracoes}
-  \figuraprovisoria{8cm}{Inserir captura da tela de configurações}
+  \imagemsombra[width=\textwidth]{figuras/Tela_Configuracao.png}
   \caption{Tela de configurações}
   \label{fig:tela-configuracoes}
   \fonte{Elaborado pelo autor}
@@ -568,8 +551,7 @@ Por fim, duas telas são exclusivas do Administrador/Operador: a de cadastro de 
 
 \begin{figure}[htbp]
   \centering
-  % Troque a linha abaixo por: \imagemsombra[width=0.8\textwidth]{figuras/tela-nova-cultura}
-  \figuraprovisoria{6cm}{Inserir captura da tela de cadastro de culturas}
+  \imagemsombra[width=0.8\textwidth]{figuras/Tela_Cadastrar_Cultura.png}
   \caption{Tela de cadastro de culturas}
   \label{fig:tela-cultura}
   \fonte{Elaborado pelo autor}
@@ -577,8 +559,7 @@ Por fim, duas telas são exclusivas do Administrador/Operador: a de cadastro de 
 
 \begin{figure}[htbp]
   \centering
-  % Troque a linha abaixo por: \imagemsombra[width=0.8\textwidth]{figuras/tela-cadastro}
-  \figuraprovisoria{6cm}{Inserir captura da tela de cadastro de usuários}
+  \imagemsombra[width=0.8\textwidth]{figuras/Tela_Cadastro.png}
   \caption{Tela de cadastro de usuários}
   \label{fig:tela-cadastro}
   \fonte{Elaborado pelo autor}
