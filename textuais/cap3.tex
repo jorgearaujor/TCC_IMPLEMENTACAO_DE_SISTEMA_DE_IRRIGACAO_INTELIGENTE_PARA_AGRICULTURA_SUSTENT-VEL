@@ -64,9 +64,9 @@ Na quinta etapa, o sistema completo, formado pelo dispositivo ESP32, pela API, p
  
 \section{Materiais e ferramentas}
  
-A Tabela~\ref{tab:ferramentas} reúne os materiais e as ferramentas usados na versão atual do sistema, com a versão de cada um e a finalidade no projeto. Eles estão organizados em seis divisões. A primeira, hardware, apresenta de forma resumida os componentes eletrônicos do dispositivo de campo, que são detalhados no Capítulo~\ref{textuais/cap5}. A segunda reúne as linguagens de programação, uma para cada parte do sistema: C++ no firmware do ESP32, Java na API e TypeScript no painel web. A terceira lista os frameworks e as bibliotecas construídos sobre essas linguagens, como o Spring Boot, base da API, e o Angular, base do painel, além das bibliotecas de estilização e de gráficos da interface.
+A Tabela~\ref{tab:ferramentas} reúne os materiais e as ferramentas usados na versão atual do sistema, com a versão de cada um e a finalidade no projeto. Eles estão organizados em cinco divisões. A primeira, hardware, apresenta de forma resumida os componentes eletrônicos do dispositivo de campo, que são detalhados no Capítulo~\ref{textuais/cap5}. A segunda reúne as linguagens de programação, uma para cada parte do sistema: C++ no firmware do ESP32, Java na API e TypeScript no painel web. A terceira lista os frameworks e as bibliotecas construídos sobre essas linguagens, como o Spring Boot, base da API, e o Angular, base do painel, além das bibliotecas de estilização e de gráficos da interface.
 
-A quarta divisão agrupa os serviços em nuvem do Firebase, responsáveis pela autenticação dos usuários e pelo armazenamento dos dados, junto com os kits de desenvolvimento que permitem à API e ao painel acessá-los. A quinta reúne as ferramentas de apoio ao desenvolvimento, que não fazem parte do sistema em execução, mas foram usadas para escrevê-lo, versioná-lo, compilá-lo, documentá-lo e empacotá-lo. Por fim, a sexta divisão contém as bibliotecas usadas nos testes automatizados da API. Os itens sem versão indicada correspondem a serviços em nuvem, cuja versão é mantida pelo fornecedor, ou a ferramentas cuja versão não interfere no funcionamento do sistema.
+A quarta divisão agrupa os serviços em nuvem do Firebase, responsáveis pela autenticação dos usuários e pelo armazenamento dos dados, junto com os kits de desenvolvimento que permitem à API e ao painel acessá-los. A quinta reúne as ferramentas de apoio ao desenvolvimento, que não fazem parte do sistema em execução, mas foram usadas para escrevê-lo, versioná-lo, compilá-lo, documentá-lo e empacotá-lo. Os itens sem versão indicada correspondem a serviços em nuvem, cuja versão é mantida pelo fornecedor, ou a ferramentas cuja versão não interfere no funcionamento do sistema.
 
 As ferramentas usadas apenas no primeiro protótipo (Python, o broker MQTT Mosquitto, o Node-RED e as bibliotecas de leitura dos sensores no Raspberry Pi) não constam na tabela, porque foram descontinuadas na migração para o ESP32.
  
@@ -100,7 +100,7 @@ As ferramentas usadas apenas no primeiro protótipo (Python, o broker MQTT Mosqu
     Firebase JS SDK         & 12.16 & Autenticação no painel web \\
     \midrule
     \multicolumn{3}{@{}l}{\textit{Apoio ao desenvolvimento}} \\
-    Git e GitHub            & --     & Versionamento e hospedagem dos repositórios \\
+    Git e GitHub            & --     & Versionamento do código-fonte \\
     Maven                   & 3.9.16 & Compilação e gerenciamento de dependências do backend \\
     npm                     & 11.6.2 & Gerenciamento de dependências e scripts do frontend \\
     Swagger (springdoc-openapi) & 2.8.8 & Documentação interativa dos endpoints da API \\
@@ -108,21 +108,16 @@ As ferramentas usadas apenas no primeiro protótipo (Python, o broker MQTT Mosqu
     IntelliJ IDEA           & --     & Desenvolvimento do backend \\
     Arduino IDE           & --     & Desenvolvimento e gravação do firmware \\ % CONFERIR
     Visual Studio Code    & --     & Desenvolvimento do frontend \\           % CONFERIR
-    \midrule
-    \multicolumn{3}{@{}l}{\textit{Testes}} \\
-    JUnit                   & --  & Testes unitários do backend \\ % versão gerenciada pelo Spring Boot 4.1
-    Mockito                 & --  & Simulação de dependências nos testes do backend \\
     \bottomrule
   \end{tabularx}
   \fonte{Elaborado pelo autor}
 \end{table}
 
 \section{Procedimentos de avaliação}
+\label{sec:avaliacao}
 
-A avaliação do sistema foi planejada em três níveis, do componente isolado ao ecossistema completo, todos executados em ambiente controlado. Os resultados são apresentados no Capítulo~\ref{textuais/cap6}.
+A avaliação do sistema foi planejada em dois níveis, ambos executados em ambiente controlado: o funcionamento do sistema completo, de ponta a ponta, e o desempenho do dispositivo de campo. Os resultados são apresentados no Capítulo~\ref{textuais/cap6}.
  
-No primeiro nível, os testes unitários verificam o código de cada aplicação separadamente. No backend, as classes de serviço e os controladores são testados com JUnit, e o Mockito substitui as dependências externas, como o Firestore, para que cada teste avalie apenas a lógica da classe. O critério de aceitação é que todos os testes passem.
+No primeiro nível, os testes de integração verificam a comunicação entre as partes do sistema nos dois sentidos. No sentido do dispositivo para o painel, as leituras enviadas pelo ESP32 devem ser registradas no Firestore e exibidas no painel com os mesmos valores. No sentido inverso, um comando emitido no painel, como iniciar a irrigação manual ou trocar o modo de operação, deve chegar ao dispositivo e ser executado. Os testes são organizados em cenários derivados dos requisitos e das regras de negócio do Capítulo~\ref{textuais/cap4}, e cada cenário é comprovado pelos registros do monitor serial do ESP32, pelas telas do painel, pelos documentos gravados no Firestore e pelos códigos de resposta da API. O critério é que os dados e os comandos cheguem íntegros ao destino e que cada irrigação fique registrada no histórico.
  
-No segundo nível, os testes de integração verificam a comunicação entre as partes do sistema nos dois sentidos. No sentido do dispositivo para o painel, as leituras enviadas pelo ESP32 devem ser registradas no Firestore e exibidas no painel com os mesmos valores. No sentido inverso, um comando emitido no painel, como iniciar a irrigação manual ou trocar o modo de operação, deve chegar ao dispositivo e ser executado. O critério é que os dados e os comandos cheguem íntegros ao destino e que cada irrigação fique registrada no histórico.
- 
-No terceiro nível, os testes de hardware avaliam o dispositivo de campo. O sensor de umidade do solo é calibrado com leituras em solo seco e em solo saturado, que definem os limites da escala usada pelo firmware. Em seguida, a irrigação é acionada nos modos manual e automático, e o volume aplicado, medido em recipiente graduado, é comparado ao volume calculado pelo sistema. O critério é que a diferença entre os dois volumes fique dentro de uma margem de erro aceitável. % CONFERIR: definir a margem (ex.: 10%)
+No segundo nível, os testes de hardware avaliam o dispositivo de campo. O sensor de umidade do solo é calibrado com leituras em solo seco e em solo saturado, que definem os limites da escala usada pelo firmware. Em seguida, a irrigação é acionada nos modos manual e automático, e o volume aplicado, medido em recipiente graduado, é comparado ao volume calculado pelo sistema. O critério é que a diferença entre os dois volumes fique dentro de uma margem de erro aceitável. % CONFERIR: definir a margem (ex.: 10%)

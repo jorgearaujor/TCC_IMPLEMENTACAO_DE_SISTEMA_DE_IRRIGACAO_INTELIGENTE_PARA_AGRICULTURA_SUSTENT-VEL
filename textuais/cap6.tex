@@ -1,26 +1,540 @@
 \chapter{A aplicação: resultados e testes}
 \label{textuais/cap6}
 
+% ---------------------------------------------------------------------
+% Marcadores usados neste capítulo (aparecem em vermelho no PDF):
+%  \preencher{...}           -> resultado ou dado que só o autor tem
+%  \figuraprovisoria{alt}{..} -> espaço para foto ou captura de tela;
+%                               troque pela linha indicada no comentário acima dele
+%  Quadros de log            -> apague a linha vermelha e cole o log no lugar,
+%                               dentro do mesmo bloco lstlisting
+% ATENÇÃO: antes de colar logs ou capturas da aba Rede, apague ou borre o
+% endereço da API (URL) que aparece neles.
+% ---------------------------------------------------------------------
+\providecommand{\preencher}[1]{\textcolor{red}{[#1]}}
+\providecommand{\figuraprovisoria}[2]{\fbox{\parbox[c][#1][c]{0.9\textwidth}{\centering\textcolor{red}{#2}}}}
+\providecommand{\logprovisorio}[1]{\textcolor{red}{[#1]}}
+
+Este capítulo apresenta o protótipo montado e os testes realizados para verificar o funcionamento do sistema descrito no Capítulo~\ref{textuais/cap5}, seguindo os procedimentos definidos na Seção~\ref{sec:avaliacao}. A Seção~\ref{sec:ambiente-testes} descreve o ambiente e as evidências coletadas, a Seção~\ref{sec:prototipo} apresenta o protótipo, a Seção~\ref{sec:testes-integracao} reúne os testes do fluxo completo, a Seção~\ref{sec:testes-hardware} trata dos testes do dispositivo de campo e a Seção~\ref{sec:discussao} discute os resultados.
+
+% =====================================================================
+\section{Ambiente de testes}
+\label{sec:ambiente-testes}
+
+Os testes foram realizados em bancada, em ambiente controlado. O dispositivo de campo foi montado conforme o esquema da Figura~\ref{fig:esquema}, com o sensor de umidade inserido em um vaso com solo, e a válvula solenoide foi ligada a \preencher{fonte de água usada nos testes (ex.: reservatório elevado ou torneira)}. A água aplicada foi coletada em um recipiente graduado, para comparar o volume medido com o volume calculado pelo sistema. O ESP32 foi conectado à rede Wi-Fi do local, e a API e o painel web estavam em execução, ligados ao Cloud Firestore e ao Firebase Authentication.
+
+Cada teste foi comprovado por evidências coletadas nas três partes do sistema, de modo que um mesmo evento pudesse ser acompanhado do painel até o dispositivo e de volta:
+
+\begin{itemize}
+  \item os registros (logs) do monitor serial do ESP32, capturados pela Arduino IDE a 115.200 baud, que mostram o que o firmware leu, recebeu e executou;
+  \item as capturas de tela do painel web;
+  \item os documentos gravados no Firestore, vistos no console do Firebase;
+  \item os códigos de resposta HTTP das requisições do painel à API, vistos na aba Rede das ferramentas de desenvolvedor do navegador.
+\end{itemize}
+
+A Tabela~\ref{tab:parametros-teste} apresenta os parâmetros configurados no painel durante os testes. Eles são os valores usados nos cálculos das Equações~\ref{eq:ra} a~\ref{eq:tempo-manual} e permitem conferir manualmente os resultados obtidos pelo firmware.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Parâmetros configurados durante os testes}
+  \label{tab:parametros-teste}
+  \small
+  \renewcommand{\arraystretch}{1.2}
+  \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X
+                               >{\raggedright\arraybackslash}p{3.6cm}}
+    \hline
+    \textbf{Parâmetro} & \textbf{Valor} \\
+    \hline
+    Latitude da área ($\varphi$) & \preencher{valor}$^{\circ}$ \\
+    Cultura e fase de desenvolvimento & \preencher{cultura, fase} \\
+    Coeficiente de cultura (K$_c$) & \preencher{valor} \\
+    Espaçamento entre plantas ($E_p$) & \preencher{valor}~m \\
+    Espaçamento entre linhas ($E_l$) & \preencher{valor}~m \\
+    Vazão do gotejador ($q_g$) & \preencher{valor}~L\,h$^{-1}$ \\
+    Gotejadores por planta ($n_g$) & \preencher{valor} \\
+    Número total de plantas ($N$) & \preencher{valor} \\
+    Limiar mínimo de umidade do solo & \preencher{valor}~\% \\
+    \hline
+  \end{tabularx}
+  \fonte{Elaborado pelo autor}
+\end{table}
+
+% =====================================================================
 \section{Protótipo montado}
-% DESCRIÇÃO: fotos do hardware montado e do display em funcionamento.
+\label{sec:prototipo}
 
-\section{Apresentação da aplicação}
-% DESCRIÇÃO: capturas de tela do painel, com uma breve explicação de
-% cada uma, seguindo um fluxo de uso (login -> dashboard -> configurações
-% -> irrigação -> histórico).
+A Figura~\ref{fig:prototipo} mostra o dispositivo de campo montado, com o ESP32, o sensor de umidade do solo, o DHT11, o módulo relé, a válvula solenoide e o display LCD. \preencher{Descreva brevemente a montagem: onde os componentes foram fixados, como foi feita a alimentação e como a válvula foi ligada à linha de gotejamento.}
 
-\section{Testes de integração}
-% DESCRIÇÃO: cenários ponta a ponta e resultados. Ex.: leitura do sensor
-% aparecendo no painel; comando de irrigação manual chegando ao ESP32 e
-% acionando a válvula; tempo de resposta medido.
+\begin{figure}[htbp]
+  \centering
+  % Troque a linha abaixo por: \imagemsombra[width=0.9\textwidth]{figuras/foto-prototipo}
+  \figuraprovisoria{9cm}{Inserir foto do protótipo montado}
+  \caption{Protótipo do dispositivo de campo montado}
+  \label{fig:prototipo}
+  \fonte{Elaborado pelo autor}
+\end{figure}
 
+O display LCD, apresentado na Figura~\ref{fig:display}, permite acompanhar o dispositivo no próprio local, sem acesso ao painel. A primeira linha mostra a temperatura do ar e as três primeiras letras do modo de operação (man ou aut), e a segunda mostra a umidade do ar.
+
+\begin{figure}[htbp]
+  \centering
+  % Troque a linha abaixo por: \imagemsombra[width=0.6\textwidth]{figuras/foto-display}
+  \figuraprovisoria{5cm}{Inserir foto do display LCD em funcionamento}
+  \caption{Display LCD do dispositivo em funcionamento}
+  \label{fig:display}
+  \fonte{Elaborado pelo autor}
+\end{figure}
+
+% =====================================================================
+\section{Testes do fluxo completo}
+\label{sec:testes-integracao}
+
+Os testes do fluxo completo verificam se as três partes do sistema funcionam juntas, nos dois sentidos da comunicação: as leituras do dispositivo devem chegar ao Firestore e ao painel, e as ações do usuário no painel devem chegar ao dispositivo e ser executadas. Os cenários foram definidos a partir dos requisitos e das regras de negócio do Capítulo~\ref{textuais/cap4}, e a Tabela~\ref{tab:cenarios} resume cada um deles e o seu resultado. As subseções seguintes descrevem o procedimento e as evidências de cada cenário.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Cenários dos testes do fluxo completo}
+  \label{tab:cenarios}
+  \small
+  \renewcommand{\arraystretch}{1.2}
+  \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.9cm}
+                               >{\raggedright\arraybackslash}X
+                               >{\raggedright\arraybackslash}p{3.9cm}
+                               >{\raggedright\arraybackslash}p{2.2cm}}
+    \hline
+    \textbf{ID} & \textbf{Cenário} & \textbf{Requisitos e regras} & \textbf{Resultado} \\
+    \hline
+    T01 & Inicialização do dispositivo & RF25, RN07, RNF10 & \preencher{Aprovado} \\
+    T02 & Leitura dos sensores e exibição no painel & RF08, RF22, RF23, RN17 & \preencher{Aprovado} \\
+    T03 & Irrigação manual & RF14, RF28, RF30, RN03, RN16, RNF06 & \preencher{Aprovado} \\
+    T04 & Interrupção da irrigação & RF15, RN05 & \preencher{Aprovado} \\
+    T05 & Irrigação automática & RF12, RF13, RF27, RF29, RN01, RN08 a RN12 & \preencher{Aprovado} \\
+    T06 & Bloqueio da irrigação automática sem autorização & RN01, RN02, RNF10 & \preencher{Aprovado} \\
+    T07 & Troca de modo durante uma irrigação & RF17, RN04, RN06 & \preencher{Aprovado} \\
+    T08 & Atualização dos parâmetros de irrigação & RF18, RF21, RF26, RN13 & \preencher{Aprovado} \\
+    T09 & Controle de acesso & RF06, RN19, RN20, RN21 & \preencher{Aprovado} \\
+    T10 & Falha de comunicação com a API & RF32, RN22, RNF07, RNF09 & \preencher{Aprovado} \\
+    \hline
+  \end{tabularx}
+  \fonte{Elaborado pelo autor}
+\end{table}
+
+% ---------------------------------------------------------------------
+\subsection{T01: Inicialização do dispositivo}
+
+Objetivo: verificar se, ao ser ligado, o dispositivo mantém o relé desligado, conecta-se ao Wi-Fi, sincroniza o relógio, obtém a configuração da API e passa a aguardar comandos. Procedimento: o ESP32 foi ligado com a API em execução, e o monitor serial registrou a sequência de inicialização, apresentada no Quadro~\ref{lst:log-t01}. Resultado esperado: as mensagens de conexão, de configuração carregada e de início do long-polling aparecem em sequência, e a válvula permanece fechada durante todo o processo. Resultado obtido: \preencher{descreva o que foi observado, incluindo o tempo aproximado entre ligar o dispositivo e a primeira leitura enviada}.
+
+% Mensagens esperadas no monitor serial (firmware):
+%   Conectando ao WiFi.....
+%   WiFi conectado, IP: <ip>
+%   Sincronizando hora via NTP....
+%   Configuracao inicial carregada da API.
+%   Long polling de comandos iniciado.
+%   Controlador de irrigacao inicializado.
+%   Temp=..C Umid.Ar=..% Umid.Solo=..% Modo=manual
+\vspace{0.6\baselineskip}
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language={}, caption={Log do monitor serial na inicialização do dispositivo (T01)}, label={lst:log-t01}]
+%*\logprovisorio{Colar aqui o log da inicialização}*)
+\end{lstlisting}
+\vspace{-0.5\baselineskip}
+\fonte{Elaborado pelo autor}
+\end{minipage}
+\medskip
+
+% ---------------------------------------------------------------------
+\subsection{T02: Leitura dos sensores e exibição no painel}
+
+Objetivo: verificar se as leituras feitas pelo dispositivo chegam ao Firestore e ao painel com os mesmos valores. Procedimento: com o dispositivo em funcionamento, uma mesma leitura foi acompanhada no monitor serial (Quadro~\ref{lst:log-t02}), no documento gravado na coleção telemetry do Firestore (Figura~\ref{fig:t02-firestore}) e no dashboard do painel (Figura~\ref{fig:t02-painel}). Resultado esperado: os três registros apresentam os mesmos valores de temperatura do ar, umidade do ar e umidade do solo, e o painel se atualiza em até cerca de 10~s após cada leitura (RNF05). A Tabela~\ref{tab:t02} compara os valores observados.
+
+% Mensagens esperadas: uma linha a cada 10 s, no formato
+%   Temp=25.0C Umid.Ar=60.0% Umid.Solo=45.0% Modo=manual
+\vspace{0.6\baselineskip}
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language={}, caption={Log do monitor serial com as leituras dos sensores (T02)}, label={lst:log-t02}]
+%*\logprovisorio{Colar aqui algumas linhas de leitura dos sensores}*)
+\end{lstlisting}
+\vspace{-0.5\baselineskip}
+\fonte{Elaborado pelo autor}
+\end{minipage}
+\medskip
+
+\begin{figure}[htbp]
+  \centering
+  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/teste-t02-firestore}
+  \figuraprovisoria{6cm}{Inserir captura do documento da leitura no console do Firestore (coleção devices/esp32-01/telemetry)}
+  \caption{Leitura gravada no Firestore (T02)}
+  \label{fig:t02-firestore}
+  \fonte{Elaborado pelo autor}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/teste-t02-painel}
+  \figuraprovisoria{6cm}{Inserir captura do dashboard mostrando a mesma leitura}
+  \caption{Leitura exibida no dashboard (T02)}
+  \label{fig:t02-painel}
+  \fonte{Elaborado pelo autor}
+\end{figure}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Comparação de uma leitura nas três partes do sistema (T02)}
+  \label{tab:t02}
+  \small
+  \renewcommand{\arraystretch}{1.2}
+  \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X
+                               >{\centering\arraybackslash}p{2.6cm}
+                               >{\centering\arraybackslash}p{2.6cm}
+                               >{\centering\arraybackslash}p{2.6cm}}
+    \hline
+    \textbf{Grandeza} & \textbf{Monitor serial} & \textbf{Firestore} & \textbf{Painel} \\
+    \hline
+    Temperatura do ar ($^{\circ}$C) & \preencher{valor} & \preencher{valor} & \preencher{valor} \\
+    Umidade do ar (\%) & \preencher{valor} & \preencher{valor} & \preencher{valor} \\
+    Umidade do solo (\%) & \preencher{valor} & \preencher{valor} & \preencher{valor} \\
+    \hline
+  \end{tabularx}
+  \fonte{Elaborado pelo autor}
+\end{table}
+
+% ---------------------------------------------------------------------
+\subsection{T03: Irrigação manual}
+
+Objetivo: verificar o caminho completo de um comando, do painel até o acionamento da válvula, e o registro da irrigação no histórico. Procedimento: com o dispositivo em modo manual, o Administrador/Operador informou no dashboard um volume de \preencher{volume}~L e iniciou a irrigação. O painel passou a indicar a irrigação em andamento (Figura~\ref{fig:t03-andamento}), o dispositivo recebeu o comando START\_IRRIGATION e ligou o relé (Quadro~\ref{lst:log-t03}) e, ao fim do tempo calculado, desligou o relé e enviou o registro da irrigação, que apareceu no histórico do painel (Figura~\ref{fig:t03-historico}). Resultado esperado: o tempo de abertura corresponde ao calculado pela Equação~\ref{eq:tempo-manual}, o comando chega ao dispositivo em no máximo cerca de 30~s (RNF06) e o histórico registra a irrigação com o modo manual. A Tabela~\ref{tab:t03} apresenta os valores obtidos.
+
+% Mensagens esperadas:
+%   Disparando irrigacao manual: 2.00L, duracao estimada 240.0s.
+%   Rele ligado
+%   Rele desligado
+%   Irrigacao (manual) concluida. Duracao real: 240s.
+\vspace{0.6\baselineskip}
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language={}, caption={Log do monitor serial durante a irrigação manual (T03)}, label={lst:log-t03}]
+%*\logprovisorio{Colar aqui o log da irrigação manual}*)
+\end{lstlisting}
+\vspace{-0.5\baselineskip}
+\fonte{Elaborado pelo autor}
+\end{minipage}
+\medskip
+
+\begin{figure}[htbp]
+  \centering
+  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/teste-t03-andamento}
+  \figuraprovisoria{6cm}{Inserir captura do dashboard com a irrigação manual em andamento}
+  \caption{Irrigação manual em andamento no dashboard (T03)}
+  \label{fig:t03-andamento}
+  \fonte{Elaborado pelo autor}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/teste-t03-historico}
+  \figuraprovisoria{6cm}{Inserir captura do histórico de irrigações com o registro da irrigação manual}
+  \caption{Registro da irrigação manual no histórico (T03)}
+  \label{fig:t03-historico}
+  \fonte{Elaborado pelo autor}
+\end{figure}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Resultados da irrigação manual (T03)}
+  \label{tab:t03}
+  \small
+  \renewcommand{\arraystretch}{1.2}
+  \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X
+                               >{\centering\arraybackslash}p{3.2cm}}
+    \hline
+    \textbf{Medida} & \textbf{Valor} \\
+    \hline
+    Volume informado no painel ($V_t$) & \preencher{valor}~L \\
+    Tempo calculado pela Equação~\ref{eq:tempo-manual} & \preencher{valor}~s \\
+    Tempo de abertura registrado no histórico & \preencher{valor}~s \\
+    Tempo entre o comando no painel e o acionamento do relé & \preencher{valor}~s \\
+    \hline
+  \end{tabularx}
+  \fonte{Elaborado pelo autor}
+\end{table}
+
+% ---------------------------------------------------------------------
+\subsection{T04: Interrupção da irrigação}
+
+Objetivo: verificar se uma irrigação em andamento pode ser interrompida pelo painel e se o tempo real é registrado (RN05). Procedimento: uma irrigação manual de \preencher{volume}~L, com tempo calculado de \preencher{tempo}~s, foi iniciada e, após cerca de \preencher{tempo}~s, interrompida pelo botão de parar irrigação. O Quadro~\ref{lst:log-t04} mostra o recebimento do comando STOP\_IRRIGATION pelo dispositivo, e a Figura~\ref{fig:t04-historico} mostra o registro no histórico. Resultado esperado: o relé é desligado logo após a chegada do comando, e o histórico registra o tempo real decorrido, menor que o tempo calculado. Resultado obtido: \preencher{tempo registrado no histórico e observações}.
+
+% Mensagens esperadas:
+%   Disparando irrigacao manual: ...
+%   Rele ligado
+%   STOP_IRRIGATION recebido, solicitando parada da irrigacao em andamento.
+%   Rele desligado
+%   Irrigacao (manual) concluida. Duracao real: ..s.
+\vspace{0.6\baselineskip}
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language={}, caption={Log do monitor serial na interrupção da irrigação (T04)}, label={lst:log-t04}]
+%*\logprovisorio{Colar aqui o log da interrupção}*)
+\end{lstlisting}
+\vspace{-0.5\baselineskip}
+\fonte{Elaborado pelo autor}
+\end{minipage}
+\medskip
+
+\begin{figure}[htbp]
+  \centering
+  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/teste-t04-historico}
+  \figuraprovisoria{6cm}{Inserir captura do histórico com a irrigação interrompida (tempo real menor que o calculado)}
+  \caption{Registro da irrigação interrompida no histórico (T04)}
+  \label{fig:t04-historico}
+  \fonte{Elaborado pelo autor}
+\end{figure}
+
+% ---------------------------------------------------------------------
+\subsection{T05: Irrigação automática}
+
+Objetivo: verificar se o dispositivo inicia a irrigação sozinho quando as quatro condições da regra RN01 são satisfeitas e se o volume e o tempo calculados correspondem às Equações~\ref{eq:ra} a~\ref{eq:tempo}. Procedimento: no painel, o modo foi alterado para automático e a irrigação automática foi autorizada. Em seguida, \preencher{descreva como a umidade ficou abaixo do limiar (ex.: sensor em solo seco ou limiar elevado temporariamente)}. O Quadro~\ref{lst:log-t05} mostra o recebimento dos comandos, a decisão de irrigar e a execução, e a Figura~\ref{fig:t05-historico} mostra o registro no histórico, com o modo automático.
+
+% Mensagens esperadas:
+%   Modo de irrigacao definido para automatico
+%   Irrigacao automatica autorizada
+%   Modo automatico: umidade=30.0%, limiar=50.0%
+%   Disparando irrigacao automatica: 810.0s, 0.45L/planta, 13.50L total.
+%   Rele ligado
+%   Rele desligado
+%   Irrigacao (automatico) concluida. Duracao real: 810s.
+\vspace{0.6\baselineskip}
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language={}, caption={Log do monitor serial durante a irrigação automática (T05)}, label={lst:log-t05}]
+%*\logprovisorio{Colar aqui o log da irrigação automática}*)
+\end{lstlisting}
+\vspace{-0.5\baselineskip}
+\fonte{Elaborado pelo autor}
+\end{minipage}
+\medskip
+
+\begin{figure}[htbp]
+  \centering
+  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/teste-t05-historico}
+  \figuraprovisoria{6cm}{Inserir captura do histórico com o registro da irrigação automática}
+  \caption{Registro da irrigação automática no histórico (T05)}
+  \label{fig:t05-historico}
+  \fonte{Elaborado pelo autor}
+\end{figure}
+
+Para conferir o cálculo do firmware, os mesmos valores foram calculados manualmente com as temperaturas mínima e máxima exibidas no painel no momento da irrigação, a latitude, o dia do ano e os parâmetros da Tabela~\ref{tab:parametros-teste}. A Tabela~\ref{tab:t05} compara os dois resultados. Resultado esperado: os valores do firmware coincidem com os calculados manualmente, a menos de arredondamentos. Resultado obtido: \preencher{observações}.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Comparação entre o cálculo manual e o cálculo do firmware (T05)}
+  \label{tab:t05}
+  \small
+  \renewcommand{\arraystretch}{1.2}
+  \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X
+                               >{\centering\arraybackslash}p{3.0cm}
+                               >{\centering\arraybackslash}p{3.0cm}}
+    \hline
+    \textbf{Grandeza} & \textbf{Cálculo manual} & \textbf{Firmware (log)} \\
+    \hline
+    Temperaturas mínima e máxima ($^{\circ}$C) & \preencher{valores} & -- \\
+    Dia do ano ($J$) & \preencher{valor} & -- \\
+    Radiação extraterrestre $R_a$ (mm\,dia$^{-1}$) & \preencher{valor} & -- \\
+    ET$_0$ (mm\,dia$^{-1}$) & \preencher{valor} & -- \\
+    ET$_c$ (mm\,dia$^{-1}$) & \preencher{valor} & -- \\
+    Volume por planta $V_p$ (L) & \preencher{valor} & \preencher{valor} \\
+    Tempo de irrigação $t$ (s) & \preencher{valor} & \preencher{valor} \\
+    Volume total $V_t$ (L) & \preencher{valor} & \preencher{valor} \\
+    \hline
+  \end{tabularx}
+  \fonte{Elaborado pelo autor}
+\end{table}
+
+% ---------------------------------------------------------------------
+\subsection{T06: Bloqueio da irrigação automática sem autorização}
+
+Objetivo: verificar se a autorização funciona como trava de segurança (RN02). Procedimento: com o modo automático ativo e a umidade do solo abaixo do limiar, a autorização foi desativada no painel (Figura~\ref{fig:t06-painel}), e o dispositivo foi observado por \preencher{tempo} minutos. Resultado esperado: o monitor serial continua registrando as leituras, com o modo automático e a umidade abaixo do limiar, mas nenhuma irrigação é disparada (Quadro~\ref{lst:log-t06}). Resultado obtido: \preencher{observações}.
+
+% Mensagens esperadas:
+%   Irrigacao automatica nao autorizada
+%   Temp=..C Umid.Ar=..% Umid.Solo=30.0% Modo=automatico   (várias linhas)
+%   (nenhuma linha "Disparando irrigacao automatica")
+\vspace{0.6\baselineskip}
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language={}, caption={Log do monitor serial com a irrigação automática não autorizada (T06)}, label={lst:log-t06}]
+%*\logprovisorio{Colar aqui o log com o modo automático sem autorização}*)
+\end{lstlisting}
+\vspace{-0.5\baselineskip}
+\fonte{Elaborado pelo autor}
+\end{minipage}
+\medskip
+
+\begin{figure}[htbp]
+  \centering
+  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/teste-t06-painel}
+  \figuraprovisoria{6cm}{Inserir captura do dashboard em modo automático, sem autorização e com a umidade abaixo do limiar}
+  \caption{Modo automático sem autorização no dashboard (T06)}
+  \label{fig:t06-painel}
+  \fonte{Elaborado pelo autor}
+\end{figure}
+
+% ---------------------------------------------------------------------
+\subsection{T07: Troca de modo durante uma irrigação}
+
+Objetivo: verificar se o sistema impede a troca do modo de operação enquanto uma irrigação está em andamento, o que garante uma única irrigação por vez e evita comandos incoerentes com o estado do dispositivo (RN04 e RN06). Procedimento: durante uma irrigação manual, foi solicitada a troca para o modo automático, pelo painel ou por uma requisição direta à API. Resultado esperado: a API recusa a solicitação com o código 409 e uma mensagem informando que não é possível trocar o modo durante a irrigação, e o dispositivo não recebe nenhum comando de troca de modo. A Figura~\ref{fig:t07-rede} mostra a resposta da API. Resultado obtido: \preencher{observações}.
+
+\begin{figure}[htbp]
+  \centering
+  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/teste-t07-rede}
+  \figuraprovisoria{6cm}{Inserir captura da aba Rede do navegador com a resposta 409 da API (borre o endereço da API)}
+  \caption{Resposta da API à troca de modo durante uma irrigação (T07)}
+  \label{fig:t07-rede}
+  \fonte{Elaborado pelo autor}
+\end{figure}
+
+% ---------------------------------------------------------------------
+\subsection{T08: Atualização dos parâmetros de irrigação}
+
+Objetivo: verificar se os parâmetros alterados no painel são gravados e chegam ao dispositivo. Procedimento: na tela de configurações, a cultura foi alterada de \preencher{cultura anterior} para \preencher{nova cultura}, na fase \preencher{fase}, e os parâmetros foram salvos (Figura~\ref{fig:t08-config}). Resultado esperado: o K$_c$ correspondente é aplicado automaticamente a partir do catálogo (RN13), o documento do dispositivo é atualizado no Firestore e o firmware recebe o comando CONFIG\_IRRIGACAO (Quadro~\ref{lst:log-t08}). Resultado obtido: \preencher{K$_c$ aplicado e observações}.
+
+% Mensagem esperada:
+%   Parametros de irrigacao atualizados.
+\vspace{0.6\baselineskip}
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language={}, caption={Log do monitor serial na atualização dos parâmetros (T08)}, label={lst:log-t08}]
+%*\logprovisorio{Colar aqui o log da atualização dos parâmetros}*)
+\end{lstlisting}
+\vspace{-0.5\baselineskip}
+\fonte{Elaborado pelo autor}
+\end{minipage}
+\medskip
+
+\begin{figure}[htbp]
+  \centering
+  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/teste-t08-config}
+  \figuraprovisoria{6cm}{Inserir captura da tela de configurações com a nova cultura e o K$_c$ aplicado}
+  \caption{Atualização dos parâmetros de irrigação (T08)}
+  \label{fig:t08-config}
+  \fonte{Elaborado pelo autor}
+\end{figure}
+
+% ---------------------------------------------------------------------
+\subsection{T09: Controle de acesso}
+
+Objetivo: verificar se as permissões de cada perfil são aplicadas no painel e na API. Procedimento: o painel foi acessado com um usuário do perfil Visualizador, e em seguida foram feitas requisições diretas à API, fora do painel, com o token desse usuário e sem a chave do dispositivo. Resultado esperado: para o Visualizador, os controles de alteração aparecem desabilitados (Figura~\ref{fig:t09-visualizador}); uma requisição de escrita com o token do Visualizador recebe o código 403 (RN19); e uma requisição a uma rota do dispositivo sem o cabeçalho X-Device-Key recebe o código 401 (RN21), como mostra a Figura~\ref{fig:t09-api}. Resultado obtido: \preencher{observações}.
+
+\begin{figure}[htbp]
+  \centering
+  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/teste-t09-visualizador}
+  \figuraprovisoria{6cm}{Inserir captura do dashboard acessado pelo Visualizador, com os controles desabilitados}
+  \caption{Dashboard acessado pelo perfil Visualizador (T09)}
+  \label{fig:t09-visualizador}
+  \fonte{Elaborado pelo autor}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/teste-t09-api}
+  \figuraprovisoria{6cm}{Inserir captura das respostas 403 e 401 da API (ex.: Swagger ou aba Rede; borre o endereço da API)}
+  \caption{Respostas da API a requisições sem permissão (T09)}
+  \label{fig:t09-api}
+  \fonte{Elaborado pelo autor}
+\end{figure}
+
+% ---------------------------------------------------------------------
+\subsection{T10: Falha de comunicação com a API}
+
+Objetivo: verificar o comportamento do dispositivo quando a API está indisponível (RN22 e RNF07). Procedimento: a execução da API foi interrompida e o ESP32 foi reiniciado; depois de alguns ciclos de leitura, a API foi colocada novamente em execução. Resultado esperado: na inicialização, o dispositivo informa que a configuração não pôde ser obtida e passa a operar com os valores padrão; cada envio que falha é repetido com intervalos crescentes, de 2, 4, 8 e 16~s, até cinco tentativas, e depois descartado; quando a API volta, os envios voltam a ser aceitos sem que seja preciso reiniciar o dispositivo (Quadro~\ref{lst:log-t10}). Resultado obtido: \preencher{observações}.
+
+% Mensagens esperadas:
+%   Erro ao buscar configuracao inicial da API: HTTP -1
+%   Configuracao inicial indisponivel na API. Usando valores padrao locais.
+%   Falha ao enviar para <API>/api/webhooks/telemetry (tentativa 1/5): HTTP -1. Nova tentativa em 2.0s.
+%   ...
+%   Todas as tentativas de envio para <API>/api/webhooks/telemetry falharam. Payload descartado.
+% ATENÇÃO: troque o endereço da API por <API> antes de colar.
+\vspace{0.6\baselineskip}
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language={}, caption={Log do monitor serial com a API indisponível (T10)}, label={lst:log-t10}]
+%*\logprovisorio{Colar aqui o log com a API indisponível (troque o endereço da API por <API>)}*)
+\end{lstlisting}
+\vspace{-0.5\baselineskip}
+\fonte{Elaborado pelo autor}
+\end{minipage}
+\medskip
+
+% =====================================================================
 \section{Testes do hardware}
-% DESCRIÇÃO: calibração do sensor de umidade (ex.: comparação com o
-% método gravimétrico), leituras do DHT11 frente a uma referência e
-% volume aplicado frente ao calculado.
+\label{sec:testes-hardware}
 
+\subsection{Calibração do sensor de umidade do solo}
+
+A calibração definiu as duas tensões de referência da Equação~\ref{eq:umidade}. A tensão de saída do sensor foi medida com \preencher{instrumento usado (ex.: multímetro)} em duas condições: com o sensor seco, ao ar, e com o sensor imerso em água. A Tabela~\ref{tab:calibracao} apresenta os valores medidos e os valores configurados no firmware.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Calibração do sensor de umidade do solo}
+  \label{tab:calibracao}
+  \small
+  \renewcommand{\arraystretch}{1.2}
+  \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X
+                               >{\centering\arraybackslash}p{3.2cm}
+                               >{\centering\arraybackslash}p{3.2cm}}
+    \hline
+    \textbf{Condição} & \textbf{Tensão medida (V)} & \textbf{Valor no firmware (V)} \\
+    \hline
+    Sensor seco ($L_{seco}$, 0\%) & \preencher{valor} & 2,80 \\
+    Sensor imerso em água ($L_{sat}$, 100\%) & \preencher{valor} & 1,20 \\
+    \hline
+  \end{tabularx}
+  \fonte{Elaborado pelo autor}
+\end{table}
+
+\preencher{Comente se os valores medidos ficaram próximos dos configurados; se não ficaram, informe os novos valores gravados no firmware.}
+
+\subsection{Volume aplicado}
+
+Para avaliar se o volume de água aplicado corresponde ao calculado pelo sistema, a água liberada pela válvula foi coletada em um recipiente graduado em \preencher{número} irrigações. A diferença percentual $D$ entre o volume medido e o volume calculado foi obtida pela Equação~\ref{eq:diferenca-volume}:
+
+\begin{equation}
+  D = \frac{V_{med} - V_{calc}}{V_{calc}} \times 100
+  \label{eq:diferenca-volume}
+\end{equation}
+
+\noindent em que:
+\begin{itemize}
+  \item $D$ é a diferença percentual entre os volumes (\%);
+  \item $V_{med}$ é o volume medido no recipiente graduado (L);
+  \item $V_{calc}$ é o volume calculado pelo sistema (L): o volume informado no modo manual ou o volume total da Equação~\ref{eq:tempo} no modo automático.
+\end{itemize}
+
+A Tabela~\ref{tab:volume} apresenta os resultados. O critério de aceitação, definido na metodologia, é que a diferença fique dentro de \preencher{margem, ex.: 10}\%.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Volume calculado e volume medido}
+  \label{tab:volume}
+  \small
+  \renewcommand{\arraystretch}{1.2}
+  \begin{tabularx}{\textwidth}{>{\centering\arraybackslash}p{1.6cm}
+                               >{\centering\arraybackslash}X
+                               >{\centering\arraybackslash}p{2.6cm}
+                               >{\centering\arraybackslash}p{2.6cm}
+                               >{\centering\arraybackslash}p{2.6cm}}
+    \hline
+    \textbf{Teste} & \textbf{Modo} & \textbf{$V_{calc}$ (L)} & \textbf{$V_{med}$ (L)} & \textbf{$D$ (\%)} \\
+    \hline
+    1 & Manual & \preencher{valor} & \preencher{valor} & \preencher{valor} \\
+    2 & Manual & \preencher{valor} & \preencher{valor} & \preencher{valor} \\
+    3 & Automático & \preencher{valor} & \preencher{valor} & \preencher{valor} \\
+    \hline
+  \end{tabularx}
+  \fonte{Elaborado pelo autor}
+\end{table}
+
+\preencher{Comente os resultados: se as diferenças ficaram dentro da margem e quais fatores podem explicá-las (ex.: variação da pressão da água, tempo de abertura e fechamento da válvula, vazão real dos gotejadores).}
+
+% =====================================================================
 \section{Discussão dos resultados}
-% DESCRIÇÃO: interprete os resultados, compare com os trabalhos
-% relacionados (retome a Tabela de comparação do Cap. 3) e aponte as
-% limitações encontradas (ex.: precisão do sensor resistivo,
-% dependência de Wi-Fi, um único dispositivo).
+\label{sec:discussao}
+
+Dos dez cenários de teste do fluxo completo, \preencher{número} foram aprovados. \preencher{Resuma os resultados: as leituras chegaram ao painel com os mesmos valores, os comandos chegaram ao dispositivo dentro do tempo esperado, a irrigação funcionou nos dois modos e o histórico registrou cada irrigação; cite qualquer cenário que não tenha sido aprovado e o motivo.} Os testes também confirmaram o comportamento das travas de segurança: a irrigação automática não foi disparada sem autorização, a troca de modo foi recusada durante uma irrigação e as ações de escrita foram bloqueadas para o perfil Visualizador.
+
+Em relação aos trabalhos relacionados apresentados no Capítulo~\ref{textuais/cap2}, o sistema desenvolvido mantém a principal vantagem da plataforma de \citeonline{campos2021}, o código aberto, e supera as limitações apontadas pelos próprios autores: os dados não ficam em um cartão de memória, mas são enviados à nuvem e consultados pelo painel, que também permite enviar comandos a distância, enquanto aquela plataforma se limitava a mensagens SMS. O custo estimado dos componentes, entre R\$~200 e R\$~345 (Tabela~\ref{tab:componentes}), é bem menor que o de R\$~1.390,55 relatado por aqueles autores, diferença que se deve principalmente ao sensor de umidade: lá foram usados quatro sensores capacitivos, que sozinhos custaram R\$~978,35, enquanto aqui se usa um único sensor resistivo, mais barato e menos preciso. Além disso, a decisão de irrigar combina o limiar de umidade com o cálculo do volume pela FAO-56, em vez de apenas acionar a válvula quando o solo fica seco. Em relação às soluções comerciais, o sistema não depende de uma plataforma proprietária, mas não oferece recursos como o ajuste pela previsão do tempo do Hydrawise, os sensores de planta e hidráulicos do NetBeat ou o acompanhamento agronômico do Valley Scheduling.
+
+Os testes também evidenciaram limitações. O sensor resistivo tem menor precisão e se desgasta com o tempo, pela corrosão dos eletrodos, e o DHT11 tem resolução e precisão inferiores às de sensores como o DHT22, o que afeta as temperaturas usadas no cálculo da ET$_0$. A comunicação depende do Wi-Fi: sem conexão, o dispositivo continua lendo os sensores e pode irrigar no modo automático com a última configuração recebida, mas as leituras dessa janela são descartadas e os comandos do painel não chegam até ele. Por fim, os testes foram realizados em bancada, com um único dispositivo e por um período curto, e não substituem uma avaliação em campo ao longo de um ciclo completo de cultura. \preencher{Acrescente outras limitações observadas durante os testes, se houver.}

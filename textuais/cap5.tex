@@ -448,7 +448,7 @@ Os comandos chegam pelo módulo CommandPoller, que mantém uma consulta aberta �
 \section{Backend}
 \label{sec:backend}
 
-A API foi desenvolvida em Java 17 com o framework Spring Boot. Ela atende a dois clientes com necessidades diferentes: o ESP32, que envia dados e busca comandos, e o painel web, que consulta os dados e envia as ações do usuário. O acesso ao Firestore e ao Firebase Authentication é feito pelo Firebase Admin SDK, a documentação das rotas é gerada automaticamente pelo springdoc-openapi, que publica uma interface Swagger, e a aplicação é empacotada em uma imagem Docker, para um deploy fácil em plataformas de hospedagem de aplicações.
+A API foi desenvolvida em Java 17 com o framework Spring Boot. Ela atende a dois clientes com necessidades diferentes: o ESP32, que envia dados e busca comandos, e o painel web, que consulta os dados e envia as ações do usuário. O acesso ao Firestore e ao Firebase Authentication é feito pelo Firebase Admin SDK, a documentação das rotas é gerada automaticamente pelo springdoc-openapi, que publica uma interface Swagger, e a aplicação pode ser empacotada em uma imagem Docker, o que permite executá-la da mesma forma em qualquer máquina (RNF14).
 
 \subsection{Organização em camadas}
 
