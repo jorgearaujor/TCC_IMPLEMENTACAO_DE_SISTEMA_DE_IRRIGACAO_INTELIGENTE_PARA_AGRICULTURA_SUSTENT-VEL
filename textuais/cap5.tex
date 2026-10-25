@@ -448,7 +448,7 @@ Os comandos chegam pelo módulo CommandPoller, que mantém uma consulta aberta �
 \section{Backend}
 \label{sec:backend}
 
-A API foi desenvolvida em Java 17 com o framework Spring Boot. Ela atende a dois clientes com necessidades diferentes: o ESP32, que envia dados e busca comandos, e o painel web, que consulta os dados e envia as ações do usuário. O acesso ao Firestore e ao Firebase Authentication é feito pelo Firebase Admin SDK, a documentação das rotas é gerada automaticamente pelo springdoc-openapi, que publica uma interface Swagger, e a aplicação é empacotada em uma imagem Docker, executada na plataforma hospedagem Render.
+A API foi desenvolvida em Java 17 com o framework Spring Boot. Ela atende a dois clientes com necessidades diferentes: o ESP32, que envia dados e busca comandos, e o painel web, que consulta os dados e envia as ações do usuário. O acesso ao Firestore e ao Firebase Authentication é feito pelo Firebase Admin SDK, a documentação das rotas é gerada automaticamente pelo springdoc-openapi, que publica uma interface Swagger, e a aplicação é empacotada em uma imagem Docker, para um deploy fácil em plataformas de hospedagem de aplicações.
 
 \subsection{Organização em camadas}
 
@@ -511,9 +511,9 @@ A Tabela~\ref{tab:endpoints} apresenta as rotas da API, separadas pelo cliente q
 \vspace{-0.8\baselineskip}
 \fonte{Elaborado pelo autor}
 
-O principal desafio da comunicação foi entregar comandos a um dispositivo que está atrás da rede local do usuário e, portanto, não pode receber conexões vindas da internet. A solução adotada foi o long-polling, onde o ESP32 faz uma requisição à rota de comandos, e a API só responde quando há um comando para ele ou quando se passam 30~s sem comandos, caso em que devolve o código 204 (sem conteúdo). Em seguida, o dispositivo abre uma nova requisição. Com isso, um comando chega ao dispositivo quase imediatamente quando há uma consulta aberta, e em no máximo cerca de 30~s no pior caso (RNF06), sem que o ESP32 precise consultar a API a todo instante.
+O principal desafio da comunicação foi entregar comandos a um dispositivo que está atrás da rede local do usuário e, portanto, não pode receber conexões vindas da internet. A solução adotada foi o long-polling, onde o ESP32 faz uma requisição à rota de comandos, e a API só responde quando há um comando para ele ou quando se passam 30 segundos sem comandos, caso em que devolve o código 204 (sem conteúdo). Em seguida, o dispositivo abre uma nova requisição. Com isso, um comando chega ao dispositivo quase imediatamente quando há uma consulta aberta, e em no máximo cerca de 30 segundos no pior caso (RNF06), sem que o ESP32 precise consultar a API a todo instante.
 
-Na API, esse mecanismo é implementado pela classe CommandDispatchService, apresentada no Quadro~\ref{lst:dispatch}. Quando o dispositivo consulta a rota, o método poll devolve imediatamente um comando já pendente ou deixa a requisição registrada à espera, com um prazo de 30~s. Quando o painel gera um comando, o método enqueue o entrega à requisição que está esperando ou, se não houver nenhuma, guarda-o em uma fila para a próxima consulta. Do lado do controlador, a resposta é devolvida de forma assíncrona com a classe DeferredResult do Spring, o que libera a thread do servidor enquanto o dispositivo aguarda.
+Na API, esse mecanismo é implementado pela classe CommandDispatchService, apresentada no Quadro~\ref{lst:dispatch}. Quando o dispositivo consulta a rota, o método poll devolve imediatamente um comando já pendente ou deixa a requisição registrada à espera, com um prazo de 30 segundos. Quando o painel gera um comando, o método enqueue o entrega à requisição que está esperando ou, se não houver nenhuma, guarda-o em uma fila para a próxima consulta. Do lado do controlador, a resposta é devolvida de forma assíncrona com a classe DeferredResult do Spring, o que libera a thread do servidor enquanto o dispositivo aguarda.
 
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
@@ -626,7 +626,7 @@ Os dados são armazenados no Cloud Firestore, banco NoSQL orientado a documentos
   \fonte{Elaborado pelo autor}
 \end{table}
 
-As consultas de histórico filtram as leituras pela data de gravação, ordenam-nas da mais recente para a mais antiga e devolvem no máximo um número fixo de documentos: 500 por padrão, ou o limite pedido pelo cliente, que na tela de histórico é de 2.000. Esse limite mantém o tempo de resposta estável mesmo com o acúmulo de dados, já que, com leituras a cada 10~s, cada dia gera cerca de 8.640 documentos.
+As consultas de histórico filtram as leituras pela data de gravação, ordenam-nas da mais recente para a mais antiga e devolvem no máximo um número fixo de documentos: 500 por padrão, ou o limite pedido pelo cliente, que na tela de histórico é de 2.000. Esse limite mantém o tempo de resposta estável mesmo com o acúmulo de dados, já que, com leituras a cada 10 segundos, cada dia gera cerca de 8.640 documentos.
 
 % =====================================================================
 \section{Frontend}
