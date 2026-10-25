@@ -3,6 +3,8 @@
 
 \providecommand{\preencher}[1]{\textcolor{red}{[#1]}}
 \providecommand{\figuraprovisoria}[2]{\fbox{\parbox[c][#1][c]{0.9\textwidth}{\centering\textcolor{red}{#2}}}}
+% Referência a uma equação dentro de um comentário de código: // %*\lsteq{eq:rotulo}*)
+\providecommand{\lsteq}[1]{\textcolor{gray}{\ttfamily Eq.~\ref{#1}}}
 
 Este capítulo descreve como o sistema especificado no Capítulo~\ref{textuais/cap4} foi construído. A Seção~\ref{sec:arquitetura} apresenta a arquitetura geral e a divisão do código entre as três aplicações. As seções seguintes detalham cada camada: o hardware do dispositivo de campo (Seção~\ref{sec:hardware}), o firmware e a lógica de irrigação (Seção~\ref{sec:firmware}), a API (Seção~\ref{sec:backend}) e o painel web (Seção~\ref{sec:frontend}).
 
@@ -190,7 +192,36 @@ O conversor analógico-digital do ESP32 tem 12 bits e entrega valores entre 0 e 
   \label{eq:umidade}
 \end{equation}
 
-\noindent em que $L$ é a tensão média lida no momento.
+\noindent em que:
+\begin{itemize}
+  \item $U$ é a umidade do solo (\%);
+  \item $L$ é a tensão média lida no sensor no momento da leitura (V);
+  \item $L_{seco}$ é a tensão de calibração com o sensor seco, que corresponde a 0\% de umidade (V);
+  \item $L_{sat}$ é a tensão de calibração com o sensor imerso em água, que corresponde a 100\% de umidade (V).
+\end{itemize}
+
+O Quadro~\ref{lst:umidade} mostra a aplicação da Equação~\ref{eq:umidade} no firmware. As constantes SOIL\_\allowbreak MAX\_\allowbreak VOLTAGE e SOIL\_\allowbreak MIN\_\allowbreak VOLTAGE correspondem a $L_{seco}$ e $L_{sat}$, e a função constrain limita o resultado ao intervalo de 0 a 100\%.
+
+\vspace{0.6\baselineskip}
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language=C++, caption={Cálculo da umidade do solo no firmware (trecho de SoilSensor)}, label={lst:umidade}]
+#define SOIL_MAX_VOLTAGE 2.800f  // L_seco (0%)
+#define SOIL_MIN_VOLTAGE 1.200f  // L_sat (100%)
+
+bool readSoilPercent(float &outValue) {
+  // L: media de 16 leituras, em volts
+  float tensao = lerTensaoMedia();
+  // %*\lsteq{eq:umidade}*)
+  float umidade = ((SOIL_MAX_VOLTAGE - tensao) /
+      (SOIL_MAX_VOLTAGE - SOIL_MIN_VOLTAGE)) * 100.0f;
+  outValue = constrain(umidade, 0.0f, 100.0f);
+  return true;
+}
+\end{lstlisting}
+\vspace{-0.5\baselineskip}
+\fonte{Elaborado pelo autor}
+\end{minipage}
+\medskip
 
 \subsection{Cálculo da irrigação}
 \label{subsec:calculo}
@@ -228,7 +259,46 @@ No modo automático, o volume de água segue o método FAO-56, com a ET$_0$ esti
   \item $J$ é o número do dia no ano, de 1 a 365 ou 366.
 \end{itemize}
 
-Para uso na Equação~\ref{eq:hargreaves}, $R_a$ é convertida para lâmina equivalente de evaporação, em mm\,dia$^{-1}$, multiplicando-se o valor por 0,408 \cite{allen1998}. Com a ET$_0$ calculada, a evapotranspiração da cultura é obtida pela Equação~\ref{eq:etc}, com o K$_c$ correspondente à cultura e à fase escolhidas no painel. A ET$_c$, em milímetros por dia, é então convertida em volume por planta. Como 1~mm de água sobre 1~m$^2$ equivale a 1~L, basta multiplicá-la pela área ocupada por planta, dada pelos espaçamentos entre plantas ($E_p$) e entre linhas ($E_l$), em metros:
+Para uso na Equação~\ref{eq:hargreaves}, $R_a$ é convertida para lâmina equivalente de evaporação, em mm\,dia$^{-1}$, multiplicando-se o valor por 0,408 \cite{allen1998}. O Quadro~\ref{lst:eto} mostra a função calcularEto, que aplica as Equações~\ref{eq:ra} a~\ref{eq:omega} e, em seguida, a equação de Hargreaves-Samani. O dia do ano $J$ é obtido do relógio sincronizado por NTP, e as temperaturas mínima e máxima são as registradas pelo DHT11 ao longo do dia. Dois cuidados foram acrescentados ao código: o argumento do arco-cosseno é limitado ao intervalo de $-1$ a 1, o que evita erro numérico em latitudes extremas, e a amplitude térmica nunca é negativa, o que evita a raiz quadrada de um número negativo.
+
+\vspace{0.6\baselineskip}
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language=C++, caption={Cálculo da ET$_0$ pela equação de Hargreaves-Samani no firmware (função calcularEto)}, label={lst:eto}]
+float calcularEto(float tempMin, float tempMax,
+                  float latitude, int diaDoAno) {
+  float tempMed = (tempMin + tempMax) / 2.0f;
+  float latRad = latitude * (float)M_PI / 180.0f;
+
+  // %*\lsteq{eq:dr}*)
+  float dr = 1.0f + 0.033f *
+      cosf(2.0f * (float)M_PI / 365.0f * diaDoAno);
+  // %*\lsteq{eq:delta}*)
+  float delta = 0.409f * sinf(
+      (2.0f * (float)M_PI / 365.0f * diaDoAno) - 1.39f);
+  // %*\lsteq{eq:omega}*), com o argumento limitado a [-1, 1]
+  float cosOmegaS = -tanf(latRad) * tanf(delta);
+  cosOmegaS = std::max(-1.0f, std::min(1.0f, cosOmegaS));
+  float omegaS = acosf(cosOmegaS);
+
+  // %*\lsteq{eq:ra}*), em MJ/m2/dia
+  const float Gsc = 0.0820f;
+  float raMj = (24.0f * 60.0f / (float)M_PI) * Gsc * dr *
+      (omegaS * sinf(latRad) * sinf(delta) +
+       cosf(latRad) * cosf(delta) * sinf(omegaS));
+  float raMm = raMj * 0.408f;  // conversao para mm/dia
+
+  // %*\lsteq{eq:hargreaves}*) (Hargreaves-Samani)
+  const float C = 0.0023f;
+  float td = std::max(0.0f, tempMax - tempMin);
+  return C * raMm * sqrtf(td) * (tempMed + 17.8f);
+}
+\end{lstlisting}
+\vspace{-0.5\baselineskip}
+\fonte{Elaborado pelo autor}
+\end{minipage}
+\medskip
+
+Com a ET$_0$ calculada, a evapotranspiração da cultura é obtida pela Equação~\ref{eq:etc}, com o K$_c$ correspondente à cultura e à fase escolhidas no painel. A ET$_c$, em milímetros por dia, é então convertida em volume por planta. Como 1~mm de água sobre 1~m$^2$ equivale a 1~L, basta multiplicá-la pela área ocupada por planta, dada pelos espaçamentos entre plantas ($E_p$) e entre linhas ($E_l$), em metros:
 
 \begin{equation}
   A_p = E_p \cdot E_l
@@ -236,6 +306,15 @@ Para uso na Equação~\ref{eq:hargreaves}, $R_a$ é convertida para lâmina equi
   V_p = ET_c \cdot A_p
   \label{eq:volume-planta}
 \end{equation}
+
+\noindent em que:
+\begin{itemize}
+  \item $A_p$ é a área ocupada por planta (m$^2$);
+  \item $E_p$ é o espaçamento entre plantas na linha (m);
+  \item $E_l$ é o espaçamento entre linhas (m);
+  \item $V_p$ é o volume de água por planta (L);
+  \item $ET_c$ é a evapotranspiração da cultura (mm\,dia$^{-1}$), dada pela Equação~\ref{eq:etc}.
+\end{itemize}
 
 O tempo de irrigação depende da vazão disponível por planta, que é a vazão de cada gotejador ($q_g$, em L\,h$^{-1}$) multiplicada pelo número de gotejadores por planta ($n_g$). Como todas as plantas são irrigadas ao mesmo tempo pela mesma válvula, o tempo de abertura, em segundos, e o volume total aplicado ($V_t$) são dados pela Equação~\ref{eq:tempo}, em que $N$ é o número total de plantas:
 
@@ -245,6 +324,56 @@ O tempo de irrigação depende da vazão disponível por planta, que é a vazão
   V_t = V_p \cdot N
   \label{eq:tempo}
 \end{equation}
+
+\noindent em que:
+\begin{itemize}
+  \item $t$ é o tempo de abertura da válvula (s);
+  \item $V_p$ é o volume de água por planta (L), dado pela Equação~\ref{eq:volume-planta};
+  \item $q_g$ é a vazão de cada gotejador (L\,h$^{-1}$);
+  \item $n_g$ é o número de gotejadores por planta;
+  \item 3600 é o fator de conversão de horas para segundos;
+  \item $V_t$ é o volume total aplicado (L);
+  \item $N$ é o número total de plantas.
+\end{itemize}
+
+O Quadro~\ref{lst:irrigacao} mostra a função calcularIrrigacao, que aplica as Equações~\ref{eq:etc}, \ref{eq:volume-planta} e~\ref{eq:tempo} a partir da ET$_0$ e dos parâmetros configurados no painel, e a linha do modo automático que calcula o volume total.
+
+\vspace{0.6\baselineskip}
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language=C++, caption={Cálculo do volume e do tempo de irrigação no firmware (função calcularIrrigacao)}, label={lst:irrigacao}]
+IrrigationResult calcularIrrigacao(float etoMm, float kc,
+    float espacamentoPlantasM, float espacamentoLinhasM,
+    float vazaoGotejadorLph, int numGotejadoresPlanta) {
+  // %*\lsteq{eq:etc}*)
+  float etcMmDia = etoMm * kc;
+  // %*\lsteq{eq:volume-planta}*): A_p e V_p (1 mm em 1 m2 = 1 L)
+  float areaPorPlantaM2 =
+      espacamentoPlantasM * espacamentoLinhasM;
+  float volumeLitrosPorPlanta = etcMmDia * areaPorPlantaM2;
+  // vazao por planta: q_g . n_g
+  float vazaoTotalPorPlantaLph =
+      vazaoGotejadorLph * numGotejadoresPlanta;
+
+  if (vazaoTotalPorPlantaLph == 0.0f) {
+    return {0.0f, 0.0f};  // RN15: sem vazao, nao irriga
+  }
+
+  // %*\lsteq{eq:tempo}*): tempo t, em segundos
+  float tempoIrrigacaoHoras =
+      volumeLitrosPorPlanta / vazaoTotalPorPlantaLph;
+  float tempoIrrigacaoSegundos =
+      tempoIrrigacaoHoras * 3600.0f;
+  return {tempoIrrigacaoSegundos, volumeLitrosPorPlanta};
+}
+
+// em executarModoAutomatico(): V_t (%*\lsteq{eq:tempo}*))
+float volumeTotal =
+    resultado.volumePorPlanta * config.numeroTotalPlantas;
+\end{lstlisting}
+\vspace{-0.5\baselineskip}
+\fonte{Elaborado pelo autor}
+\end{minipage}
+\medskip
 
 Se a vazão disponível for nula, a irrigação não é executada, o que evita uma divisão por zero (RN15). Por exemplo, com ET$_0$ de 5,0~mm\,dia$^{-1}$, K$_c$ de 1,0, espaçamento de 0,3~m por 0,3~m, um gotejador de 2,0~L\,h$^{-1}$ por planta e 30 plantas, cada planta recebe $5{,}0 \times 1{,}0 \times 0{,}09 = 0{,}45$~L, a válvula fica aberta por 810~s (13,5~min) e o volume total aplicado é de 13,5~L.
 
@@ -260,7 +389,36 @@ A irrigação automática só começa quando as quatro condições a seguir são
 
 A autorização vem desativada por padrão e funciona como uma trava de segurança contra acionamentos indesejados (RN02)
 
-No modo manual, o usuário informa no painel o volume total de água, em litros, e o dispositivo calcula o tempo de abertura com a mesma vazão total das plantas, isto é, $t = V_t / (q_g \cdot n_g \cdot N) \cdot 3600$. O comando de iniciar só é aceito com o dispositivo em modo manual e sem irrigação em andamento (RN03), e o comando de interromper desliga o relé e registra o tempo real decorrido (RN05).
+No modo manual, o usuário informa no painel o volume total de água, em litros, e o dispositivo calcula o tempo de abertura com a mesma vazão total das plantas, conforme a Equação~\ref{eq:tempo-manual}. O comando de iniciar só é aceito com o dispositivo em modo manual e sem irrigação em andamento (RN03), e o comando de interromper desliga o relé e registra o tempo real decorrido (RN05).
+
+\begin{equation}
+  t = \frac{V_t}{q_g \cdot n_g \cdot N} \cdot 3600
+  \label{eq:tempo-manual}
+\end{equation}
+
+\noindent em que $V_t$ é o volume total informado pelo usuário (L), e $t$, $q_g$, $n_g$ e $N$ têm o mesmo significado da Equação~\ref{eq:tempo}. O Quadro~\ref{lst:manual} mostra o trecho correspondente do firmware; o volume por planta, registrado no histórico, é obtido dividindo-se $V_t$ por $N$.
+
+\vspace{0.6\baselineskip}
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language=C++, caption={Cálculo do tempo de irrigação no modo manual (trecho de executarModoManual)}, label={lst:manual}]
+// vazao de todas as plantas: q_g . n_g . N
+float vazaoTotalLph = config.vazaoGotejadorLph *
+    config.numGotejadoresPlanta * config.numeroTotalPlantas;
+if (vazaoTotalLph <= 0.0f) {
+  return;  // RN15: sem vazao, nao irriga
+}
+// %*\lsteq{eq:tempo-manual}*)
+float tempoSegundos =
+    (quantidadeAguaLitros / vazaoTotalLph) * 3600.0f;
+// volume por planta registrado no historico: V_t / N
+float volumePorPlanta = config.numeroTotalPlantas > 0
+    ? quantidadeAguaLitros / config.numeroTotalPlantas
+    : quantidadeAguaLitros;
+\end{lstlisting}
+\vspace{-0.5\baselineskip}
+\fonte{Elaborado pelo autor}
+\end{minipage}
+\medskip
 
 Os comandos chegam pelo módulo CommandPoller, que mantém uma consulta aberta à API (Subseção~\ref{subsec:endpoints}) e repassa cada comando recebido à rotina responsável. A Tabela~\ref{tab:comandos} relaciona os comandos tratados pelo firmware. Ao fim de cada irrigação, automática ou manual, o dispositivo envia à API um registro com a umidade do solo antes da irrigação, o tempo real, o volume por planta, o volume total, a data, a hora e o modo (RN16).
 
@@ -357,6 +515,7 @@ O principal desafio da comunicação foi entregar comandos a um dispositivo que 
 
 Na API, esse mecanismo é implementado pela classe CommandDispatchService, apresentada no Quadro~\ref{lst:dispatch}. Quando o dispositivo consulta a rota, o método poll devolve imediatamente um comando já pendente ou deixa a requisição registrada à espera, com um prazo de 30~s. Quando o painel gera um comando, o método enqueue o entrega à requisição que está esperando ou, se não houver nenhuma, guarda-o em uma fila para a próxima consulta. Do lado do controlador, a resposta é devolvida de forma assíncrona com a classe DeferredResult do Spring, o que libera a thread do servidor enquanto o dispositivo aguarda.
 
+\vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language=Java, caption={Entrega de comandos por long-polling (trecho de CommandDispatchService)}, label={lst:dispatch}]
 public void enqueue(String deviceId, Command command) {
@@ -399,6 +558,7 @@ public CompletableFuture<Optional<Command>> poll(String deviceId, long timeoutMi
 
 A API usa dois mecanismos de autenticação, um para cada cliente, configurados com o Spring Security. O dispositivo envia em todas as requisições uma chave fixa no cabeçalho X-Device-Key, conferida pelo filtro DeviceKeyFilter (Quadro~\ref{lst:devicekey}). A chave é lida de uma variável de ambiente e nunca aparece no código-fonte (RNF03); requisições às rotas do dispositivo sem a chave correta recebem o código 401.
 
+\vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language=Java, caption={Verificação da chave do dispositivo (trecho de DeviceKeyFilter)}, label={lst:devicekey}]
 String cleanedUri = StringUtils.cleanPath(request.getRequestURI());
@@ -420,6 +580,7 @@ filterChain.doFilter(request, response);
 
 O usuário do painel faz login diretamente no Firebase Authentication, com e-mail e senha, e recebe um token que o painel envia no cabeçalho Authorization de cada requisição. O filtro FirebaseAuthFilter valida esse token com o Firebase Admin SDK e procura o usuário na coleção usuarios, que funciona como lista de acesso: quem não está cadastrado recebe o código 403, mesmo tendo uma conta válida no Firebase. O campo tipo do cadastro define o papel do usuário, como mostra o Quadro~\ref{lst:papel}. As rotas que alteram o sistema são marcadas com a anotação \texttt{@PreAuthorize("hasRole('ADMIN')")}, de modo que a restrição de escrita ao perfil Administrador/Operador (RN19) é verificada na própria API, e não apenas escondida no painel.
 
+\vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language=Java, caption={Definição do papel do usuário (trecho de FirebaseAuthFilter)}, label={lst:papel}]
 FirebaseToken token = firebaseAuth.verifyIdToken(header.substring("Bearer ".length()));
@@ -481,6 +642,7 @@ O serviço IrrigationService concentra a comunicação com a API. Ele consulta o
 
 O acesso às telas é controlado por dois guards: o authGuard exige que o usuário esteja autenticado, e o adminGuard libera as telas de cadastro de usuários e de culturas apenas para o Administrador/Operador. Dois interceptadores atuam em todas as requisições à API: o primeiro anexa o token do Firebase ao cabeçalho Authorization (Quadro~\ref{lst:interceptor}), e o segundo encerra a sessão e volta à tela de login quando a API responde com os códigos 401 ou 403. Para o desenvolvimento, o painel também pode funcionar com dados simulados, sem depender da API (RNF11).
 
+\vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language={}, caption={Inclusão do token nas requisições à API (auth.interceptor.ts)}, label={lst:interceptor}]
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
