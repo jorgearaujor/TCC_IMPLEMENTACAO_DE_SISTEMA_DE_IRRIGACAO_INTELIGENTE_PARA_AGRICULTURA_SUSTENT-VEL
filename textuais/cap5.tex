@@ -296,20 +296,7 @@ A API foi desenvolvida em Java 17 com o framework Spring Boot. Ela atende a dois
 
 O código da API é dividido em camadas, cada uma em um pacote. Os controladores (pacote controller) recebem as requisições HTTP e são separados em dois grupos, um para o dispositivo e outro para o painel. Os serviços (service) concentram as regras do sistema, como impedir a troca de modo durante uma irrigação. Os repositórios (repository) são a única camada que acessa o Firestore. Os modelos (model) representam os documentos gravados, e os objetos de transferência de dados (dto) definem o formato do JSON de entrada e de saída de cada rota. Completam a organização os pacotes security, com os filtros de autenticação; config, com a configuração do Firebase, do CORS e do Swagger; e exception, que converte os erros em respostas padronizadas, como 404 para recurso inexistente e 409 para conflito de estado.
 
-A Figura~\ref{fig:classes-backend} apresenta o diagrama de classes da API, com as principais classes de cada camada e as dependências entre elas. % CONFERIR: ajustar esta frase ao que o diagrama final mostrar (ex.: se omite DTOs e métodos get/set)
-
 A classe DeviceService concentra a maior parte das regras, pois atende tanto aos dados enviados pelo dispositivo quanto às ações do painel, e por isso depende de três repositórios e do CommandDispatchService. Este último é o único serviço que não acessa o Firestore: ele mantém em memória as consultas abertas e os comandos pendentes de cada dispositivo, representados pelo registro Command. O FirebaseAuthFilter é o único elemento fora das camadas de negócio que usa um repositório, já que precisa consultar a coleção usuarios para definir o papel de quem faz a requisição. Do lado dos modelos, um Device é composto por uma ConfigIrrigacao e possui as suas leituras (Telemetry) e irrigações (IrrigationHistoryRecord), que correspondem às subcoleções do Firestore descritas na Subseção~\ref{subsec:modelo-dados}.
-
-\begin{figure}[htbp]
-  \centering
-  % Troque a linha abaixo por: \includegraphics[width=\textwidth]{figuras/diagrama-classes-backend}
-  % Se o diagrama ficar muito largo, ele pode ir em uma página deitada: envolva
-  % todo este bloco figure com \afterpage{\begin{landscape} ... \end{landscape}}
-  \figuraprovisoria{11cm}{Inserir o diagrama de classes do backend}
-  \caption{Diagrama de classes do backend}
-  \label{fig:classes-backend}
-  \fonte{Elaborado pelo autor}
-\end{figure}
 
 \subsection{Endpoints e comunicação com o dispositivo}
 \label{subsec:endpoints}
