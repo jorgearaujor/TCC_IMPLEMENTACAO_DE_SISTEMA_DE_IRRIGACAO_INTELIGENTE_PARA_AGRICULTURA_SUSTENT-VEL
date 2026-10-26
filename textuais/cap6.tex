@@ -67,8 +67,7 @@ A Figura~\ref{fig:prototipo} mostra o dispositivo de campo montado, com o ESP32,
 
 \begin{figure}[htbp]
   \centering
-  % Troque a linha abaixo por: \imagemsombra[width=0.9\textwidth]{figuras/foto-prototipo}
-  \figuraprovisoria{9cm}{Inserir foto do protótipo montado}
+  \imagemsombra[width=0.9\textwidth]{figuras/prototipo.jpeg}
   \caption{Protótipo do dispositivo de campo montado}
   \label{fig:prototipo}
   \fonte{Elaborado pelo autor}
@@ -78,8 +77,7 @@ O display LCD, apresentado na Figura~\ref{fig:display}, permite acompanhar o dis
 
 \begin{figure}[htbp]
   \centering
-  % Troque a linha abaixo por: \imagemsombra[width=0.6\textwidth]{figuras/foto-display}
-  \figuraprovisoria{5cm}{Inserir foto do display LCD em funcionamento}
+  \imagemsombra[width=0.6\textwidth]{figuras/LCD.jpeg}
   \caption{Display LCD do dispositivo em funcionamento}
   \label{fig:display}
   \fonte{Elaborado pelo autor}
@@ -104,16 +102,16 @@ Os testes do fluxo completo verificam se as três partes do sistema funcionam ju
     \hline
     \textbf{ID} & \textbf{Cenário} & \textbf{Requisitos e regras} & \textbf{Resultado} \\
     \hline
-    T01 & Inicialização do dispositivo & RF25, RN07, RNF10 & \preencher{Aprovado} \\
-    T02 & Leitura dos sensores e exibição no painel & RF08, RF22, RF23, RN17 & \preencher{Aprovado} \\
-    T03 & Irrigação manual & RF14, RF28, RF30, RN03, RN16, RNF06 & \preencher{Aprovado} \\
-    T04 & Interrupção da irrigação & RF15, RN05 & \preencher{Aprovado} \\
-    T05 & Irrigação automática & RF12, RF13, RF27, RF29, RN01, RN08 a RN12 & \preencher{Aprovado} \\
-    T06 & Bloqueio da irrigação automática sem autorização & RN01, RN02, RNF10 & \preencher{Aprovado} \\
-    T07 & Troca de modo durante uma irrigação & RF17, RN04, RN06 & \preencher{Aprovado} \\
-    T08 & Atualização dos parâmetros de irrigação & RF18, RF21, RF26, RN13 & \preencher{Aprovado} \\
-    T09 & Controle de acesso & RF06, RN19, RN20, RN21 & \preencher{Aprovado} \\
-    T10 & Falha de comunicação com a API & RF32, RN22, RNF07, RNF09 & \preencher{Aprovado} \\
+    T01 & Inicialização do dispositivo & RF25, RN07, RNF10 & Aprovado \\
+    T02 & Leitura dos sensores e exibição no painel & RF08, RF22, RF23, RN17 & Aprovado \\
+    T03 & Irrigação manual & RF14, RF28, RF30, RN03, RN16, RNF06 & Aprovado \\
+    T04 & Interrupção da irrigação & RF15, RN05 & Aprovado \\
+    T05 & Irrigação automática & RF12, RF13, RF27, RF29, RN01, RN08 a RN12 & Aprovado \\
+    T06 & Bloqueio da irrigação automática sem autorização & RN01, RN02, RNF10 & Aprovado \\
+    T07 & Troca de modo durante uma irrigação & RF17, RN04, RN06 & Aprovado \\
+    T08 & Atualização dos parâmetros de irrigação & RF18, RF21, RF26, RN13 & Aprovado \\
+    T09 & Controle de acesso & RF06, RN19, RN20, RN21 & Aprovado \\
+    T10 & Falha de comunicação com a API & RF32, RN22, RNF07, RNF09 & Aprovado \\
     \hline
   \end{tabularx}
   \fonte{Elaborado pelo autor}
@@ -123,19 +121,16 @@ Os testes do fluxo completo verificam se as três partes do sistema funcionam ju
 \subsection{T01: Inicialização do dispositivo}
 
 Objetivo: verificar se, ao ser ligado, o dispositivo mantém o relé desligado, conecta-se ao Wi-Fi, sincroniza o relógio, obtém a configuração da API e passa a aguardar comandos. Procedimento: o ESP32 foi ligado com a API em execução, e o monitor serial registrou a sequência de inicialização, apresentada no Quadro~\ref{lst:log-t01}. Resultado esperado: as mensagens de conexão, de configuração carregada e de início do long-polling aparecem em sequência, e a válvula permanece fechada durante todo o processo. Resultado obtido: \preencher{descreva o que foi observado, incluindo o tempo aproximado entre ligar o dispositivo e a primeira leitura enviada}.
-
-% Mensagens esperadas no monitor serial (firmware):
-%   Conectando ao WiFi.....
-%   WiFi conectado, IP: <ip>
-%   Sincronizando hora via NTP....
-%   Configuracao inicial carregada da API.
-%   Long polling de comandos iniciado.
-%   Controlador de irrigacao inicializado.
-%   Temp=..C Umid.Ar=..% Umid.Solo=..% Modo=manual
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language={}, caption={Log do monitor serial na inicialização do dispositivo (T01)}, label={lst:log-t01}]
-%*\logprovisorio{Colar aqui o log da inicialização}*)
+Conectando ao WiFi.....
+WiFi conectado, IP: 192.168.2.229
+Sincronizando hora via NTP.....
+Configuracao inicial carregada da API.
+Long polling de comandos iniciado.
+Controlador de irrigacao inicializado.
+ }
 \end{lstlisting}
 \vspace{-0.5\baselineskip}
 \fonte{Elaborado pelo autor}
@@ -152,7 +147,11 @@ Objetivo: verificar se as leituras feitas pelo dispositivo chegam ao Firestore e
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language={}, caption={Log do monitor serial com as leituras dos sensores (T02)}, label={lst:log-t02}]
-%*\logprovisorio{Colar aqui algumas linhas de leitura dos sensores}*)
+Temp=24.5C Umid.Ar=36.0% Umid.Solo=61.2% Modo=automatico
+Temp=24.5C Umid.Ar=37.0% Umid.Solo=61.8% Modo=automatico
+Temp=24.5C Umid.Ar=37.0% Umid.Solo=61.4% Modo=automatico
+Temp=24.4C Umid.Ar=37.0% Umid.Solo=61.5% Modo=automatico
+Temp=24.4C Umid.Ar=37.0% Umid.Solo=61.5% Modo=automatico
 \end{lstlisting}
 \vspace{-0.5\baselineskip}
 \fonte{Elaborado pelo autor}
@@ -161,8 +160,7 @@ Objetivo: verificar se as leituras feitas pelo dispositivo chegam ao Firestore e
 
 \begin{figure}[htbp]
   \centering
-  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/teste-t02-firestore}
-  \figuraprovisoria{6cm}{Inserir captura do documento da leitura no console do Firestore (coleção devices/esp32-01/telemetry)}
+  \imagemsombra[width=0.9\textwidth]{figuras/doc_coleta.jpg}
   \caption{Leitura gravada no Firestore (T02)}
   \label{fig:t02-firestore}
   \fonte{Elaborado pelo autor}
@@ -170,8 +168,7 @@ Objetivo: verificar se as leituras feitas pelo dispositivo chegam ao Firestore e
 
 \begin{figure}[htbp]
   \centering
-  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/teste-t02-painel}
-  \figuraprovisoria{6cm}{Inserir captura do dashboard mostrando a mesma leitura}
+  \imagemsombra[width=0.97\textwidth]{figuras/dashboard_log.jpeg}
   \caption{Leitura exibida no dashboard (T02)}
   \label{fig:t02-painel}
   \fonte{Elaborado pelo autor}
@@ -190,9 +187,9 @@ Objetivo: verificar se as leituras feitas pelo dispositivo chegam ao Firestore e
     \hline
     \textbf{Grandeza} & \textbf{Monitor serial} & \textbf{Firestore} & \textbf{Painel} \\
     \hline
-    Temperatura do ar ($^{\circ}$C) & \preencher{valor} & \preencher{valor} & \preencher{valor} \\
-    Umidade do ar (\%) & \preencher{valor} & \preencher{valor} & \preencher{valor} \\
-    Umidade do solo (\%) & \preencher{valor} & \preencher{valor} & \preencher{valor} \\
+    Temperatura do ar ($^{\circ}$C) & 24.3 & 24.3 & 24.3 \\
+    Umidade do ar (\%) & 38 & 38 & 38 \\
+    Umidade do solo (\%) & 61.3 & 61.30078 & 61 \\
     \hline
   \end{tabularx}
   \fonte{Elaborado pelo autor}
@@ -201,7 +198,7 @@ Objetivo: verificar se as leituras feitas pelo dispositivo chegam ao Firestore e
 % ---------------------------------------------------------------------
 \subsection{T03: Irrigação manual}
 
-Objetivo: verificar o caminho completo de um comando, do painel até o acionamento da válvula, e o registro da irrigação no histórico. Procedimento: com o dispositivo em modo manual, o Administrador/Operador informou no dashboard um volume de \preencher{volume}~L e iniciou a irrigação. O painel passou a indicar a irrigação em andamento (Figura~\ref{fig:t03-andamento}), o dispositivo recebeu o comando START\_IRRIGATION e ligou o relé (Quadro~\ref{lst:log-t03}) e, ao fim do tempo calculado, desligou o relé e enviou o registro da irrigação, que apareceu no histórico do painel (Figura~\ref{fig:t03-historico}). Resultado esperado: o tempo de abertura corresponde ao calculado pela Equação~\ref{eq:tempo-manual}, o comando chega ao dispositivo em no máximo cerca de 30~s (RNF06) e o histórico registra a irrigação com o modo manual. A Tabela~\ref{tab:t03} apresenta os valores obtidos.
+Objetivo: verificar o caminho completo de um comando, do painel até o acionamento da válvula, e o registro da irrigação no histórico. Procedimento: com o dispositivo em modo manual, o Administrador/Operador informou no dashboard um volume de 10 Litros e iniciou a irrigação. O painel passou a indicar a irrigação em andamento (Figura~\ref{fig:t03-andamento}), o dispositivo recebeu o comando START\_IRRIGATION e ligou o relé (Quadro~\ref{lst:log-t03}) e, ao fim do tempo calculado, desligou o relé e enviou o registro da irrigação, que apareceu no histórico do painel (Figura~\ref{fig:t03-historico}). Resultado esperado: o tempo de abertura corresponde ao calculado pela Equação~\ref{eq:tempo-manual}, o comando chega ao dispositivo em no máximo cerca de 30~s (RNF06) e o histórico registra a irrigação com o modo manual. A Tabela~\ref{tab:t03} apresenta os valores obtidos.
 
 % Mensagens esperadas:
 %   Disparando irrigacao manual: 2.00L, duracao estimada 240.0s.
@@ -211,7 +208,11 @@ Objetivo: verificar o caminho completo de um comando, do painel até o acionamen
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language={}, caption={Log do monitor serial durante a irrigação manual (T03)}, label={lst:log-t03}]
-%*\logprovisorio{Colar aqui o log da irrigação manual}*)
+Temp=22.3C Umid.Ar=50.0% Umid.Solo=0.0% Modo=manual
+Temp=22.3C Umid.Ar=49.0% Umid.Solo=0.0% Modo=manual
+Disparando irrigacao manual: 10.00L, duracao estimada 600.0s.
+Rele ligado
+Temp=22.3C Umid.Ar=49.0% Umid.Solo=0.0% Modo=manual
 \end{lstlisting}
 \vspace{-0.5\baselineskip}
 \fonte{Elaborado pelo autor}
@@ -220,8 +221,7 @@ Objetivo: verificar o caminho completo de um comando, do painel até o acionamen
 
 \begin{figure}[htbp]
   \centering
-  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/teste-t03-andamento}
-  \figuraprovisoria{6cm}{Inserir captura do dashboard com a irrigação manual em andamento}
+  \imagemsombra[width=0.97\textwidth]{figuras/manual.jpg}
   \caption{Irrigação manual em andamento no dashboard (T03)}
   \label{fig:t03-andamento}
   \fonte{Elaborado pelo autor}
@@ -229,8 +229,7 @@ Objetivo: verificar o caminho completo de um comando, do painel até o acionamen
 
 \begin{figure}[htbp]
   \centering
-  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/teste-t03-historico}
-  \figuraprovisoria{6cm}{Inserir captura do histórico de irrigações com o registro da irrigação manual}
+  \imagemsombra[width=0.97\textwidth]{figuras/historico.jpg}
   \caption{Registro da irrigação manual no histórico (T03)}
   \label{fig:t03-historico}
   \fonte{Elaborado pelo autor}
@@ -247,10 +246,9 @@ Objetivo: verificar o caminho completo de um comando, do painel até o acionamen
     \hline
     \textbf{Medida} & \textbf{Valor} \\
     \hline
-    Volume informado no painel ($V_t$) & \preencher{valor}~L \\
-    Tempo calculado pela Equação~\ref{eq:tempo-manual} & \preencher{valor}~s \\
-    Tempo de abertura registrado no histórico & \preencher{valor}~s \\
-    Tempo entre o comando no painel e o acionamento do relé & \preencher{valor}~s \\
+    Volume informado no painel ($V_t$) & 10~L \\
+    Tempo calculado pela Equação~\ref{eq:tempo-manual} & 10~min / 600~s \\
+    Tempo de abertura registrado no histórico & 10~min / 600~s \\
     \hline
   \end{tabularx}
   \fonte{Elaborado pelo autor}
@@ -259,7 +257,7 @@ Objetivo: verificar o caminho completo de um comando, do painel até o acionamen
 % ---------------------------------------------------------------------
 \subsection{T04: Interrupção da irrigação}
 
-Objetivo: verificar se uma irrigação em andamento pode ser interrompida pelo painel e se o tempo real é registrado (RN05). Procedimento: uma irrigação manual de \preencher{volume}~L, com tempo calculado de \preencher{tempo}~s, foi iniciada e, após cerca de \preencher{tempo}~s, interrompida pelo botão de parar irrigação. O Quadro~\ref{lst:log-t04} mostra o recebimento do comando STOP\_IRRIGATION pelo dispositivo, e a Figura~\ref{fig:t04-historico} mostra o registro no histórico. Resultado esperado: o relé é desligado logo após a chegada do comando, e o histórico registra o tempo real decorrido, menor que o tempo calculado. Resultado obtido: \preencher{tempo registrado no histórico e observações}.
+Objetivo: verificar se uma irrigação em andamento pode ser interrompida pelo painel e se o tempo real é registrado (RN05). Procedimento: uma irrigação manual de 10~L, com tempo calculado de 600~s, foi iniciada e, após cerca de 4~s, interrompida pelo botão de parar irrigação. O Quadro~\ref{lst:log-t04} mostra o recebimento do comando STOP\_IRRIGATION pelo dispositivo, e a Figura~\ref{fig:t04-historico} mostra o registro no histórico. Resultado esperado: o relé é desligado logo após a chegada do comando, e o histórico registra o tempo real decorrido, menor que o tempo calculado. Resultado obtido: A irrigação marcou 4~s, interrupção ocorreu corretamente e armazenou no histórico de irrigação, porém houve uma marcação de volume conforme foi informado no painel pelo operador, e não o volume que foi irrigado.
 
 % Mensagens esperadas:
 %   Disparando irrigacao manual: ...
@@ -270,7 +268,15 @@ Objetivo: verificar se uma irrigação em andamento pode ser interrompida pelo p
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language={}, caption={Log do monitor serial na interrupção da irrigação (T04)}, label={lst:log-t04}]
-%*\logprovisorio{Colar aqui o log da interrupção}*)
+Temp=23.4C Umid.Ar=45.0% Umid.Solo=0.0% Modo=manual
+Disparando irrigacao manual: 10.00L, duracao estimada 600.0s.
+Rele ligado
+Temp=23.4C Umid.Ar=45.0% Umid.Solo=0.0% Modo=manual
+STOP_IRRIGATION recebido, solicitando parada da irrigacao em andamento.
+Rele desligado
+Irrigacao (manual) concluida. Duracao real: 4s.
+Temp=23.5C Umid.Ar=45.0% Umid.Solo=0.0% Modo=manual
+Temp=23.4C Umid.Ar=45.0% Umid.Solo=0.0% Modo=manual
 \end{lstlisting}
 \vspace{-0.5\baselineskip}
 \fonte{Elaborado pelo autor}
@@ -279,8 +285,7 @@ Objetivo: verificar se uma irrigação em andamento pode ser interrompida pelo p
 
 \begin{figure}[htbp]
   \centering
-  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/teste-t04-historico}
-  \figuraprovisoria{6cm}{Inserir captura do histórico com a irrigação interrompida (tempo real menor que o calculado)}
+  \imagemsombra[width=0.97\textwidth]{figuras/interrompe.jpg}
   \caption{Registro da irrigação interrompida no histórico (T04)}
   \label{fig:t04-historico}
   \fonte{Elaborado pelo autor}
@@ -289,7 +294,7 @@ Objetivo: verificar se uma irrigação em andamento pode ser interrompida pelo p
 % ---------------------------------------------------------------------
 \subsection{T05: Irrigação automática}
 
-Objetivo: verificar se o dispositivo inicia a irrigação sozinho quando as quatro condições da regra RN01 são satisfeitas e se o volume e o tempo calculados correspondem às Equações~\ref{eq:ra} a~\ref{eq:tempo}. Procedimento: no painel, o modo foi alterado para automático e a irrigação automática foi autorizada. Em seguida, \preencher{descreva como a umidade ficou abaixo do limiar (ex.: sensor em solo seco ou limiar elevado temporariamente)}. O Quadro~\ref{lst:log-t05} mostra o recebimento dos comandos, a decisão de irrigar e a execução, e a Figura~\ref{fig:t05-historico} mostra o registro no histórico, com o modo automático.
+Objetivo: verificar se o dispositivo inicia a irrigação sozinho quando as quatro condições da regra RN01 são satisfeitas e se o volume e o tempo calculados correspondem às Equações~\ref{eq:ra} a~\ref{eq:tempo}. Procedimento: no painel, o modo foi alterado para automático e a irrigação automática foi autorizada. O Quadro~\ref{lst:log-t05} mostra o recebimento dos comandos, a decisão de irrigar e a execução, e a Figura~\ref{fig:t05-historico} mostra o registro no histórico, com o modo automático.
 
 % Mensagens esperadas:
 %   Modo de irrigacao definido para automatico
@@ -302,7 +307,24 @@ Objetivo: verificar se o dispositivo inicia a irrigação sozinho quando as quat
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language={}, caption={Log do monitor serial durante a irrigação automática (T05)}, label={lst:log-t05}]
-%*\logprovisorio{Colar aqui o log da irrigação automática}*)
+Temp=23.5C Umid.Ar=39.0% Umid.Solo=0.0% Modo=automatico
+Modo automatico: umidade=0.0%, limiar=45.0%
+----- Irrigacao automatica: parametros -----
+Temperatura min/max: 23.5 / 25.1 C
+Dia do ano (J): 298
+Radiacao extraterrestre (Ra): 15.13 mm/dia
+ET0: 0.46 mm/dia
+ETc: 0.14 mm/dia
+Volume por planta (Vp): 0.01 L
+Tempo de irrigacao (t): 22.1 s
+Volume total (Vt): 0.37 L
+--------------------------------------------
+Rele ligado
+Temp=23.4C Umid.Ar=38.0% Umid.Solo=0.0% Modo=automatico
+Irrigacao automatica nao autorizada
+Temp=23.5C Umid.Ar=38.0% Umid.Solo=0.0% Modo=automatico
+Rele desligado
+Irrigacao (automatico) concluida. Duracao real: 22s.
 \end{lstlisting}
 \vspace{-0.5\baselineskip}
 \fonte{Elaborado pelo autor}
@@ -311,8 +333,7 @@ Objetivo: verificar se o dispositivo inicia a irrigação sozinho quando as quat
 
 \begin{figure}[htbp]
   \centering
-  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/teste-t05-historico}
-  \figuraprovisoria{6cm}{Inserir captura do histórico com o registro da irrigação automática}
+  \imagemsombra[width=0.97\textwidth]{figuras/historico_aut.jpg}
   \caption{Registro da irrigação automática no histórico (T05)}
   \label{fig:t05-historico}
   \fonte{Elaborado pelo autor}
