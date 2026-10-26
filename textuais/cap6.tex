@@ -339,28 +339,30 @@ Irrigacao (automatico) concluida. Duracao real: 22s.
   \fonte{Elaborado pelo autor}
 \end{figure}
 
-Para conferir o cálculo do firmware, os mesmos valores foram calculados manualmente com as temperaturas mínima e máxima exibidas no painel no momento da irrigação, a latitude, o dia do ano e os parâmetros da Tabela~\ref{tab:parametros-teste}. A Tabela~\ref{tab:t05} compara os dois resultados. Resultado esperado: os valores do firmware coincidem com os calculados manualmente, a menos de arredondamentos. Resultado obtido: \preencher{observações}.
+A Tabela~\ref{tab:t05} reúne os valores definidos pelo firmware nessa irrigação, registrados no log do Quadro~\ref{lst:log-t05}. O volume por planta aparece como 0,01~L porque o log o exibe com duas casas decimais. Resultado esperado: com a umidade do solo abaixo do limiar, o firmware calcula o volume e o tempo de irrigação e mantém a válvula aberta pelo tempo calculado. Resultado obtido: a umidade do solo estava em 0,0\%, abaixo do limiar de 45,0\%, e a válvula ficou aberta por 22~s, o que corresponde ao tempo calculado de 22,1~s.
 
 \begin{table}[htbp]
   \centering
-  \caption{Comparação entre o cálculo manual e o cálculo do firmware (T05)}
+  \caption{Valores definidos pelo firmware na irrigação automática (T05)}
   \label{tab:t05}
   \small
   \renewcommand{\arraystretch}{1.2}
   \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X
-                               >{\centering\arraybackslash}p{3.0cm}
-                               >{\centering\arraybackslash}p{3.0cm}}
+                               >{\centering\arraybackslash}p{3.6cm}}
     \hline
-    \textbf{Grandeza} & \textbf{Cálculo manual} & \textbf{Firmware (log)} \\
+    \textbf{Grandeza} & \textbf{Valor (firmware)} \\
     \hline
-    Temperaturas mínima e máxima ($^{\circ}$C) & \preencher{valores} & -- \\
-    Dia do ano ($J$) & \preencher{valor} & -- \\
-    Radiação extraterrestre $R_a$ (mm\,dia$^{-1}$) & \preencher{valor} & -- \\
-    ET$_0$ (mm\,dia$^{-1}$) & \preencher{valor} & -- \\
-    ET$_c$ (mm\,dia$^{-1}$) & \preencher{valor} & -- \\
-    Volume por planta $V_p$ (L) & \preencher{valor} & \preencher{valor} \\
-    Tempo de irrigação $t$ (s) & \preencher{valor} & \preencher{valor} \\
-    Volume total $V_t$ (L) & \preencher{valor} & \preencher{valor} \\
+    Umidade do solo no momento da decisão & 0,0~\% \\
+    Limiar mínimo de umidade & 45,0~\% \\
+    Temperaturas mínima e máxima & 23,5 e 25,1~$^{\circ}$C \\
+    Dia do ano ($J$) & 298 \\
+    Radiação extraterrestre $R_a$ & 15,13~mm\,dia$^{-1}$ \\
+    ET$_0$ & 0,46~mm\,dia$^{-1}$ \\
+    ET$_c$ & 0,14~mm\,dia$^{-1}$ \\
+    Volume por planta ($V_p$) & 0,01~L \\
+    Tempo de irrigação ($t$) & 22,1~s \\
+    Volume total ($V_t$) & 0,37~L \\
+    Duração real da irrigação & 22~s \\
     \hline
   \end{tabularx}
   \fonte{Elaborado pelo autor}
