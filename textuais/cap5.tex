@@ -4,7 +4,7 @@
 \providecommand{\preencher}[1]{\textcolor{red}{[#1]}}
 \providecommand{\figuraprovisoria}[2]{\fbox{\parbox[c][#1][c]{0.9\textwidth}{\centering\textcolor{red}{#2}}}}
 
-Este capítulo descreve o desenvolvimento do sistema com base nos requisitos levantados no Capítulo~\ref{textuais/cap4}. A Seção~\ref{sec:arquitetura} apresenta a arquitetura proposta, e as seções seguintes acompanham as suas camadas: a camada de percepção, com o hardware e o firmware do dispositivo de campo (Seção~\ref{sec:percepcao}), a camada de rede, com a comunicação entre as partes (Seção~\ref{sec:rede}), a camada de nuvem, com o backend e o banco de dados (Seção~\ref{sec:backend}), e a camada de aplicação, com o painel web (Seção~\ref{sec:frontend}).
+Este capítulo descreve o desenvolvimento do sistema com base nos requisitos levantados no Capítulo~\ref{textuais/cap4}. A Seção~\ref{sec:arquitetura} apresenta a arquitetura proposta e a forma como as suas camadas se comunicam. As seções seguintes descrevem cada uma das três camadas implementadas, a camada de percepção, com o hardware e o firmware do dispositivo de campo (Seção~\ref{sec:percepcao}), a camada de nuvem, com o backend e o banco de dados (Seção~\ref{sec:backend}), e a camada de aplicação, com o painel web (Seção~\ref{sec:frontend}).
 
 Ao longo do capítulo, nomes que aparecem no código-fonte, como arquivos, pastas, classes, métodos, variáveis e comandos, são escritos em \texttt{fonte monoespaçada}, para diferenciá-los do restante do texto.
 
@@ -12,7 +12,7 @@ Ao longo do capítulo, nomes que aparecem no código-fonte, como arquivos, pasta
 \section{Arquitetura do sistema}
 \label{sec:arquitetura}
 
-A arquitetura do sistema segue o modelo conceitual de quatro camadas para a agricultura inteligente proposto por \citeonline{morchid2024} e apresentado na Seção~\ref{sec:iot}, formado pelas camadas de percepção, rede, nuvem e aplicação. A partir desse modelo, este trabalho propõe a arquitetura da Figura~\ref{fig:arquitetura}, que define quais componentes do sistema ocupam cada camada.
+A arquitetura do sistema segue o modelo conceitual de quatro camadas para a agricultura inteligente proposto por \citeonline{morchid2024} e apresentado na Seção~\ref{sec:iot}, formado pelas camadas de percepção, rede, nuvem e aplicação. Esse modelo foi usado como base, e a partir dele este trabalho propõe a arquitetura da Figura~\ref{fig:arquitetura}, que tem três camadas, percepção, nuvem e aplicação. A camada de rede do modelo original não aparece como uma camada independente, pois a comunicação entre as três camadas é feita apenas por protocolos, como explicado na Subseção~\ref{sec:rede}.
 
 \begin{figure}[!htbp]
   \centering
@@ -52,26 +52,78 @@ A arquitetura do sistema segue o modelo conceitual de quatro camadas para a agri
     \node[rotulo] at (cn.north west) {Nuvem};
     \node[camada, fit=(front)] (ca) {};
     \node[rotulo] at (ca.north west) {Aplicação};
-    \node[msg, font=\scriptsize\bfseries] at ($(esp.east)!0.5!(api.west) + (0,2.05)$) {Rede\\ (Wi-Fi e HTTPS)};
+    \node[msg, font=\scriptsize\bfseries] at ($(esp.east)!0.5!(api.west) + (0,2.05)$) {Comunicação\\ (Wi-Fi e HTTPS)};
   \end{tikzpicture}
   \caption{Arquitetura geral do sistema}
   \label{fig:arquitetura}
   \fonte{Elaborado pelo autor}
 \end{figure}
 
-Na camada de percepção estão os sensores, os atuadores e o ESP32, cujo firmware lê os sensores, decide quando irrigar e aciona o relé. A camada de rede não corresponde a um componente físico separado, mas à comunicação entre as demais camadas, feita pela rede Wi-Fi do local e pela internet, com mensagens HTTPS no padrão REST. A camada de nuvem reúne o backend, implementado como uma API em Spring Boot que aplica as regras do sistema, e os serviços do Firebase, que armazenam os dados e autenticam os usuários. Por fim, a camada de aplicação corresponde ao painel web em Angular, por meio do qual o usuário acompanha o sistema e envia seus comandos.
+Na camada de percepção estão os sensores, os atuadores e o ESP32, cujo firmware lê os sensores, decide quando irrigar e aciona o relé. A camada de nuvem reúne o backend, isto é, a parte do sistema executada no servidor, implementada como uma API em Spring Boot que aplica as regras do sistema, e os serviços do Firebase, que armazenam os dados e autenticam os usuários. A camada de aplicação corresponde ao frontend, o painel web em Angular por meio do qual o usuário acompanha o sistema e envia seus comandos. Essas três camadas trocam dados pela rede Wi-Fi do local e pela internet, com mensagens HTTPS no padrão REST.
 
 Os dados circulam em dois sentidos. No sentido do campo para o painel, o ESP32 envia as leituras, o seu estado e o registro de cada irrigação à API, que os grava no Firestore, e o painel consulta a API periodicamente para exibir os dados atualizados. No sentido inverso, cada ação do usuário no painel, como trocar o modo ou iniciar uma irrigação, é enviada à API, que a transforma em um comando e o entrega ao ESP32 na próxima consulta do dispositivo. Assim, o dispositivo nunca recebe conexões de fora, pois é sempre ele quem inicia a comunicação, o que dispensa configurar a rede local para aceitar acessos externos.
 
-O código foi dividido em três aplicações independentes, uma para cada camada com software próprio. O firmware separa a leitura dos sensores, o acionamento dos atuadores, as regras de irrigação e a comunicação. A API separa controladores, serviços, repositórios, modelos e segurança. O painel separa os serviços e os modelos compartilhados das telas. Essa divisão atende ao requisito de manutenibilidade (RNF12) e permite alterar uma parte sem modificar as demais.
+O código foi dividido em três aplicações independentes, uma para cada camada. O firmware separa a leitura dos sensores, o acionamento dos atuadores, as regras de irrigação e a comunicação. A API separa controladores, serviços, repositórios, modelos e segurança. O painel separa os serviços e os modelos compartilhados das telas. Essa divisão atende ao requisito de manutenibilidade (RNF12) e permite alterar uma parte sem modificar as demais.
+
+\subsection{Comunicação entre as camadas}
+\label{sec:rede}
+\label{sec:longpolling}
+
+No modelo de \citeonline{morchid2024}, a rede é uma camada própria, responsável por transportar os dados entre a percepção e a nuvem. Na arquitetura proposta neste trabalho, porém, ela não foi implementada como uma camada independente, com equipamentos ou software próprios. A comunicação é feita apenas por protocolos, usados pelas demais camadas para trocar dados entre si. O ESP32 conecta-se ao roteador Wi-Fi do local como uma estação comum e volta a se conectar automaticamente se a conexão cair (RNF09), e tanto o dispositivo quanto o painel se comunicam com a API pela internet, usando o protocolo HTTPS, que protege as mensagens com o protocolo TLS (RNF03). As mensagens seguem o estilo REST, com os dados representados em JSON (RNF15). Por isso, a Figura~\ref{fig:arquitetura} representa a comunicação apenas como as setas que ligam as camadas, e não como uma camada separada.
+
+Cada informação enviada pelo dispositivo é uma requisição HTTP com um documento JSON no corpo. O Quadro~\ref{lst:json-telemetria} mostra, como exemplo, a mensagem de telemetria que o ESP32 envia a cada 10 segundos à rota \texttt{/api/webhooks/telemetry}.
+
+\vspace{0.6\baselineskip}
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language={}, caption={Exemplo de mensagem de telemetria enviada pelo dispositivo}, label={lst:json-telemetria}]
+{
+  "deviceId": "esp32-01",
+  "temperature": 24.5,
+  "humidity": 37.0,
+  "soilPercent": 61.5,
+  "timestamp": 1792872000
+}
+\end{lstlisting}
+\vspace{-0.5\baselineskip}
+\fonte{Elaborado pelo autor}
+\end{minipage}
+\medskip
+
+A linha 2 identifica o dispositivo que fez a leitura, as linhas 3 a 5 trazem a temperatura do ar, em graus Celsius, a umidade do ar e a umidade do solo, em porcentagem, e a linha 6 traz o momento da leitura, em segundos desde 1º de janeiro de 1970, obtido do relógio sincronizado por NTP. Junto com a mensagem, o dispositivo envia a sua chave de autenticação no cabeçalho \texttt{X-Device-Key}, como descrito na Subseção~\ref{subsec:seguranca}.
+
+Cada resposta da API traz um código de status HTTP, que informa ao cliente o resultado da requisição \cite{rfc9110}. A Tabela~\ref{tab:codigos-http} apresenta os códigos usados pelo sistema e o significado de cada um.
+
+\begin{table}[!htbp]
+  \centering
+  \caption{Códigos de status HTTP usados pela API}
+  \label{tab:codigos-http}
+  \small
+  \renewcommand{\arraystretch}{1.2}
+  \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.2cm}
+                               >{\raggedright\arraybackslash}X}
+    \hline
+    \textbf{Código} & \textbf{Significado no sistema} \\
+    \hline
+    200 (OK) & A requisição foi atendida, e a resposta traz os dados pedidos \\
+    204 (No Content) & A requisição foi atendida, mas não há conteúdo a devolver, como quando nenhum comando chega ao dispositivo em 30 segundos \\
+    401 (Unauthorized) & A requisição não trouxe uma credencial válida, como quando o dispositivo envia uma chave ausente ou incorreta \\
+    403 (Forbidden) & A credencial é válida, mas não dá permissão para a operação, como quando um Visualizador tenta alterar o sistema \\
+    404 (Not Found) & O recurso pedido não existe, como um dispositivo não cadastrado \\
+    409 (Conflict) & A operação conflita com o estado atual, como a troca de modo durante uma irrigação \\
+    \hline
+  \end{tabularx}
+  \fonte{Elaborado pelo autor com base em \citeonline{rfc9110}}
+\end{table}
+
+O principal desafio da comunicação foi entregar comandos a um dispositivo que está atrás da rede local do usuário e, portanto, não pode receber conexões vindas da internet. A solução adotada foi o long-polling, técnica em que o ESP32 faz uma requisição à rota de comandos e a API só responde quando há um comando para ele ou quando se passam 30 segundos sem comandos. No segundo caso, a API devolve o código 204, que indica que a requisição foi atendida, mas não há conteúdo a entregar. Em seguida, o dispositivo abre uma nova requisição. Com isso, um comando chega ao dispositivo quase imediatamente quando há uma consulta aberta, e em no máximo cerca de 30 segundos no pior caso (RNF06), sem que o ESP32 precise consultar a API a todo instante. A implementação desse mecanismo na API é apresentada na Subseção~\ref{subsec:dispatch}.
 
 % =====================================================================
 \section{Camada de percepção}
 \label{sec:percepcao}
 
-A camada de percepção reúne o dispositivo de campo, formado pelo hardware que coleta os dados do ambiente e age sobre ele e pelo firmware que controla esse hardware. Esta seção descreve os componentes e as suas ligações, a organização e o funcionamento do firmware e os cálculos que ele realiza para decidir quanto irrigar.
+A camada de percepção corresponde ao dispositivo de campo. Ela é uma única camada, formada por duas partes que funcionam juntas, o hardware, que coleta os dados do ambiente e age sobre ele, e o firmware, o programa gravado no ESP32 que controla esse hardware. Esta seção discute primeiro o hardware, com os componentes e as suas ligações, e depois o firmware, com a sua organização, o seu funcionamento e os cálculos que ele realiza para decidir quanto irrigar.
 
-\subsection{Hardware}
+\subsection{Hardware do dispositivo de campo}
 \label{sec:hardware}
 
 O dispositivo de campo é formado pelos componentes descritos na fundamentação teórica e listados na Tabela~\ref{tab:componentes}. O ESP32 concentra a leitura dos sensores, o cálculo da irrigação e a comunicação com a API. O sensor de umidade do solo é do tipo resistivo e é ligado a uma entrada analógica do ESP32, o DHT11 usa um pino digital, o display LCD 16x2 se comunica pelo barramento I2C e o módulo relé, ligado a uma saída digital, abre e fecha o circuito de 12~V da válvula solenoide.
@@ -137,7 +189,7 @@ A Tabela~\ref{tab:ligacoes} indica os pinos do ESP32 usados por cada componente,
   \fonte{Elaborado pelo autor}
 \end{figure}
 
-\subsection{Firmware}
+\subsection{Firmware do dispositivo de campo}
 \label{sec:firmware}
 
 O firmware foi escrito em C++ com o framework Arduino para o ESP32, usando as bibliotecas DHT sensor library, LiquidCrystal\_I2C e ArduinoJson. Ele preserva a lógica de cálculo do primeiro protótipo e a organiza em módulos com responsabilidades separadas. A classe \texttt{IrrigationState} guarda o estado do dispositivo (modo, autorização, volume de água, temperaturas mínima e máxima, irrigação em andamento e latitude) e os parâmetros agronômicos, reunidos na estrutura \texttt{ConfigIrrigacao}. O módulo \texttt{IrrigationService} concentra as regras de irrigação, o \texttt{IrrigationRunner} controla o relé durante uma irrigação, o \texttt{CommandPoller} recebe os comandos da API e o \texttt{ApiClient} faz todas as chamadas HTTP. Os módulos \texttt{SoilSensor}, \texttt{DhtSensor}, \texttt{Relay} e \texttt{Display} encapsulam o acesso ao hardware.
@@ -181,7 +233,7 @@ A \texttt{sensorTask} lê os sensores a cada 10 segundos, atualiza as temperatur
   \fonte{Elaborado pelo autor}
 \end{figure}
 
-\subsection{Leitura da umidade do solo}
+\subsubsection{Leitura da umidade do solo}
 
 O conversor analógico-digital do ESP32 tem 12 bits e entrega valores entre 0 e 4095. Para reduzir o ruído, o firmware faz 16 leituras seguidas, converte cada uma em tensão e usa a média, em volts. No sensor resistivo, quanto mais úmido o solo, menor a tensão de saída. Por isso, a umidade percentual é obtida por interpolação linear entre duas tensões de calibração, uma com o sensor seco e outra com o sensor imerso em água, conforme a Equação~\ref{eq:umidade}:
 
@@ -221,7 +273,7 @@ bool readSoilPercent(float &outValue) {
 
 Nas linhas 1 e 2, as constantes \texttt{SOIL\_\allowbreak MAX\_\allowbreak VOLTAGE} e \texttt{SOIL\_\allowbreak MIN\_\allowbreak VOLTAGE} definem os valores de $L_{seco}$ e $L_{sat}$. A função \texttt{readSoilPercent}, declarada na linha 4, recebe por referência a variável em que o resultado será gravado. Na linha 5, a função \texttt{lerTensaoMedia} devolve a tensão $L$, já calculada como a média das 16 leituras. As linhas 6 e 7 aplicam a Equação~\ref{eq:umidade}, e a linha 8 usa a função \texttt{constrain} para limitar o resultado ao intervalo de 0 a 100\%. Por fim, a linha 9 indica que a leitura foi concluída com sucesso.
 
-\subsection{Cálculo da irrigação}
+\subsubsection{Cálculo da irrigação}
 \label{subsec:calculo}
 
 No modo automático, o volume de água segue o método FAO-56, com a ET$_0$ estimada pela equação de Hargreaves-Samani (Equação~\ref{eq:hargreaves}) a partir das temperaturas mínima e máxima registradas pelo dispositivo e da latitude informada no painel \cite{allen1998,hargreaves1985}. O primeiro passo é calcular a radiação extraterrestre $R_a$, que depende apenas da latitude e do dia do ano, pelas Equações~\ref{eq:ra} a~\ref{eq:omega} \cite{allen1998}:
@@ -370,7 +422,7 @@ A função recebe, nas linhas 1 a 3, a ET$_0$, o K$_c$, os espaçamentos entre p
 
 Por exemplo, com ET$_0$ de 5,0~mm\,dia$^{-1}$, K$_c$ de 1,0, espaçamento de 0,3~m por 0,3~m, um gotejador de 2,0~L\,h$^{-1}$ por planta e 30 plantas, cada planta recebe $5{,}0 \times 1{,}0 \times 0{,}09 = 0{,}45$~L, a válvula fica aberta por 810~s (13,5~min) e o volume total aplicado é de 13,5~L.
 
-\subsection{Modos de operação e comandos}
+\subsubsection{Modos de operação e comandos}
 
 A irrigação automática só começa quando as quatro condições a seguir são verdadeiras ao mesmo tempo:
 \begin{itemize}
@@ -412,7 +464,7 @@ float volumePorPlanta = config.numeroTotalPlantas > 0
 
 As linhas 1 e 2 calculam a vazão total de todas as plantas, $q_g \cdot n_g \cdot N$. Se essa vazão for nula ou negativa, as linhas 3 a 5 encerram a função sem irrigar (RN15). As linhas 6 e 7 aplicam a Equação~\ref{eq:tempo-manual}, em que a variável \texttt{quantidadeAguaLitros} corresponde ao volume $V_t$ informado no painel. Por fim, as linhas 8 a 10 calculam o volume por planta que será registrado no histórico, dividindo $V_t$ por $N$ quando há plantas cadastradas.
 
-Os comandos chegam pelo módulo \texttt{CommandPoller}, que mantém uma consulta aberta à API (Subseção~\ref{sec:longpolling}) e repassa cada comando recebido à rotina responsável. A Tabela~\ref{tab:comandos} relaciona os comandos tratados pelo firmware. Ao fim de cada irrigação, automática ou manual, o dispositivo envia à API um registro com a umidade do solo antes da irrigação, o tempo real, o volume por planta, o volume total, a data, a hora e o modo (RN16).
+Os comandos chegam pelo módulo \texttt{CommandPoller}, que mantém uma consulta aberta à API pelo mecanismo de long-polling (Subseção~\ref{sec:longpolling}) e repassa cada comando recebido à rotina responsável. A Tabela~\ref{tab:comandos} relaciona os comandos tratados pelo firmware. Ao fim de cada irrigação, automática ou manual, o dispositivo envia à API um registro com a umidade do solo antes da irrigação, o tempo real, o volume por planta, o volume total, a data, a hora e o modo (RN16).
 
 \begin{table}[!htbp]
   \centering
@@ -437,24 +489,66 @@ Os comandos chegam pelo módulo \texttt{CommandPoller}, que mantém uma consulta
 \end{table}
 
 % =====================================================================
-\section{Camada de rede}
-\label{sec:rede}
+\section{Camada de nuvem}
+\label{sec:backend}
 
-A camada de rede é responsável por transportar os dados entre o dispositivo, o backend e o painel. Neste sistema, ela não depende de um equipamento próprio, mas da rede Wi-Fi do local e da internet. O ESP32 conecta-se ao roteador Wi-Fi como uma estação comum e volta a se conectar automaticamente se a conexão cair (RNF09). Toda a comunicação, tanto do dispositivo quanto do painel, usa o protocolo HTTPS, que protege as mensagens com o protocolo TLS (RNF03), e segue o estilo REST, com os dados representados em JSON (RNF15).
+A camada de nuvem reúne o processamento e o armazenamento que ficam fora do dispositivo e do navegador do usuário. Neste sistema, ela é formada pelo backend e pelos serviços do Firebase, e por isso a camada de nuvem e o backend são tratados juntos nesta seção. O backend é a parte do sistema executada no servidor e responsável pelas regras de negócio, como validar os comandos, aplicar as permissões de cada perfil e decidir o que gravar no banco de dados. Ele foi implementado como uma API REST, ou seja, as suas funções são oferecidas aos outros componentes por meio das rotas HTTP apresentadas na Tabela~\ref{tab:endpoints}. Assim, a API é a forma como o backend se comunica com o dispositivo e com o painel. Os dados são guardados no Cloud Firestore, e a autenticação dos usuários é feita pelo Firebase Authentication.
 
-\subsection{Formato das mensagens}
+A API foi desenvolvida em Java 17 com o framework Spring Boot. O acesso ao Firestore e ao Firebase Authentication é feito pelo Firebase Admin SDK, a documentação das rotas é gerada automaticamente pela biblioteca springdoc-openapi, que publica uma interface Swagger, e a aplicação pode ser empacotada em uma imagem Docker, o que permite executá-la da mesma forma em qualquer máquina (RNF14).
 
-Cada informação enviada pelo dispositivo é uma requisição HTTP com um documento JSON no corpo. O Quadro~\ref{lst:json-telemetria} mostra, como exemplo, a mensagem de telemetria que o ESP32 envia a cada 10 segundos à rota \texttt{/api/webhooks/telemetry}.
+\subsection{Organização interna da API}
+
+Internamente, é comum organizar uma API REST em camadas de código, cada uma com uma responsabilidade. Essas camadas internas não se confundem com as camadas da arquitetura da Figura~\ref{fig:arquitetura}, pois todas elas fazem parte do backend e, portanto, da camada de nuvem. A camada de controladores recebe as requisições HTTP e devolve as respostas. A camada de serviços aplica as regras de negócio. A camada de repositórios lê e grava os dados no banco. Os modelos e os objetos de transferência de dados descrevem as informações que circulam entre essas camadas. Essa separação permite alterar uma camada sem afetar as outras, como trocar o banco de dados modificando apenas os repositórios. A Figura~\ref{fig:camadas-api} mostra como essas camadas internas foram organizadas em pacotes na API deste trabalho.
+
+\begin{figure}[!htbp]
+  \centering
+  \begin{tikzpicture}[
+      font=\footnotesize,
+      bloco/.style={draw, rounded corners=2pt, align=center, text width=4.8cm, minimum height=1.0cm, fill=white},
+      apoio/.style={draw, dashed, rounded corners=2pt, align=left, text width=4.6cm, inner sep=5pt},
+      seta/.style={-{Stealth[length=2mm]}, thick}
+    ]
+    \node[align=center] (cli) at (0,1.6) {ESP32 e painel web\\ \scriptsize requisições HTTP};
+    \node[bloco] (sec) at (0,0) {Filtros de segurança\\ \scriptsize pacote \texttt{security}};
+    \node[bloco] (ctl) at (0,-1.6) {Controladores\\ \scriptsize pacote \texttt{controller} (\texttt{device} e \texttt{web})};
+    \node[bloco] (srv) at (0,-3.2) {Serviços\\ \scriptsize pacote \texttt{service}};
+    \node[bloco] (rep) at (0,-4.8) {Repositórios\\ \scriptsize pacote \texttt{repository}};
+    \node[bloco] (fs) at (0,-6.4) {Cloud Firestore};
+    \draw[seta] (cli) -- (sec);
+    \draw[seta] (sec) -- (ctl);
+    \draw[seta] (ctl) -- (srv);
+    \draw[seta] (srv) -- (rep);
+    \draw[seta] (rep) -- (fs);
+    \node[apoio, anchor=west] (ap) at (3.4,-3.2) {Pacotes de apoio\\[3pt]
+      \texttt{model}: documentos gravados\\
+      \texttt{dto}: formato do JSON das rotas\\
+      \texttt{config}: Firebase, CORS e Swagger\\
+      \texttt{exception}: respostas de erro};
+    \draw[dashed] (srv.east) -- (ap.west);
+  \end{tikzpicture}
+  \caption{Organização interna da API em pacotes}
+  \label{fig:camadas-api}
+  \fonte{Elaborado pelo autor}
+\end{figure}
+
+Cada requisição passa primeiro pelos filtros do pacote \texttt{security}, que verificam a identidade de quem a enviou. Em seguida, ela chega aos controladores do pacote \texttt{controller}, separados em dois grupos, \texttt{device}, com as rotas usadas pelo ESP32, e \texttt{web}, com as rotas usadas pelo painel. Os controladores repassam o trabalho aos serviços do pacote \texttt{service}, que concentram as regras do sistema, como impedir a troca de modo durante uma irrigação. Os serviços, por sua vez, usam os repositórios do pacote \texttt{repository}, a única camada que acessa o Firestore. Completam a organização os pacotes de apoio. O pacote \texttt{model} contém as classes que representam os documentos gravados, o \texttt{dto} define o formato do JSON de entrada e de saída de cada rota, o \texttt{config} reúne a configuração do Firebase, do CORS e do Swagger, e o \texttt{exception} converte os erros em respostas padronizadas, com os códigos da Tabela~\ref{tab:codigos-http}.
+
+A classe \texttt{DeviceService} concentra a maior parte das regras, pois atende tanto aos dados enviados pelo dispositivo quanto às ações do painel, e por isso depende de três repositórios e do serviço de comandos \texttt{CommandDispatchService}. O Quadro~\ref{lst:devicemode} mostra, como exemplo, o método \texttt{setModo}, que troca o modo de operação a pedido do painel.
 
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
-\begin{lstlisting}[language={}, caption={Exemplo de mensagem de telemetria enviada pelo dispositivo}, label={lst:json-telemetria}]
-{
-  "deviceId": "esp32-01",
-  "temperature": 24.5,
-  "humidity": 37.0,
-  "soilPercent": 61.5,
-  "timestamp": 1792872000
+\begin{lstlisting}[language=Java, caption={Troca do modo de operação (trecho de DeviceService)}, label={lst:devicemode}]
+public void setModo(String deviceId, String modo) {
+    Device device = findDevice(deviceId);
+    if (Boolean.TRUE.equals(device.getEmExecucao())) {
+        throw new ConflictException(
+            "Nao e possivel trocar o modo enquanto o dispositivo esta irrigando.");
+    }
+    device.setModo(modo);
+    deviceRepository.save(deviceId, device);
+
+    commandDispatchService.enqueue(deviceId,
+        new CommandDispatchService.Command("MODE_CHANGE", Map.of("modo", modo)));
 }
 \end{lstlisting}
 \vspace{-0.5\baselineskip}
@@ -462,7 +556,7 @@ Cada informação enviada pelo dispositivo é uma requisição HTTP com um docum
 \end{minipage}
 \medskip
 
-A linha 2 identifica o dispositivo que fez a leitura, as linhas 3 a 5 trazem a temperatura do ar, em graus Celsius, a umidade do ar e a umidade do solo, em porcentagem, e a linha 6 traz o momento da leitura, em segundos desde 1º de janeiro de 1970, obtido do relógio sincronizado por NTP. Junto com a mensagem, o dispositivo envia a sua chave de autenticação no cabeçalho \texttt{X-Device-Key}, como descrito na Subseção~\ref{subsec:seguranca}.
+O método recebe, na linha 1, o identificador do dispositivo e o novo modo. A linha 2 busca o documento do dispositivo no Firestore, por meio do repositório. As linhas 3 a 6 aplicam uma regra de negócio. Se houver uma irrigação em andamento, o método lança uma \texttt{ConflictException}, que o pacote \texttt{exception} transforma em uma resposta com o código 409. Caso contrário, a linha 7 altera o modo, e a linha 8 grava o documento atualizado no Firestore. Por fim, as linhas 10 e 11 enfileiram o comando \texttt{MODE\_CHANGE}, que será entregue ao dispositivo pelo mecanismo de long-polling. Esse padrão, em que o serviço valida a ação, grava o novo estado e enfileira um comando, se repete nas demais ações do painel.
 
 \subsection{Rotas da API}
 \label{subsec:endpoints}
@@ -518,105 +612,6 @@ A Tabela~\ref{tab:endpoints} apresenta as rotas da API, separadas pelo cliente q
 }
 \vspace{-0.8\baselineskip}
 \fonte{Elaborado pelo autor}
-
-Cada resposta da API traz um código de status HTTP, que informa ao cliente o resultado da requisição \cite{rfc9110}. A Tabela~\ref{tab:codigos-http} apresenta os códigos usados pelo sistema e o significado de cada um.
-
-\begin{table}[!htbp]
-  \centering
-  \caption{Códigos de status HTTP usados pela API}
-  \label{tab:codigos-http}
-  \small
-  \renewcommand{\arraystretch}{1.2}
-  \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.2cm}
-                               >{\raggedright\arraybackslash}X}
-    \hline
-    \textbf{Código} & \textbf{Significado no sistema} \\
-    \hline
-    200 (OK) & A requisição foi atendida, e a resposta traz os dados pedidos \\
-    204 (No Content) & A requisição foi atendida, mas não há conteúdo a devolver, como quando nenhum comando chega ao dispositivo em 30 segundos \\
-    401 (Unauthorized) & A requisição não trouxe uma credencial válida, como quando o dispositivo envia uma chave ausente ou incorreta \\
-    403 (Forbidden) & A credencial é válida, mas não dá permissão para a operação, como quando um Visualizador tenta alterar o sistema \\
-    404 (Not Found) & O recurso pedido não existe, como um dispositivo não cadastrado \\
-    409 (Conflict) & A operação conflita com o estado atual, como a troca de modo durante uma irrigação \\
-    \hline
-  \end{tabularx}
-  \fonte{Elaborado pelo autor com base em \citeonline{rfc9110}}
-\end{table}
-
-\subsection{Entrega de comandos por long-polling}
-\label{sec:longpolling}
-
-O principal desafio da comunicação foi entregar comandos a um dispositivo que está atrás da rede local do usuário e, portanto, não pode receber conexões vindas da internet. A solução adotada foi o long-polling, técnica em que o ESP32 faz uma requisição à rota de comandos e a API só responde quando há um comando para ele ou quando se passam 30 segundos sem comandos. No segundo caso, a API devolve o código 204, que indica que a requisição foi atendida, mas não há conteúdo a entregar. Em seguida, o dispositivo abre uma nova requisição. Com isso, um comando chega ao dispositivo quase imediatamente quando há uma consulta aberta, e em no máximo cerca de 30 segundos no pior caso (RNF06), sem que o ESP32 precise consultar a API a todo instante. A implementação desse mecanismo na API é apresentada na Subseção~\ref{subsec:dispatch}.
-
-% =====================================================================
-\section{Camada de nuvem}
-\label{sec:backend}
-
-A camada de nuvem reúne o processamento e o armazenamento que ficam fora do dispositivo e do navegador do usuário. Neste sistema, ela é formada pelo backend e pelos serviços do Firebase. O backend é a parte do sistema executada no servidor e responsável pelas regras de negócio, como validar os comandos, aplicar as permissões de cada perfil e decidir o que gravar no banco de dados. Ele foi implementado como uma API REST, ou seja, as suas funções são oferecidas aos outros componentes por meio das rotas HTTP apresentadas na Tabela~\ref{tab:endpoints}. Assim, a API é a forma como o backend se comunica com o dispositivo e com o painel. Os dados são guardados no Cloud Firestore, e a autenticação dos usuários é feita pelo Firebase Authentication.
-
-A API foi desenvolvida em Java 17 com o framework Spring Boot. O acesso ao Firestore e ao Firebase Authentication é feito pelo Firebase Admin SDK, a documentação das rotas é gerada automaticamente pela biblioteca springdoc-openapi, que publica uma interface Swagger, e a aplicação pode ser empacotada em uma imagem Docker, o que permite executá-la da mesma forma em qualquer máquina (RNF14).
-
-\subsection{Organização em camadas}
-
-É comum organizar uma API REST em camadas, cada uma com uma responsabilidade. A camada de controladores recebe as requisições HTTP e devolve as respostas. A camada de serviços aplica as regras de negócio. A camada de repositórios lê e grava os dados no banco. Os modelos e os objetos de transferência de dados descrevem as informações que circulam entre essas camadas. Essa separação permite alterar uma camada sem afetar as outras, como trocar o banco de dados modificando apenas os repositórios. A Figura~\ref{fig:camadas-api} mostra como essas camadas foram organizadas em pacotes na API deste trabalho.
-
-\begin{figure}[!htbp]
-  \centering
-  \begin{tikzpicture}[
-      font=\footnotesize,
-      bloco/.style={draw, rounded corners=2pt, align=center, text width=4.8cm, minimum height=1.0cm, fill=white},
-      apoio/.style={draw, dashed, rounded corners=2pt, align=left, text width=4.6cm, inner sep=5pt},
-      seta/.style={-{Stealth[length=2mm]}, thick}
-    ]
-    \node[align=center] (cli) at (0,1.6) {ESP32 e painel web\\ \scriptsize requisições HTTP};
-    \node[bloco] (sec) at (0,0) {Filtros de segurança\\ \scriptsize pacote \texttt{security}};
-    \node[bloco] (ctl) at (0,-1.6) {Controladores\\ \scriptsize pacote \texttt{controller} (\texttt{device} e \texttt{web})};
-    \node[bloco] (srv) at (0,-3.2) {Serviços\\ \scriptsize pacote \texttt{service}};
-    \node[bloco] (rep) at (0,-4.8) {Repositórios\\ \scriptsize pacote \texttt{repository}};
-    \node[bloco] (fs) at (0,-6.4) {Cloud Firestore};
-    \draw[seta] (cli) -- (sec);
-    \draw[seta] (sec) -- (ctl);
-    \draw[seta] (ctl) -- (srv);
-    \draw[seta] (srv) -- (rep);
-    \draw[seta] (rep) -- (fs);
-    \node[apoio, anchor=west] (ap) at (3.4,-3.2) {Pacotes de apoio\\[3pt]
-      \texttt{model}: documentos gravados\\
-      \texttt{dto}: formato do JSON das rotas\\
-      \texttt{config}: Firebase, CORS e Swagger\\
-      \texttt{exception}: respostas de erro};
-    \draw[dashed] (srv.east) -- (ap.west);
-  \end{tikzpicture}
-  \caption{Organização em camadas da API}
-  \label{fig:camadas-api}
-  \fonte{Elaborado pelo autor}
-\end{figure}
-
-Cada requisição passa primeiro pelos filtros do pacote \texttt{security}, que verificam a identidade de quem a enviou. Em seguida, ela chega aos controladores do pacote \texttt{controller}, separados em dois grupos, \texttt{device}, com as rotas usadas pelo ESP32, e \texttt{web}, com as rotas usadas pelo painel. Os controladores repassam o trabalho aos serviços do pacote \texttt{service}, que concentram as regras do sistema, como impedir a troca de modo durante uma irrigação. Os serviços, por sua vez, usam os repositórios do pacote \texttt{repository}, a única camada que acessa o Firestore. Completam a organização os pacotes de apoio. O pacote \texttt{model} contém as classes que representam os documentos gravados, o \texttt{dto} define o formato do JSON de entrada e de saída de cada rota, o \texttt{config} reúne a configuração do Firebase, do CORS e do Swagger, e o \texttt{exception} converte os erros em respostas padronizadas, com os códigos da Tabela~\ref{tab:codigos-http}.
-
-A classe \texttt{DeviceService} concentra a maior parte das regras, pois atende tanto aos dados enviados pelo dispositivo quanto às ações do painel, e por isso depende de três repositórios e do serviço de comandos \texttt{CommandDispatchService}. O Quadro~\ref{lst:devicemode} mostra, como exemplo, o método \texttt{setModo}, que troca o modo de operação a pedido do painel.
-
-\vspace{0.6\baselineskip}
-\noindent\begin{minipage}{\linewidth}
-\begin{lstlisting}[language=Java, caption={Troca do modo de operação (trecho de DeviceService)}, label={lst:devicemode}]
-public void setModo(String deviceId, String modo) {
-    Device device = findDevice(deviceId);
-    if (Boolean.TRUE.equals(device.getEmExecucao())) {
-        throw new ConflictException(
-            "Nao e possivel trocar o modo enquanto o dispositivo esta irrigando.");
-    }
-    device.setModo(modo);
-    deviceRepository.save(deviceId, device);
-
-    commandDispatchService.enqueue(deviceId,
-        new CommandDispatchService.Command("MODE_CHANGE", Map.of("modo", modo)));
-}
-\end{lstlisting}
-\vspace{-0.5\baselineskip}
-\fonte{Elaborado pelo autor}
-\end{minipage}
-\medskip
-
-O método recebe, na linha 1, o identificador do dispositivo e o novo modo. A linha 2 busca o documento do dispositivo no Firestore, por meio do repositório. As linhas 3 a 6 aplicam uma regra de negócio. Se houver uma irrigação em andamento, o método lança uma \texttt{ConflictException}, que o pacote \texttt{exception} transforma em uma resposta com o código 409. Caso contrário, a linha 7 altera o modo, e a linha 8 grava o documento atualizado no Firestore. Por fim, as linhas 10 e 11 enfileiram o comando \texttt{MODE\_CHANGE}, que será entregue ao dispositivo pelo mecanismo de long-polling. Esse padrão, em que o serviço valida a ação, grava o novo estado e enfileira um comando, se repete nas demais ações do painel.
 
 \subsection{Implementação do long-polling}
 \label{subsec:dispatch}
