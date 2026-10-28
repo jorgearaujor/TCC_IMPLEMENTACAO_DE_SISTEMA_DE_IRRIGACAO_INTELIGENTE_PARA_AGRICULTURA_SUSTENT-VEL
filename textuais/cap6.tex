@@ -97,13 +97,13 @@ Os testes do fluxo completo verificam se as três partes do sistema funcionam ju
     \hline
     T01 & Inicialização do dispositivo & RF25, RN07, RNF10 & Aprovado \\
     T02 & Leitura dos sensores e exibição no painel & RF08, RF22, RF23, RN17 & Aprovado \\
-    T03 & Irrigação manual & RF14, RF28, RF30, RN03, RN16, RNF06 & Aprovado \\
+    T03 & Irrigação manual & RF14, RF28, RF30, RN03, RN16 & Aprovado \\
     T04 & Interrupção da irrigação & RF15, RN05 & Aprovado \\
     T05 & Irrigação automática & RF12, RF13, RF27, RF29, RN01, RN08 a RN12 & Aprovado \\
     T06 & Bloqueio da irrigação automática sem autorização & RN01, RN02, RNF10 & Aprovado \\
     T07 & Troca de modo durante uma irrigação & RF17, RN04, RN06 & Aprovado \\
     T08 & Atualização dos parâmetros de irrigação & RF18, RF21, RF26, RN13 & Aprovado \\
-    T09 & Controle de acesso & RF06, RN19, RN20, RN21 & Aprovado \\
+    T09 & Controle de acesso & RF06, RN19 & Aprovado \\
     T10 & Falha de comunicação com a API & RF32, RN22, RNF07, RNF09 & Aprovado \\
     \hline
   \end{tabularx}
@@ -189,7 +189,7 @@ Temp=24.4C Umid.Ar=37.0% Umid.Solo=61.5% Modo=automatico
 % ---------------------------------------------------------------------
 \subsection{T03: Irrigação manual}
 
-Este teste verifica o caminho completo de um comando, do painel até o acionamento do relé, e o registro da irrigação no histórico. Com o dispositivo em modo manual, o Administrador/Operador informou no dashboard um volume de 10~L e iniciou a irrigação. O painel passou a indicar a irrigação em andamento (Figura~\ref{fig:t03-andamento}), e o dispositivo recebeu o comando START\_IRRIGATION e ligou o relé (Quadro~\ref{lst:log-t03}). Ao fim do tempo calculado, o relé foi desligado e o registro da irrigação foi enviado à API, aparecendo no histórico do painel (Figura~\ref{fig:t03-historico}). Esperava-se que o tempo de abertura correspondesse ao calculado pela Equação~\ref{eq:tempo-manual}, que o comando chegasse ao dispositivo em no máximo cerca de 30~s (RNF06) e que o histórico registrasse a irrigação no modo manual. Como mostra a Tabela~\ref{tab:t03}, o tempo registrado no histórico foi igual ao tempo calculado de 600~s.
+Este teste verifica o caminho completo de um comando, do painel até o acionamento do relé, e o registro da irrigação no histórico. Com o dispositivo em modo manual, o Administrador/Operador informou no dashboard um volume de 10~L e iniciou a irrigação. O painel passou a indicar a irrigação em andamento (Figura~\ref{fig:t03-andamento}), e o dispositivo recebeu o comando START\_IRRIGATION e ligou o relé (Quadro~\ref{lst:log-t03}). Ao fim do tempo calculado, o relé foi desligado e o registro da irrigação foi enviado à API, aparecendo no histórico do painel (Figura~\ref{fig:t03-historico}). Esperava-se que o tempo de abertura correspondesse ao calculado pela Equação~\ref{eq:tempo-manual} e que o histórico registrasse a irrigação no modo manual. Como mostra a Tabela~\ref{tab:t03}, o tempo registrado no histórico foi igual ao tempo calculado de 600~s.
 
 % Mensagens esperadas:
 %   Disparando irrigacao manual: 2.00L, duracao estimada 240.0s.

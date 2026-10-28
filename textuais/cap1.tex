@@ -155,7 +155,7 @@ Para organizar seus componentes, os sistemas IoT costumam ser descritos por arqu
 
 Para a agricultura inteligente, \citeonline{morchid2024} propõem uma arquitetura de quatro camadas. A camada de percepção reúne os sensores e atuadores que coletam dados do ambiente e agem sobre ele, como sensores de umidade do solo e válvulas de irrigação. A camada de rede transmite esses dados; a camada de nuvem os armazena e processa; e a camada de aplicação apresenta as informações ao usuário, por meio de painéis ou aplicativos.
 
-Essa organização orienta as seções seguintes deste trabalho: os sensores e microcontroladores correspondem à camada de percepção, os protocolos de comunicação à camada de rede, e o backend com banco de dados às camadas de nuvem e de aplicação.
+Essa organização orienta as seções seguintes deste trabalho. Os sensores e os microcontroladores correspondem à camada de percepção, os protocolos de comunicação à camada de rede, e o backend e o banco de dados à camada de nuvem. A camada de aplicação corresponde ao painel web, apresentado no Capítulo~\ref{textuais/cap5}.
 
 
 \subsection{Sensores e atuadores}
@@ -228,7 +228,7 @@ As três plataformas atendem a necessidades distintas. O Arduino Uno é adequado
     Memória RAM & 2 KB & 520 KB & 1 a 8 GB \\
     Entradas analógicas & 6 (ADC de 10 bits) & Até 18 (ADC de 12 bits) & Não possui \\
     Conectividade sem fio & Não possui & Wi-Fi b/g/n e Bluetooth & Wi-Fi ac e Bluetooth 5.0 \\
-    Sistema operacional & Não (\textit{firmware}) & Não (\textit{firmware}) & Sim (Linux) \\
+    Sistema operacional & Não (firmware) & Não (firmware) & Sim (Linux) \\
     Faixa de preço\textsuperscript{*} & R\$ 28,00--57,72 & R\$ 27,33--61,90 & R\$ 495,70--920,00 \\
     \hline
   \end{tabular}
@@ -283,7 +283,7 @@ No HTTP, cada envio exige uma requisição completa, com cabeçalhos em texto, o
     \textbf{Característica} & \textbf{HTTP} & \textbf{MQTT} \\
     \hline
     Modelo de comunicação & Requisição-resposta & Publicação/assinatura \\
-    Intermediário & Não há (cliente e servidor) & \textit{Broker} \\
+    Intermediário & Não há (cliente e servidor) & Broker \\
     Conexão & Uma requisição por envio & Conexão persistente \\
     Sobrecarga & Maior (cabeçalhos em texto) & Menor (cabeçalhos compactos) \\
     Qualidade de serviço & Não define níveis & Três níveis (QoS 0, 1 e 2) \\

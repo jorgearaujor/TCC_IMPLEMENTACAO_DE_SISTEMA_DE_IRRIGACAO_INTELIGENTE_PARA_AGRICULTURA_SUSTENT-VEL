@@ -146,7 +146,7 @@ O firmware foi escrito em C++ com o framework Arduino para o ESP32, usando as bi
 
 Ao ser ligado, o dispositivo mantém o relé desligado, conecta-se ao Wi-Fi, sincroniza o relógio por NTP no fuso de Brasília e busca na API a sua configuração inicial: modo, autorização, latitude e parâmetros agronômicos. Se a API não responder, o firmware segue com valores padrão locais, conforme a regra RN22. A partir daí, o trabalho é dividido entre tarefas concorrentes do FreeRTOS, sistema operacional de tempo real usado pelo ESP32. Três tarefas ficam ativas o tempo todo: a sensorTask lê os sensores e envia os dados, a statusSyncTask envia o estado do dispositivo e a commandPollTask aguarda os comandos da API. Uma quarta tarefa, a irrigationTask, é criada no início de cada irrigação e encerrada ao fim dela, o que garante que só exista uma irrigação por vez. Como as tarefas leem e alteram o mesmo estado, o acesso a ele é protegido por um mutex, que impede que duas tarefas o modifiquem ao mesmo tempo (RNF08).
 
-A tarefa de leitura lê os sensores a cada 10 segundos, atualiza as temperaturas mínima e máxima do dia, mostra os valores no display e envia a telemetria à API. A cada 20 segundos, a statusSyncTask envia o estado completo do dispositivo. Quando um envio falha, o módulo ApiClient repete a tentativa com intervalos crescentes, até cinco vezes, quando esgotadas as tentativas, a leitura é descartada para não travar a tarefa (RNF07). A Figura~\ref{fig:fluxograma} resume o ciclo de funcionamento e a decisão de irrigar.
+A tarefa de leitura lê os sensores a cada 10 segundos, atualiza as temperaturas mínima e máxima registradas desde que o dispositivo foi ligado, mostra os valores no display e envia a telemetria à API. A cada 20 segundos, a statusSyncTask envia o estado completo do dispositivo. Quando um envio falha, o módulo ApiClient repete a tentativa com intervalos crescentes, até cinco vezes. Esgotadas as tentativas, a leitura é descartada para não travar a tarefa (RNF07). A Figura~\ref{fig:fluxograma} resume o ciclo de funcionamento e a decisão de irrigar.
 
 \begin{figure}[htbp]
   \centering
@@ -185,8 +185,8 @@ A tarefa de leitura lê os sensores a cada 10 segundos, atualiza as temperaturas
 
 \subsection{Leitura da umidade do solo}
 
-O conversor analógico-digital do ESP32 tem 12 bits e entrega valores entre 0 e 4095. No sensor resistivo, quanto mais úmido o solo, menor a tensão de saída. A umidade percentual $U$ é obtida por interpolação linear entre duas tensões de calibração, uma com o sensor seco ($L_{seco}$) e outra com o sensor imerso em água ($L_{sat}$), conforme a Equação~\ref{eq:umidade}, e o resultado é limitado ao intervalo de 0 a 100\%. No firmware, esses valores estão configurados em 2,8~V e 1,2~V, respectivamente, e devem ser ajustados após a montagem, pelo procedimento descrito no Capítulo~\ref{textuais/cap3}.
-AQUI
+O conversor analógico-digital do ESP32 tem 12 bits e entrega valores entre 0 e 4095. No sensor resistivo, quanto mais úmido o solo, menor a tensão de saída. A umidade percentual $U$ é obtida por interpolação linear entre duas tensões de calibração, uma com o sensor seco ($L_{seco}$) e outra com o sensor imerso em água ($L_{sat}$), conforme a Equação~\ref{eq:umidade}, e o resultado é limitado ao intervalo de 0 a 100\%. No firmware, esses valores estão configurados em 2,8~V e 1,2~V, respectivamente, e devem ser ajustados após a montagem, medindo-se a tensão de saída do sensor seco e imerso em água.
+
 \begin{equation}
   U = \frac{L_{seco} - L}{L_{seco} - L_{sat}} \times 100
   \label{eq:umidade}
@@ -226,7 +226,7 @@ bool readSoilPercent(float &outValue) {
 \subsection{Cálculo da irrigação}
 \label{subsec:calculo}
 
-No modo automático, o volume de água segue o método FAO-56, com a ET$_0$ estimada pela equação de Hargreaves-Samani (Equação~\ref{eq:hargreaves}) a partir das temperaturas mínima e máxima registradas no dia e da latitude informada no painel \cite{allen1998,hargreaves1985}. O primeiro passo é calcular a radiação extraterrestre $R_a$, que depende apenas da latitude e do dia do ano, pelas Equações~\ref{eq:ra} a~\ref{eq:omega} \cite{allen1998}:
+No modo automático, o volume de água segue o método FAO-56, com a ET$_0$ estimada pela equação de Hargreaves-Samani (Equação~\ref{eq:hargreaves}) a partir das temperaturas mínima e máxima registradas pelo dispositivo e da latitude informada no painel \cite{allen1998,hargreaves1985}. O primeiro passo é calcular a radiação extraterrestre $R_a$, que depende apenas da latitude e do dia do ano, pelas Equações~\ref{eq:ra} a~\ref{eq:omega} \cite{allen1998}:
 
 \begin{equation}
   R_a = \frac{24 \cdot 60}{\pi}\, G_{sc}\, d_r \left[\omega_s \sin\varphi \sin\delta + \cos\varphi \cos\delta \sin\omega_s\right]
@@ -259,7 +259,7 @@ No modo automático, o volume de água segue o método FAO-56, com a ET$_0$ esti
   \item $J$ é o número do dia no ano, de 1 a 365 ou 366.
 \end{itemize}
 
-Para uso na Equação~\ref{eq:hargreaves}, $R_a$ é convertida para lâmina equivalente de evaporação, em mm\,dia$^{-1}$, multiplicando-se o valor por 0,408 \cite{allen1998}. O Quadro~\ref{lst:eto} mostra a função \textbf{calcularEto()}, que aplica as Equações~\ref{eq:ra} a~\ref{eq:omega} e, em seguida, a equação de Hargreaves-Samani. O dia do ano $J$ é obtido do relógio sincronizado por NTP, e as temperaturas mínima e máxima são as registradas pelo DHT11 ao longo do dia. Dois cuidados foram acrescentados ao código: o argumento do arco-cosseno é limitado ao intervalo de $-1$ a 1, o que evita erro numérico em latitudes extremas, e a amplitude térmica nunca é negativa, o que evita a raiz quadrada de um número negativo.
+Para uso na Equação~\ref{eq:hargreaves}, $R_a$ é convertida para lâmina equivalente de evaporação, em mm\,dia$^{-1}$, multiplicando-se o valor por 0,408 \cite{allen1998}. O Quadro~\ref{lst:eto} mostra a função \textbf{calcularEto()}, que aplica as Equações~\ref{eq:ra} a~\ref{eq:omega} e, em seguida, a equação de Hargreaves-Samani. O dia do ano $J$ é obtido do relógio sincronizado por NTP, e as temperaturas mínima e máxima são as registradas pelo DHT11 desde que o dispositivo foi ligado, e não apenas no dia corrente, ponto que é retomado nos trabalhos futuros. Dois cuidados foram acrescentados ao código: o argumento do arco-cosseno é limitado ao intervalo de $-1$ a 1, o que evita erro numérico em latitudes extremas, e a amplitude térmica nunca é negativa, o que evita a raiz quadrada de um número negativo.
 
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
