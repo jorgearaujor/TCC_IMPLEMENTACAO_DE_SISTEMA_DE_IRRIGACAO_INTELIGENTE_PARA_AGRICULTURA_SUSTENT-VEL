@@ -45,15 +45,15 @@ A Tabela~\ref{tab:parametros-teste} apresenta os parâmetros configurados no pai
     \hline
     \textbf{Parâmetro} & \textbf{Valor} \\
     \hline
-    Latitude da área ($\varphi$) & \preencher{valor}$^{\circ}$ \\
-    Cultura e fase de desenvolvimento & \preencher{cultura, fase} \\
-    Coeficiente de cultura (K$_c$) & \preencher{valor} \\
-    Espaçamento entre plantas ($E_p$) & \preencher{valor}~m \\
-    Espaçamento entre linhas ($E_l$) & \preencher{valor}~m \\
-    Vazão do gotejador ($q_g$) & \preencher{valor}~L\,h$^{-1}$ \\
-    Gotejadores por planta ($n_g$) & \preencher{valor} \\
-    Número total de plantas ($N$) & \preencher{valor} \\
-    Limiar mínimo de umidade do solo & \preencher{valor}~\% \\
+    Latitude da área ($\varphi$) & -17$^{\circ}$ \\
+    Cultura e fase de desenvolvimento & Batata Fase 4 \\
+    Coeficiente de cultura (K$_c$) & 0.3 \\
+    Espaçamento entre plantas ($E_p$) & 0.3~m \\
+    Espaçamento entre linhas ($E_l$) & 0.3~m \\
+    Vazão do gotejador ($q_g$) & 2~L\,h$^{-1}$ \\
+    Gotejadores por planta ($n_g$) & 1 \\
+    Número total de plantas ($N$) & 30 \\
+    Limiar mínimo de umidade do solo & 45~\% \\
     \hline
   \end{tabularx}
   \fonte{Elaborado pelo autor}
@@ -63,11 +63,11 @@ A Tabela~\ref{tab:parametros-teste} apresenta os parâmetros configurados no pai
 \section{Protótipo montado}
 \label{sec:prototipo}
 
-A Figura~\ref{fig:prototipo} mostra o dispositivo de campo montado, com o ESP32, o sensor de umidade do solo, o DHT11, o módulo relé, a válvula solenoide e o display LCD. \preencher{Descreva brevemente a montagem: onde os componentes foram fixados, como foi feita a alimentação e como a válvula foi ligada à linha de gotejamento.}
+A Figura~\ref{fig:prototipo} mostra o dispositivo de campo montado, com o ESP32, o sensor de umidade do solo, o DHT11, o módulo relé e o display LCD. A parte montada do prototipo foi a apenas a parte eletronica dispensando o uso de elementos hidraulicos, pois o intuito do prototipo segue como elemento para a implementação do sistema e ainda não entra nos testes de campo.
 
 \begin{figure}[htbp]
   \centering
-  \imagemsombra[width=0.9\textwidth]{figuras/prototipo.jpeg}
+  \imagemsombra[width=0.8\textwidth]{figuras/prototipo.jpeg}
   \caption{Protótipo do dispositivo de campo montado}
   \label{fig:prototipo}
   \fonte{Elaborado pelo autor}
@@ -120,7 +120,10 @@ Os testes do fluxo completo verificam se as três partes do sistema funcionam ju
 % ---------------------------------------------------------------------
 \subsection{T01: Inicialização do dispositivo}
 
-Objetivo: verificar se, ao ser ligado, o dispositivo mantém o relé desligado, conecta-se ao Wi-Fi, sincroniza o relógio, obtém a configuração da API e passa a aguardar comandos. Procedimento: o ESP32 foi ligado com a API em execução, e o monitor serial registrou a sequência de inicialização, apresentada no Quadro~\ref{lst:log-t01}. Resultado esperado: as mensagens de conexão, de configuração carregada e de início do long-polling aparecem em sequência, e a válvula permanece fechada durante todo o processo. Resultado obtido: \preencher{descreva o que foi observado, incluindo o tempo aproximado entre ligar o dispositivo e a primeira leitura enviada}.
+Objetivo: verificar se, ao ser ligado, o dispositivo mantém o relé desligado, conecta-se ao Wi-Fi, sincroniza o relógio, obtém a configuração da API e passa a aguardar comandos. Procedimento: o ESP32 foi ligado com a API em execução, e o monitor serial registrou a sequência de inicialização, apresentada no Quadro~\ref{lst:log-t01}. 
+Resultado esperado: Mensagens de conexão, de configuração carregada e de início do long-polling aparecem em sequência, e a válvula permanece fechada durante todo o processo. 
+Resultado obtido: Mensagens de log corretas, conforme a inicialização esperada.
+
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language={}, caption={Log do monitor serial na inicialização do dispositivo (T01)}, label={lst:log-t01}]
@@ -130,7 +133,6 @@ Sincronizando hora via NTP.....
 Configuracao inicial carregada da API.
 Long polling de comandos iniciado.
 Controlador de irrigacao inicializado.
- }
 \end{lstlisting}
 \vspace{-0.5\baselineskip}
 \fonte{Elaborado pelo autor}
@@ -142,8 +144,6 @@ Controlador de irrigacao inicializado.
 
 Objetivo: verificar se as leituras feitas pelo dispositivo chegam ao Firestore e ao painel com os mesmos valores. Procedimento: com o dispositivo em funcionamento, uma mesma leitura foi acompanhada no monitor serial (Quadro~\ref{lst:log-t02}), no documento gravado na coleção telemetry do Firestore (Figura~\ref{fig:t02-firestore}) e no dashboard do painel (Figura~\ref{fig:t02-painel}). Resultado esperado: os três registros apresentam os mesmos valores de temperatura do ar, umidade do ar e umidade do solo, e o painel se atualiza em até cerca de 10~s após cada leitura (RNF05). A Tabela~\ref{tab:t02} compara os valores observados.
 
-% Mensagens esperadas: uma linha a cada 10 s, no formato
-%   Temp=25.0C Umid.Ar=60.0% Umid.Solo=45.0% Modo=manual
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language={}, caption={Log do monitor serial com as leituras dos sensores (T02)}, label={lst:log-t02}]
@@ -160,7 +160,7 @@ Temp=24.4C Umid.Ar=37.0% Umid.Solo=61.5% Modo=automatico
 
 \begin{figure}[htbp]
   \centering
-  \imagemsombra[width=0.9\textwidth]{figuras/doc_coleta.jpg}
+  \imagemsombra[width=0.6\textwidth]{figuras/doc_coleta.jpg}
   \caption{Leitura gravada no Firestore (T02)}
   \label{fig:t02-firestore}
   \fonte{Elaborado pelo autor}
@@ -168,7 +168,7 @@ Temp=24.4C Umid.Ar=37.0% Umid.Solo=61.5% Modo=automatico
 
 \begin{figure}[htbp]
   \centering
-  \imagemsombra[width=0.97\textwidth]{figuras/dashboard_log.jpeg}
+  \imagemsombra[width=0.8\textwidth]{figuras/dashboard_log.jpeg}
   \caption{Leitura exibida no dashboard (T02)}
   \label{fig:t02-painel}
   \fonte{Elaborado pelo autor}
@@ -188,8 +188,8 @@ Temp=24.4C Umid.Ar=37.0% Umid.Solo=61.5% Modo=automatico
     \textbf{Grandeza} & \textbf{Monitor serial} & \textbf{Firestore} & \textbf{Painel} \\
     \hline
     Temperatura do ar ($^{\circ}$C) & 24.3 & 24.3 & 24.3 \\
-    Umidade do ar (\%) & 38 & 38 & 38 \\
-    Umidade do solo (\%) & 61.3 & 61.30078 & 61 \\
+    Umidade do ar (\%) & 37 & 37 & 37 \\
+    Umidade do solo (\%) & 61.5 & 61.53907 & 61,5 \\
     \hline
   \end{tabularx}
   \fonte{Elaborado pelo autor}
@@ -221,7 +221,7 @@ Temp=22.3C Umid.Ar=49.0% Umid.Solo=0.0% Modo=manual
 
 \begin{figure}[htbp]
   \centering
-  \imagemsombra[width=0.97\textwidth]{figuras/manual.jpg}
+  \imagemsombra[width=0.9\textwidth]{figuras/manual.jpg}
   \caption{Irrigação manual em andamento no dashboard (T03)}
   \label{fig:t03-andamento}
   \fonte{Elaborado pelo autor}
@@ -229,7 +229,7 @@ Temp=22.3C Umid.Ar=49.0% Umid.Solo=0.0% Modo=manual
 
 \begin{figure}[htbp]
   \centering
-  \imagemsombra[width=0.97\textwidth]{figuras/historico.jpg}
+  \imagemsombra[width=0.9\textwidth]{figuras/historico.jpg}
   \caption{Registro da irrigação manual no histórico (T03)}
   \label{fig:t03-historico}
   \fonte{Elaborado pelo autor}
@@ -285,7 +285,7 @@ Temp=23.4C Umid.Ar=45.0% Umid.Solo=0.0% Modo=manual
 
 \begin{figure}[htbp]
   \centering
-  \imagemsombra[width=0.97\textwidth]{figuras/interrompe.jpg}
+  \imagemsombra[width=0.6\textwidth]{figuras/interrompe.jpg}
   \caption{Registro da irrigação interrompida no histórico (T04)}
   \label{fig:t04-historico}
   \fonte{Elaborado pelo autor}
@@ -333,7 +333,7 @@ Irrigacao (automatico) concluida. Duracao real: 22s.
 
 \begin{figure}[htbp]
   \centering
-  \imagemsombra[width=0.97\textwidth]{figuras/historico_aut.jpg}
+  \imagemsombra[width=0.6\textwidth]{figuras/historico_aut.jpg}
   \caption{Registro da irrigação automática no histórico (T05)}
   \label{fig:t05-historico}
   \fonte{Elaborado pelo autor}
@@ -371,7 +371,7 @@ A Tabela~\ref{tab:t05} reúne os valores definidos pelo firmware nessa irrigaç�
 % ---------------------------------------------------------------------
 \subsection{T06: Bloqueio da irrigação automática sem autorização}
 
-Objetivo: verificar se a autorização funciona como trava de segurança (RN02). Procedimento: com o modo automático ativo e a umidade do solo abaixo do limiar, a autorização foi desativada no painel (Figura~\ref{fig:t06-painel}), e o dispositivo foi observado por \preencher{tempo} minutos. Resultado esperado: o monitor serial continua registrando as leituras, com o modo automático e a umidade abaixo do limiar, mas nenhuma irrigação é disparada (Quadro~\ref{lst:log-t06}). Resultado obtido: \preencher{observações}.
+Objetivo: verificar se a autorização funciona como trava de segurança (RN02). Procedimento: com o modo automático ativo e a umidade do solo abaixo do limiar, a autorização foi desativada no painel (Figura~\ref{fig:t06-painel}), e o dispositivo foi observado por alguns minutos. Resultado esperado: o monitor serial continua registrando as leituras, com o modo automático e a umidade abaixo do limiar, mas nenhuma irrigação é disparada. Resultado obtido: sistema comportou como esperado, não ativou a irrigação,o Quadro~\ref{lst:log-t06} mostra parte do log que mostra que a umidade do solo está em 0\% e no modo automático mas não ativando a irrigação.
 
 % Mensagens esperadas:
 %   Irrigacao automatica nao autorizada
@@ -380,7 +380,14 @@ Objetivo: verificar se a autorização funciona como trava de segurança (RN02).
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language={}, caption={Log do monitor serial com a irrigação automática não autorizada (T06)}, label={lst:log-t06}]
-%*\logprovisorio{Colar aqui o log com o modo automático sem autorização}*)
+Temp=26.9C Umid.Ar=66.0% Umid.Solo=0.0% Modo=automatico
+Temp=26.9C Umid.Ar=66.0% Umid.Solo=0.0% Modo=automatico
+Temp=26.9C Umid.Ar=66.0% Umid.Solo=0.0% Modo=automatico
+Temp=26.8C Umid.Ar=66.0% Umid.Solo=0.0% Modo=automatico
+Temp=26.8C Umid.Ar=66.0% Umid.Solo=0.0% Modo=automatico
+Temp=26.8C Umid.Ar=66.0% Umid.Solo=0.0% Modo=automatico
+Temp=26.8C Umid.Ar=66.0% Umid.Solo=0.0% Modo=automatico
+Temp=26.8C Umid.Ar=66.0% Umid.Solo=0.0% Modo=automatico
 \end{lstlisting}
 \vspace{-0.5\baselineskip}
 \fonte{Elaborado pelo autor}
@@ -389,8 +396,7 @@ Objetivo: verificar se a autorização funciona como trava de segurança (RN02).
 
 \begin{figure}[htbp]
   \centering
-  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/teste-t06-painel}
-  \figuraprovisoria{6cm}{Inserir captura do dashboard em modo automático, sem autorização e com a umidade abaixo do limiar}
+  \imagemsombra[width=0.97\textwidth]{figuras/automatico_nao_irrigando.jpg}
   \caption{Modo automático sem autorização no dashboard (T06)}
   \label{fig:t06-painel}
   \fonte{Elaborado pelo autor}
@@ -399,28 +405,40 @@ Objetivo: verificar se a autorização funciona como trava de segurança (RN02).
 % ---------------------------------------------------------------------
 \subsection{T07: Troca de modo durante uma irrigação}
 
-Objetivo: verificar se o sistema impede a troca do modo de operação enquanto uma irrigação está em andamento, o que garante uma única irrigação por vez e evita comandos incoerentes com o estado do dispositivo (RN04 e RN06). Procedimento: durante uma irrigação manual, foi solicitada a troca para o modo automático, pelo painel ou por uma requisição direta à API. Resultado esperado: a API recusa a solicitação com o código 409 e uma mensagem informando que não é possível trocar o modo durante a irrigação, e o dispositivo não recebe nenhum comando de troca de modo. A Figura~\ref{fig:t07-rede} mostra a resposta da API. Resultado obtido: \preencher{observações}.
+Objetivo: verificar se o sistema impede a troca do modo de operação enquanto uma irrigação está em andamento, o que garante uma única irrigação por vez e evita comandos incoerentes com o estado do dispositivo (RN04 e RN06). Procedimento: durante uma irrigação manual, foi solicitada a troca para o modo automático, pelo painel ou por uma requisição direta à API. Resultado esperado: a API recusa a solicitação com o código 409 e uma mensagem informando que não é possível trocar o modo durante a irrigação, e o dispositivo não recebe nenhum comando de troca de modo. O Quadro~\ref{lst:log-t07} mostra a resposta da API. Resultado obtido: resultado coerente com o esperado, no painel não é possível fazer a requisição através do botão pois ele é desativado quando está com alguma irrigação ativa.
 
-\begin{figure}[htbp]
-  \centering
-  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/teste-t07-rede}
-  \figuraprovisoria{6cm}{Inserir captura da aba Rede do navegador com a resposta 409 da API (borre o endereço da API)}
-  \caption{Resposta da API à troca de modo durante uma irrigação (T07)}
-  \label{fig:t07-rede}
-  \fonte{Elaborado pelo autor}
-\end{figure}
+% Mensagens esperadas:
+%   Irrigacao automatica nao autorizada
+%   Temp=..C Umid.Ar=..% Umid.Solo=30.0% Modo=automatico   (várias linhas)
+%   (nenhuma linha "Disparando irrigacao automatica")
+\vspace{0.6\baselineskip}
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language={}, caption={Resposta da API com erro 409}, label={lst:log-t07}]
+{
+  "status": 409,
+  "error": "Conflict",
+  "message": "Nao e possivel trocar o modo enquanto o dispositivo esta irrigando.",
+  "timestamp": "2026-10-28T01:02:16.152"
+}
+\end{lstlisting}
+\vspace{-0.5\baselineskip}
+\fonte{Elaborado pelo autor}
+\end{minipage}
+\medskip
 
 % ---------------------------------------------------------------------
 \subsection{T08: Atualização dos parâmetros de irrigação}
 
-Objetivo: verificar se os parâmetros alterados no painel são gravados e chegam ao dispositivo. Procedimento: na tela de configurações, a cultura foi alterada de \preencher{cultura anterior} para \preencher{nova cultura}, na fase \preencher{fase}, e os parâmetros foram salvos (Figura~\ref{fig:t08-config}). Resultado esperado: o K$_c$ correspondente é aplicado automaticamente a partir do catálogo (RN13), o documento do dispositivo é atualizado no Firestore e o firmware recebe o comando CONFIG\_IRRIGACAO (Quadro~\ref{lst:log-t08}). Resultado obtido: \preencher{K$_c$ aplicado e observações}.
+Objetivo: verificar se os parâmetros alterados no painel são gravados e chegam ao dispositivo. Procedimento: na tela de configurações, a cultura foi alterada de Alface para Tomate, na fase 3, e os parâmetros foram salvos. Resultado esperado: o K$_c$ correspondente é aplicado automaticamente a partir do catálogo (RN13), o documento do dispositivo é atualizado no Firestore e o firmware atualiza os parâmetros (Quadro~\ref{lst:log-t08}). Resultado obtido: a cultura foi persistida no banco de dados, foi informado no log da firmware que a cultura foi atualizada, e no painel um feedback visual na Figura~\ref{fig:t08-config}.
 
 % Mensagem esperada:
 %   Parametros de irrigacao atualizados.
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language={}, caption={Log do monitor serial na atualização dos parâmetros (T08)}, label={lst:log-t08}]
-%*\logprovisorio{Colar aqui o log da atualização dos parâmetros}*)
+Temp=26.8C Umid.Ar=68.0% Umid.Solo=0.0% Modo=manual
+Parametros de irrigacao atualizados.
+Temp=26.8C Umid.Ar=68.0% Umid.Solo=0.0% Modo=manual
 \end{lstlisting}
 \vspace{-0.5\baselineskip}
 \fonte{Elaborado pelo autor}
@@ -429,8 +447,7 @@ Objetivo: verificar se os parâmetros alterados no painel são gravados e chegam
 
 \begin{figure}[htbp]
   \centering
-  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/teste-t08-config}
-  \figuraprovisoria{6cm}{Inserir captura da tela de configurações com a nova cultura e o K$_c$ aplicado}
+  \imagemsombra[width=0.9\textwidth]{figuras/troca_cultura.jpg}
   \caption{Atualização dos parâmetros de irrigação (T08)}
   \label{fig:t08-config}
   \fonte{Elaborado pelo autor}
@@ -439,30 +456,36 @@ Objetivo: verificar se os parâmetros alterados no painel são gravados e chegam
 % ---------------------------------------------------------------------
 \subsection{T09: Controle de acesso}
 
-Objetivo: verificar se as permissões de cada perfil são aplicadas no painel e na API. Procedimento: o painel foi acessado com um usuário do perfil Visualizador, e em seguida foram feitas requisições diretas à API, fora do painel, com o token desse usuário e sem a chave do dispositivo. Resultado esperado: para o Visualizador, os controles de alteração aparecem desabilitados (Figura~\ref{fig:t09-visualizador}); uma requisição de escrita com o token do Visualizador recebe o código 403 (RN19); e uma requisição a uma rota do dispositivo sem o cabeçalho X-Device-Key recebe o código 401 (RN21), como mostra a Figura~\ref{fig:t09-api}. Resultado obtido: \preencher{observações}.
+Objetivo: verificar se as permissões de cada perfil são aplicadas no painel e na API. Procedimento: o painel foi acessado com um usuário do perfil Visualizador, e em seguida foram feitas requisições diretas à API, fora do painel, com o token desse usuário e sem a chave do dispositivo. Resultado esperado: para o Visualizador, os controles de alteração aparecem desabilitados (Figura~\ref{fig:t09-visualizador}), uma requisição de escrita com o token do Visualizador recebe o código 403 (RN19), como mostra a Quadro~\ref{lst:log-t09}. Resultado obtido: API e o painel se comportou da maneira esperada.
 
 \begin{figure}[htbp]
   \centering
-  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/teste-t09-visualizador}
-  \figuraprovisoria{6cm}{Inserir captura do dashboard acessado pelo Visualizador, com os controles desabilitados}
+  \imagemsombra[width=1.0\textwidth]{figuras/visualizador.jpg}
   \caption{Dashboard acessado pelo perfil Visualizador (T09)}
   \label{fig:t09-visualizador}
   \fonte{Elaborado pelo autor}
 \end{figure}
-
-\begin{figure}[htbp]
-  \centering
-  % Troque a linha abaixo por: \imagemsombra[width=0.97\textwidth]{figuras/teste-t09-api}
-  \figuraprovisoria{6cm}{Inserir captura das respostas 403 e 401 da API (ex.: Swagger ou aba Rede; borre o endereço da API)}
-  \caption{Respostas da API a requisições sem permissão (T09)}
-  \label{fig:t09-api}
-  \fonte{Elaborado pelo autor}
-\end{figure}
+% Mensagem esperada:
+%   Parametros de irrigacao atualizados.
+\vspace{0.6\baselineskip}
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language={}, caption={Resposta da API quando requisitado sem permissão}, label={lst:log-t09}]
+{
+  "status": 403,
+  "error": "Forbidden",
+  "message": "Acesso negado: permissao insuficiente para este recurso.",
+  "timestamp": "2026-10-28T01:42:32.771044406"
+}
+\end{lstlisting}
+\vspace{-0.5\baselineskip}
+\fonte{Elaborado pelo autor}
+\end{minipage}
+\medskip
 
 % ---------------------------------------------------------------------
 \subsection{T10: Falha de comunicação com a API}
 
-Objetivo: verificar o comportamento do dispositivo quando a API está indisponível (RN22 e RNF07). Procedimento: a execução da API foi interrompida e o ESP32 foi reiniciado; depois de alguns ciclos de leitura, a API foi colocada novamente em execução. Resultado esperado: na inicialização, o dispositivo informa que a configuração não pôde ser obtida e passa a operar com os valores padrão; cada envio que falha é repetido com intervalos crescentes, de 2, 4, 8 e 16~s, até cinco tentativas, e depois descartado; quando a API volta, os envios voltam a ser aceitos sem que seja preciso reiniciar o dispositivo (Quadro~\ref{lst:log-t10}). Resultado obtido: \preencher{observações}.
+Objetivo: verificar o comportamento do dispositivo quando a API está indisponível (RN22 e RNF07). Procedimento: a execução da API foi interrompida e o ESP32 foi reiniciado; depois de alguns ciclos de leitura, a API foi colocada novamente em execução. Resultado esperado: na inicialização, o dispositivo informa que a configuração não pôde ser obtida e passa a operar com os valores padrão; cada envio que falha é repetido com intervalos crescentes, de 2, 4, 8 e 16~s, até cinco tentativas, e depois descartado; quando a API volta, os envios voltam a ser aceitos sem que seja preciso reiniciar o dispositivo (Quadro~\ref{lst:log-t10}). Resultado obtido: Quando não acontece uma falha o sistema ele reenvia.
 
 % Mensagens esperadas:
 %   Erro ao buscar configuracao inicial da API: HTTP -1
@@ -474,83 +497,17 @@ Objetivo: verificar o comportamento do dispositivo quando a API está indisponí
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language={}, caption={Log do monitor serial com a API indisponível (T10)}, label={lst:log-t10}]
-%*\logprovisorio{Colar aqui o log com a API indisponível (troque o endereço da API por <API>)}*)
+Falha ao enviar para https://smart-irrigation-api-bhii.onrender.com/api/webhooks/telemetry (tentativa 1/5): HTTP -1. Nova tentativa em 2.0s.
+Temp=26.7C Umid.Ar=68.0% Umid.Solo=0.0% Modo=manual
+Temp=26.7C Umid.Ar=68.0% Umid.Solo=0.0% Modo=manual
+Temp=26.7C Umid.Ar=69.0% Umid.Solo=0.0% Modo=manual
+Falha ao enviar para https://smart-irrigation-api-bhii.onrender.com/api/webhooks/telemetry (tentativa 1/5): HTTP -1. Nova tentativa em 2.0s.
 \end{lstlisting}
 \vspace{-0.5\baselineskip}
 \fonte{Elaborado pelo autor}
 \end{minipage}
 \medskip
 
-% =====================================================================
-\section{Testes do hardware}
-\label{sec:testes-hardware}
-
-\subsection{Calibração do sensor de umidade do solo}
-
-A calibração definiu as duas tensões de referência da Equação~\ref{eq:umidade}. A tensão de saída do sensor foi medida com \preencher{instrumento usado (ex.: multímetro)} em duas condições: com o sensor seco, ao ar, e com o sensor imerso em água. A Tabela~\ref{tab:calibracao} apresenta os valores medidos e os valores configurados no firmware.
-
-\begin{table}[htbp]
-  \centering
-  \caption{Calibração do sensor de umidade do solo}
-  \label{tab:calibracao}
-  \small
-  \renewcommand{\arraystretch}{1.2}
-  \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X
-                               >{\centering\arraybackslash}p{3.2cm}
-                               >{\centering\arraybackslash}p{3.2cm}}
-    \hline
-    \textbf{Condição} & \textbf{Tensão medida (V)} & \textbf{Valor no firmware (V)} \\
-    \hline
-    Sensor seco ($L_{seco}$, 0\%) & \preencher{valor} & 2,80 \\
-    Sensor imerso em água ($L_{sat}$, 100\%) & \preencher{valor} & 1,20 \\
-    \hline
-  \end{tabularx}
-  \fonte{Elaborado pelo autor}
-\end{table}
-
-\preencher{Comente se os valores medidos ficaram próximos dos configurados; se não ficaram, informe os novos valores gravados no firmware.}
-
-\subsection{Volume aplicado}
-
-Para avaliar se o volume de água aplicado corresponde ao calculado pelo sistema, a água liberada pela válvula foi coletada em um recipiente graduado em \preencher{número} irrigações. A diferença percentual $D$ entre o volume medido e o volume calculado foi obtida pela Equação~\ref{eq:diferenca-volume}:
-
-\begin{equation}
-  D = \frac{V_{med} - V_{calc}}{V_{calc}} \times 100
-  \label{eq:diferenca-volume}
-\end{equation}
-
-\noindent em que:
-\begin{itemize}
-  \item $D$ é a diferença percentual entre os volumes (\%);
-  \item $V_{med}$ é o volume medido no recipiente graduado (L);
-  \item $V_{calc}$ é o volume calculado pelo sistema (L): o volume informado no modo manual ou o volume total da Equação~\ref{eq:tempo} no modo automático.
-\end{itemize}
-
-A Tabela~\ref{tab:volume} apresenta os resultados. O critério de aceitação, definido na metodologia, é que a diferença fique dentro de \preencher{margem, ex.: 10}\%.
-
-\begin{table}[htbp]
-  \centering
-  \caption{Volume calculado e volume medido}
-  \label{tab:volume}
-  \small
-  \renewcommand{\arraystretch}{1.2}
-  \begin{tabularx}{\textwidth}{>{\centering\arraybackslash}p{1.6cm}
-                               >{\centering\arraybackslash}X
-                               >{\centering\arraybackslash}p{2.6cm}
-                               >{\centering\arraybackslash}p{2.6cm}
-                               >{\centering\arraybackslash}p{2.6cm}}
-    \hline
-    \textbf{Teste} & \textbf{Modo} & \textbf{$V_{calc}$ (L)} & \textbf{$V_{med}$ (L)} & \textbf{$D$ (\%)} \\
-    \hline
-    1 & Manual & \preencher{valor} & \preencher{valor} & \preencher{valor} \\
-    2 & Manual & \preencher{valor} & \preencher{valor} & \preencher{valor} \\
-    3 & Automático & \preencher{valor} & \preencher{valor} & \preencher{valor} \\
-    \hline
-  \end{tabularx}
-  \fonte{Elaborado pelo autor}
-\end{table}
-
-\preencher{Comente os resultados: se as diferenças ficaram dentro da margem e quais fatores podem explicá-las (ex.: variação da pressão da água, tempo de abertura e fechamento da válvula, vazão real dos gotejadores).}
 
 % =====================================================================
 \section{Discussão dos resultados}
