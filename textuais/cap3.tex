@@ -78,7 +78,7 @@ As ferramentas usadas apenas no primeiro protótipo (Python, o broker MQTT Mosqu
     \textbf{Ferramenta} & \textbf{Versão} & \textbf{Finalidade} \\
     \midrule
     \multicolumn{3}{@{}l}{\textit{Hardware}} \\
-    Componentes eletrônicos & -- & Dispositivo de campo: ESP32, DHT11, sensor de umidade do solo, relé, válvula solenoide e display LCD I2C (detalhados no Capítulo~6) \\
+    Componentes eletrônicos & -- & Dispositivo de campo: ESP32, DHT11, sensor de umidade do solo, relé, válvula solenoide e display LCD I2C (detalhados no Capítulo~\ref{textuais/cap5}) \\
     \midrule
     \multicolumn{3}{@{}l}{\textit{Linguagens}} \\
     C++ (framework Arduino) & --  & Firmware do ESP32 \\ % CONFERIR: versão do núcleo ESP32 para Arduino
@@ -114,8 +114,6 @@ As ferramentas usadas apenas no primeiro protótipo (Python, o broker MQTT Mosqu
 \section{Procedimentos de avaliação}
 \label{sec:avaliacao}
 
-A avaliação do sistema foi planejada em dois níveis, ambos executados em ambiente controlado: o funcionamento do sistema completo, de ponta a ponta, e o desempenho do dispositivo de campo. Os resultados são apresentados no Capítulo~\ref{textuais/cap6}.
+A avaliação do sistema foi feita em ambiente controlado, em bancada, e verificou o funcionamento do sistema completo, de ponta a ponta. Como o protótipo foi montado apenas com a parte eletrônica, sem os elementos hidráulicos, o acionamento da irrigação foi verificado pelo estado do relé. Os resultados são apresentados no Capítulo~\ref{textuais/cap6}.
  
-No primeiro nível, os testes de integração verificam a comunicação entre as partes do sistema nos dois sentidos. No sentido do dispositivo para o painel, as leituras enviadas pelo ESP32 devem ser registradas no Firestore e exibidas no painel com os mesmos valores. No sentido inverso, um comando emitido no painel, como iniciar a irrigação manual ou trocar o modo de operação, deve chegar ao dispositivo e ser executado. Os testes são organizados em cenários derivados dos requisitos e das regras de negócio do Capítulo~\ref{textuais/cap4}, e cada cenário é comprovado pelos registros do monitor serial do ESP32, pelas telas do painel, pelos documentos gravados no Firestore e pelos códigos de resposta da API. O critério é que os dados e os comandos cheguem íntegros ao destino e que cada irrigação fique registrada no histórico.
- 
-No segundo nível, os testes de hardware avaliam o dispositivo de campo. O sensor de umidade do solo é calibrado com leituras em solo seco e em solo saturado, que definem os limites da escala usada pelo firmware. Em seguida, a irrigação é acionada nos modos manual e automático, e o volume aplicado, medido em recipiente graduado, é comparado ao volume calculado pelo sistema. O critério é que a diferença entre os dois volumes fique dentro de uma margem de erro aceitável. % CONFERIR: definir a margem (ex.: 10%)
+Os testes de integração verificam a comunicação entre as partes do sistema nos dois sentidos. No sentido do dispositivo para o painel, as leituras enviadas pelo ESP32 devem ser registradas no Firestore e exibidas no painel com os mesmos valores. No sentido inverso, um comando emitido no painel, como iniciar a irrigação manual ou trocar o modo de operação, deve chegar ao dispositivo e ser executado. Os testes são organizados em cenários derivados dos requisitos e das regras de negócio do Capítulo~\ref{textuais/cap4}, e cada cenário é comprovado pelos registros do monitor serial do ESP32, pelas telas do painel, pelos documentos gravados no Firestore e pelos códigos de resposta da API. O critério é que os dados e os comandos cheguem íntegros ao destino e que cada irrigação fique registrada no histórico.
