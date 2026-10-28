@@ -15,24 +15,17 @@
 \providecommand{\figuraprovisoria}[2]{\fbox{\parbox[c][#1][c]{0.9\textwidth}{\centering\textcolor{red}{#2}}}}
 \providecommand{\logprovisorio}[1]{\textcolor{red}{[#1]}}
 
-Este capítulo apresenta o protótipo montado e os testes realizados para verificar o funcionamento do sistema descrito no Capítulo~\ref{textuais/cap5}, seguindo os procedimentos definidos na Seção~\ref{sec:avaliacao}. A Seção~\ref{sec:ambiente-testes} descreve o ambiente e as evidências coletadas, a Seção~\ref{sec:prototipo} apresenta o protótipo, a Seção~\ref{sec:testes-integracao} reúne os testes do fluxo completo, a Seção~\ref{sec:testes-hardware} trata dos testes do dispositivo de campo e a Seção~\ref{sec:discussao} discute os resultados.
+Este capítulo apresenta o protótipo montado e os testes realizados para verificar o funcionamento do sistema descrito no Capítulo~\ref{textuais/cap5}, de acordo com os procedimentos definidos na Seção~\ref{sec:avaliacao}. A Seção~\ref{sec:ambiente-testes} descreve o ambiente de testes e as evidências coletadas, a Seção~\ref{sec:prototipo} apresenta o protótipo, a Seção~\ref{sec:testes-integracao} reúne os testes do fluxo completo e a Seção~\ref{sec:discussao} discute os resultados obtidos.
 
 % =====================================================================
 \section{Ambiente de testes}
 \label{sec:ambiente-testes}
 
-Os testes foram realizados em bancada, em ambiente controlado. O dispositivo de campo foi montado conforme o esquema da Figura~\ref{fig:esquema}, com o sensor de umidade inserido em um vaso com solo, e a válvula solenoide foi ligada a \preencher{fonte de água usada nos testes (ex.: reservatório elevado ou torneira)}. A água aplicada foi coletada em um recipiente graduado, para comparar o volume medido com o volume calculado pelo sistema. O ESP32 foi conectado à rede Wi-Fi do local, e a API e o painel web estavam em execução, ligados ao Cloud Firestore e ao Firebase Authentication.
+Os testes foram realizados em bancada, em ambiente controlado. O dispositivo de campo foi montado conforme o esquema da Figura~\ref{fig:esquema}, e o acionamento da irrigação foi verificado pelo estado do relé, já que a parte hidráulica não fez parte do protótipo. O ESP32 foi conectado à rede Wi-Fi do local, e a API e o painel web permaneceram em execução, ligados ao Cloud Firestore e ao Firebase Authentication.
 
-Cada teste foi comprovado por evidências coletadas nas três partes do sistema, de modo que um mesmo evento pudesse ser acompanhado do painel até o dispositivo e de volta:
+Cada teste foi comprovado por evidências coletadas nas três partes do sistema, o que permite acompanhar um mesmo evento do painel até o dispositivo e de volta. No dispositivo, foram usados os registros (logs) do monitor serial do ESP32, capturados pela Arduino IDE a 115.200 baud, que mostram o que o firmware leu, recebeu e executou. No painel, foram feitas capturas de tela das informações exibidas ao usuário. No banco de dados, foram consultados os documentos gravados no Firestore pelo console do Firebase. Por fim, as respostas da API foram observadas na aba Rede das ferramentas de desenvolvedor do navegador ou em requisições feitas diretamente a ela.
 
-\begin{itemize}
-  \item os registros (logs) do monitor serial do ESP32, capturados pela Arduino IDE a 115.200 baud, que mostram o que o firmware leu, recebeu e executou;
-  \item as capturas de tela do painel web;
-  \item os documentos gravados no Firestore, vistos no console do Firebase;
-  \item os códigos de resposta HTTP das requisições do painel à API, vistos na aba Rede das ferramentas de desenvolvedor do navegador.
-\end{itemize}
-
-A Tabela~\ref{tab:parametros-teste} apresenta os parâmetros configurados no painel durante os testes. Eles são os valores usados nos cálculos das Equações~\ref{eq:ra} a~\ref{eq:tempo-manual} e permitem conferir manualmente os resultados obtidos pelo firmware.
+A Tabela~\ref{tab:parametros-teste} apresenta os parâmetros configurados no painel durante os testes. São esses os valores usados nos cálculos das Equações~\ref{eq:ra} a~\ref{eq:tempo-manual}, e eles servem de referência para interpretar os resultados registrados pelo firmware.
 
 \begin{table}[htbp]
   \centering
@@ -46,10 +39,10 @@ A Tabela~\ref{tab:parametros-teste} apresenta os parâmetros configurados no pai
     \textbf{Parâmetro} & \textbf{Valor} \\
     \hline
     Latitude da área ($\varphi$) & -17$^{\circ}$ \\
-    Cultura e fase de desenvolvimento & Batata Fase 4 \\
-    Coeficiente de cultura (K$_c$) & 0.3 \\
-    Espaçamento entre plantas ($E_p$) & 0.3~m \\
-    Espaçamento entre linhas ($E_l$) & 0.3~m \\
+    Cultura e fase de desenvolvimento & Batata, fase 4 \\
+    Coeficiente de cultura (K$_c$) & 0,3 \\
+    Espaçamento entre plantas ($E_p$) & 0,3~m \\
+    Espaçamento entre linhas ($E_l$) & 0,3~m \\
     Vazão do gotejador ($q_g$) & 2~L\,h$^{-1}$ \\
     Gotejadores por planta ($n_g$) & 1 \\
     Número total de plantas ($N$) & 30 \\
@@ -63,7 +56,7 @@ A Tabela~\ref{tab:parametros-teste} apresenta os parâmetros configurados no pai
 \section{Protótipo montado}
 \label{sec:prototipo}
 
-A Figura~\ref{fig:prototipo} mostra o dispositivo de campo montado, com o ESP32, o sensor de umidade do solo, o DHT11, o módulo relé e o display LCD. A parte montada do prototipo foi a apenas a parte eletronica dispensando o uso de elementos hidraulicos, pois o intuito do prototipo segue como elemento para a implementação do sistema e ainda não entra nos testes de campo.
+A Figura~\ref{fig:prototipo} mostra o dispositivo de campo montado, com o ESP32, o sensor de umidade do solo, o DHT11, o módulo relé e o display LCD. Foi montada apenas a parte eletrônica do protótipo, sem os elementos hidráulicos, porque o objetivo desta etapa é validar a implementação do sistema, e não realizar testes em campo.
 
 \begin{figure}[htbp]
   \centering
@@ -87,7 +80,7 @@ O display LCD, apresentado na Figura~\ref{fig:display}, permite acompanhar o dis
 \section{Testes do fluxo completo}
 \label{sec:testes-integracao}
 
-Os testes do fluxo completo verificam se as três partes do sistema funcionam juntas, nos dois sentidos da comunicação: as leituras do dispositivo devem chegar ao Firestore e ao painel, e as ações do usuário no painel devem chegar ao dispositivo e ser executadas. Os cenários foram definidos a partir dos requisitos e das regras de negócio do Capítulo~\ref{textuais/cap4}, e a Tabela~\ref{tab:cenarios} resume cada um deles e o seu resultado. As subseções seguintes descrevem o procedimento e as evidências de cada cenário.
+Os testes do fluxo completo verificam se as três partes do sistema funcionam juntas nos dois sentidos da comunicação. Em um sentido, as leituras do dispositivo devem chegar ao Firestore e ao painel. No outro, as ações do usuário no painel devem chegar ao dispositivo e ser executadas. Os cenários foram definidos a partir dos requisitos e das regras de negócio do Capítulo~\ref{textuais/cap4}, e a Tabela~\ref{tab:cenarios} resume cada um deles e o seu resultado. As subseções seguintes descrevem o procedimento e as evidências de cada cenário.
 
 \begin{table}[htbp]
   \centering
@@ -120,9 +113,7 @@ Os testes do fluxo completo verificam se as três partes do sistema funcionam ju
 % ---------------------------------------------------------------------
 \subsection{T01: Inicialização do dispositivo}
 
-Objetivo: verificar se, ao ser ligado, o dispositivo mantém o relé desligado, conecta-se ao Wi-Fi, sincroniza o relógio, obtém a configuração da API e passa a aguardar comandos. Procedimento: o ESP32 foi ligado com a API em execução, e o monitor serial registrou a sequência de inicialização, apresentada no Quadro~\ref{lst:log-t01}. 
-Resultado esperado: Mensagens de conexão, de configuração carregada e de início do long-polling aparecem em sequência, e a válvula permanece fechada durante todo o processo. 
-Resultado obtido: Mensagens de log corretas, conforme a inicialização esperada.
+Este teste verifica se, ao ser ligado, o dispositivo mantém o relé desligado, conecta-se ao Wi-Fi, sincroniza o relógio, obtém a configuração da API e passa a aguardar comandos. Para isso, o ESP32 foi ligado com a API em execução, e o monitor serial registrou a sequência de inicialização apresentada no Quadro~\ref{lst:log-t01}. Esperava-se que as mensagens de conexão, de configuração carregada e de início do long-polling aparecessem em sequência e que o relé permanecesse desligado durante todo o processo. O resultado correspondeu ao esperado, pois todas as mensagens foram registradas na ordem prevista.
 
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
@@ -142,7 +133,7 @@ Controlador de irrigacao inicializado.
 % ---------------------------------------------------------------------
 \subsection{T02: Leitura dos sensores e exibição no painel}
 
-Objetivo: verificar se as leituras feitas pelo dispositivo chegam ao Firestore e ao painel com os mesmos valores. Procedimento: com o dispositivo em funcionamento, uma mesma leitura foi acompanhada no monitor serial (Quadro~\ref{lst:log-t02}), no documento gravado na coleção telemetry do Firestore (Figura~\ref{fig:t02-firestore}) e no dashboard do painel (Figura~\ref{fig:t02-painel}). Resultado esperado: os três registros apresentam os mesmos valores de temperatura do ar, umidade do ar e umidade do solo, e o painel se atualiza em até cerca de 10~s após cada leitura (RNF05). A Tabela~\ref{tab:t02} compara os valores observados.
+Este teste verifica se as leituras feitas pelo dispositivo chegam ao Firestore e ao painel com os mesmos valores. Com o dispositivo em funcionamento, uma mesma leitura foi acompanhada no monitor serial (Quadro~\ref{lst:log-t02}), no documento gravado na coleção telemetry do Firestore (Figura~\ref{fig:t02-firestore}) e no dashboard do painel (Figura~\ref{fig:t02-painel}). Esperava-se que os três registros apresentassem os mesmos valores de temperatura do ar, umidade do ar e umidade do solo e que o painel se atualizasse em até cerca de 10~s após cada leitura (RNF05). A Tabela~\ref{tab:t02} compara os valores observados, que coincidiram nas três partes do sistema. A única diferença está no número de casas decimais da umidade do solo, que o Firestore guarda com a precisão completa e que o monitor serial e o painel arredondam para uma casa.
 
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
@@ -187,9 +178,9 @@ Temp=24.4C Umid.Ar=37.0% Umid.Solo=61.5% Modo=automatico
     \hline
     \textbf{Grandeza} & \textbf{Monitor serial} & \textbf{Firestore} & \textbf{Painel} \\
     \hline
-    Temperatura do ar ($^{\circ}$C) & 24.3 & 24.3 & 24.3 \\
+    Temperatura do ar ($^{\circ}$C) & 24,3 & 24,3 & 24,3 \\
     Umidade do ar (\%) & 37 & 37 & 37 \\
-    Umidade do solo (\%) & 61.5 & 61.53907 & 61,5 \\
+    Umidade do solo (\%) & 61,5 & 61,53907 & 61,5 \\
     \hline
   \end{tabularx}
   \fonte{Elaborado pelo autor}
@@ -198,7 +189,7 @@ Temp=24.4C Umid.Ar=37.0% Umid.Solo=61.5% Modo=automatico
 % ---------------------------------------------------------------------
 \subsection{T03: Irrigação manual}
 
-Objetivo: verificar o caminho completo de um comando, do painel até o acionamento da válvula, e o registro da irrigação no histórico. Procedimento: com o dispositivo em modo manual, o Administrador/Operador informou no dashboard um volume de 10 Litros e iniciou a irrigação. O painel passou a indicar a irrigação em andamento (Figura~\ref{fig:t03-andamento}), o dispositivo recebeu o comando START\_IRRIGATION e ligou o relé (Quadro~\ref{lst:log-t03}) e, ao fim do tempo calculado, desligou o relé e enviou o registro da irrigação, que apareceu no histórico do painel (Figura~\ref{fig:t03-historico}). Resultado esperado: o tempo de abertura corresponde ao calculado pela Equação~\ref{eq:tempo-manual}, o comando chega ao dispositivo em no máximo cerca de 30~s (RNF06) e o histórico registra a irrigação com o modo manual. A Tabela~\ref{tab:t03} apresenta os valores obtidos.
+Este teste verifica o caminho completo de um comando, do painel até o acionamento do relé, e o registro da irrigação no histórico. Com o dispositivo em modo manual, o Administrador/Operador informou no dashboard um volume de 10~L e iniciou a irrigação. O painel passou a indicar a irrigação em andamento (Figura~\ref{fig:t03-andamento}), e o dispositivo recebeu o comando START\_IRRIGATION e ligou o relé (Quadro~\ref{lst:log-t03}). Ao fim do tempo calculado, o relé foi desligado e o registro da irrigação foi enviado à API, aparecendo no histórico do painel (Figura~\ref{fig:t03-historico}). Esperava-se que o tempo de abertura correspondesse ao calculado pela Equação~\ref{eq:tempo-manual}, que o comando chegasse ao dispositivo em no máximo cerca de 30~s (RNF06) e que o histórico registrasse a irrigação no modo manual. Como mostra a Tabela~\ref{tab:t03}, o tempo registrado no histórico foi igual ao tempo calculado de 600~s.
 
 % Mensagens esperadas:
 %   Disparando irrigacao manual: 2.00L, duracao estimada 240.0s.
@@ -257,7 +248,7 @@ Temp=22.3C Umid.Ar=49.0% Umid.Solo=0.0% Modo=manual
 % ---------------------------------------------------------------------
 \subsection{T04: Interrupção da irrigação}
 
-Objetivo: verificar se uma irrigação em andamento pode ser interrompida pelo painel e se o tempo real é registrado (RN05). Procedimento: uma irrigação manual de 10~L, com tempo calculado de 600~s, foi iniciada e, após cerca de 4~s, interrompida pelo botão de parar irrigação. O Quadro~\ref{lst:log-t04} mostra o recebimento do comando STOP\_IRRIGATION pelo dispositivo, e a Figura~\ref{fig:t04-historico} mostra o registro no histórico. Resultado esperado: o relé é desligado logo após a chegada do comando, e o histórico registra o tempo real decorrido, menor que o tempo calculado. Resultado obtido: A irrigação marcou 4~s, interrupção ocorreu corretamente e armazenou no histórico de irrigação, porém houve uma marcação de volume conforme foi informado no painel pelo operador, e não o volume que foi irrigado.
+Este teste verifica se uma irrigação em andamento pode ser interrompida pelo painel e se o tempo real é registrado (RN05). Uma irrigação manual de 10~L, com tempo calculado de 600~s, foi iniciada e interrompida cerca de 4~s depois pelo botão de parar irrigação. O Quadro~\ref{lst:log-t04} mostra o recebimento do comando STOP\_IRRIGATION pelo dispositivo, e a Figura~\ref{fig:t04-historico} mostra o registro no histórico. Esperava-se que o relé fosse desligado logo após a chegada do comando e que o histórico registrasse o tempo real decorrido, menor que o tempo calculado. A interrupção ocorreu corretamente, e o histórico registrou a duração real de 4~s. No entanto, o volume registrado foi o volume informado no painel, e não o volume proporcional ao tempo em que o relé ficou ligado, o que indica um ponto a ser corrigido no firmware.
 
 % Mensagens esperadas:
 %   Disparando irrigacao manual: ...
@@ -294,7 +285,7 @@ Temp=23.4C Umid.Ar=45.0% Umid.Solo=0.0% Modo=manual
 % ---------------------------------------------------------------------
 \subsection{T05: Irrigação automática}
 
-Objetivo: verificar se o dispositivo inicia a irrigação sozinho quando as quatro condições da regra RN01 são satisfeitas e se o volume e o tempo calculados correspondem às Equações~\ref{eq:ra} a~\ref{eq:tempo}. Procedimento: no painel, o modo foi alterado para automático e a irrigação automática foi autorizada. O Quadro~\ref{lst:log-t05} mostra o recebimento dos comandos, a decisão de irrigar e a execução, e a Figura~\ref{fig:t05-historico} mostra o registro no histórico, com o modo automático.
+Este teste verifica se o dispositivo inicia a irrigação sozinho quando as quatro condições da regra RN01 são satisfeitas e se o volume e o tempo são calculados conforme as Equações~\ref{eq:ra} a~\ref{eq:tempo}. No painel, o modo foi alterado para automático e a irrigação automática foi autorizada. O Quadro~\ref{lst:log-t05} mostra a decisão de irrigar, os valores calculados e a execução, e a Figura~\ref{fig:t05-historico} mostra o registro da irrigação no histórico, no modo automático.
 
 % Mensagens esperadas:
 %   Modo de irrigacao definido para automatico
@@ -339,7 +330,7 @@ Irrigacao (automatico) concluida. Duracao real: 22s.
   \fonte{Elaborado pelo autor}
 \end{figure}
 
-A Tabela~\ref{tab:t05} reúne os valores definidos pelo firmware nessa irrigação, registrados no log do Quadro~\ref{lst:log-t05}. O volume por planta aparece como 0,01~L porque o log o exibe com duas casas decimais. Resultado esperado: com a umidade do solo abaixo do limiar, o firmware calcula o volume e o tempo de irrigação e mantém a válvula aberta pelo tempo calculado. Resultado obtido: a umidade do solo estava em 0,0\%, abaixo do limiar de 45,0\%, e a válvula ficou aberta por 22~s, o que corresponde ao tempo calculado de 22,1~s.
+A Tabela~\ref{tab:t05} reúne os valores definidos pelo firmware nessa irrigação, registrados no log do Quadro~\ref{lst:log-t05}. O volume por planta aparece como 0,01~L porque o log o exibe com apenas duas casas decimais. Esperava-se que, com a umidade do solo abaixo do limiar, o firmware calculasse o volume e o tempo de irrigação e mantivesse o relé ligado pelo tempo calculado. Foi o que ocorreu. A umidade do solo estava em 0,0\%, abaixo do limiar de 45,0\%, e o relé ficou ligado por 22~s, o que corresponde ao tempo calculado de 22,1~s. Durante a irrigação, a autorização foi desativada no painel, e a irrigação seguiu até o fim, já que o firmware só verifica a autorização antes de iniciá-la.
 
 \begin{table}[htbp]
   \centering
@@ -371,7 +362,7 @@ A Tabela~\ref{tab:t05} reúne os valores definidos pelo firmware nessa irrigaç�
 % ---------------------------------------------------------------------
 \subsection{T06: Bloqueio da irrigação automática sem autorização}
 
-Objetivo: verificar se a autorização funciona como trava de segurança (RN02). Procedimento: com o modo automático ativo e a umidade do solo abaixo do limiar, a autorização foi desativada no painel (Figura~\ref{fig:t06-painel}), e o dispositivo foi observado por alguns minutos. Resultado esperado: o monitor serial continua registrando as leituras, com o modo automático e a umidade abaixo do limiar, mas nenhuma irrigação é disparada. Resultado obtido: sistema comportou como esperado, não ativou a irrigação,o Quadro~\ref{lst:log-t06} mostra parte do log que mostra que a umidade do solo está em 0\% e no modo automático mas não ativando a irrigação.
+Este teste verifica se a autorização funciona como trava de segurança (RN02). Com o modo automático ativo e a umidade do solo abaixo do limiar, a autorização foi desativada no painel (Figura~\ref{fig:t06-painel}), e o dispositivo foi observado por alguns minutos. Esperava-se que o monitor serial continuasse registrando as leituras, com o modo automático e a umidade abaixo do limiar, sem que nenhuma irrigação fosse disparada. O sistema se comportou como esperado. O trecho de log do Quadro~\ref{lst:log-t06} mostra a umidade do solo em 0\% e o modo automático ativo, sem nenhum acionamento da irrigação.
 
 % Mensagens esperadas:
 %   Irrigacao automatica nao autorizada
@@ -405,15 +396,11 @@ Temp=26.8C Umid.Ar=66.0% Umid.Solo=0.0% Modo=automatico
 % ---------------------------------------------------------------------
 \subsection{T07: Troca de modo durante uma irrigação}
 
-Objetivo: verificar se o sistema impede a troca do modo de operação enquanto uma irrigação está em andamento, o que garante uma única irrigação por vez e evita comandos incoerentes com o estado do dispositivo (RN04 e RN06). Procedimento: durante uma irrigação manual, foi solicitada a troca para o modo automático, pelo painel ou por uma requisição direta à API. Resultado esperado: a API recusa a solicitação com o código 409 e uma mensagem informando que não é possível trocar o modo durante a irrigação, e o dispositivo não recebe nenhum comando de troca de modo. O Quadro~\ref{lst:log-t07} mostra a resposta da API. Resultado obtido: resultado coerente com o esperado, no painel não é possível fazer a requisição através do botão pois ele é desativado quando está com alguma irrigação ativa.
+Este teste verifica se o sistema impede a troca do modo de operação enquanto uma irrigação está em andamento, o que garante uma única irrigação por vez e evita comandos incoerentes com o estado do dispositivo (RN04 e RN06). No painel, o botão de troca de modo fica desativado durante a irrigação, de modo que não é possível fazer a solicitação por ele. Por isso, durante uma irrigação manual, a troca para o modo automático foi solicitada por uma requisição feita diretamente à API. Esperava-se que a API recusasse a solicitação com o código 409 e uma mensagem informando que não é possível trocar o modo durante a irrigação, sem enviar nenhum comando ao dispositivo. O resultado foi coerente com o esperado, como mostra a resposta da API no Quadro~\ref{lst:log-t07}.
 
-% Mensagens esperadas:
-%   Irrigacao automatica nao autorizada
-%   Temp=..C Umid.Ar=..% Umid.Solo=30.0% Modo=automatico   (várias linhas)
-%   (nenhuma linha "Disparando irrigacao automatica")
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
-\begin{lstlisting}[language={}, caption={Resposta da API com erro 409}, label={lst:log-t07}]
+\begin{lstlisting}[language={}, caption={Resposta da API à troca de modo durante uma irrigação (T07)}, label={lst:log-t07}]
 {
   "status": 409,
   "error": "Conflict",
@@ -429,7 +416,7 @@ Objetivo: verificar se o sistema impede a troca do modo de operação enquanto u
 % ---------------------------------------------------------------------
 \subsection{T08: Atualização dos parâmetros de irrigação}
 
-Objetivo: verificar se os parâmetros alterados no painel são gravados e chegam ao dispositivo. Procedimento: na tela de configurações, a cultura foi alterada de Alface para Tomate, na fase 3, e os parâmetros foram salvos. Resultado esperado: o K$_c$ correspondente é aplicado automaticamente a partir do catálogo (RN13), o documento do dispositivo é atualizado no Firestore e o firmware atualiza os parâmetros (Quadro~\ref{lst:log-t08}). Resultado obtido: a cultura foi persistida no banco de dados, foi informado no log da firmware que a cultura foi atualizada, e no painel um feedback visual na Figura~\ref{fig:t08-config}.
+Este teste verifica se os parâmetros alterados no painel são gravados e chegam ao dispositivo. Na tela de configurações, a cultura foi alterada de alface para tomate, na fase 3, e os parâmetros foram salvos. Esperava-se que o K$_c$ correspondente fosse aplicado automaticamente a partir do catálogo (RN13), que o documento do dispositivo fosse atualizado no Firestore e que o firmware recebesse os novos parâmetros. A nova cultura foi gravada no banco de dados, o firmware registrou a atualização dos parâmetros no log (Quadro~\ref{lst:log-t08}) e o painel exibiu uma confirmação ao usuário (Figura~\ref{fig:t08-config}).
 
 % Mensagem esperada:
 %   Parametros de irrigacao atualizados.
@@ -456,7 +443,7 @@ Temp=26.8C Umid.Ar=68.0% Umid.Solo=0.0% Modo=manual
 % ---------------------------------------------------------------------
 \subsection{T09: Controle de acesso}
 
-Objetivo: verificar se as permissões de cada perfil são aplicadas no painel e na API. Procedimento: o painel foi acessado com um usuário do perfil Visualizador, e em seguida foram feitas requisições diretas à API, fora do painel, com o token desse usuário e sem a chave do dispositivo. Resultado esperado: para o Visualizador, os controles de alteração aparecem desabilitados (Figura~\ref{fig:t09-visualizador}), uma requisição de escrita com o token do Visualizador recebe o código 403 (RN19), como mostra a Quadro~\ref{lst:log-t09}. Resultado obtido: API e o painel se comportou da maneira esperada.
+Este teste verifica se as permissões de cada perfil são aplicadas tanto no painel quanto na API. O painel foi acessado com um usuário do perfil Visualizador e, em seguida, foi feita uma requisição de escrita diretamente à API, fora do painel, com o token desse usuário. Esperava-se que os controles de alteração aparecessem desabilitados para o Visualizador e que a API recusasse a requisição de escrita com o código 403 (RN19). A API e o painel se comportaram da maneira esperada. A Figura~\ref{fig:t09-visualizador} mostra os controles desabilitados, e o Quadro~\ref{lst:log-t09} mostra a resposta da API.
 
 \begin{figure}[htbp]
   \centering
@@ -465,11 +452,10 @@ Objetivo: verificar se as permissões de cada perfil são aplicadas no painel e 
   \label{fig:t09-visualizador}
   \fonte{Elaborado pelo autor}
 \end{figure}
-% Mensagem esperada:
-%   Parametros de irrigacao atualizados.
+
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
-\begin{lstlisting}[language={}, caption={Resposta da API quando requisitado sem permissão}, label={lst:log-t09}]
+\begin{lstlisting}[language={}, caption={Resposta da API a uma requisição sem permissão (T09)}, label={lst:log-t09}]
 {
   "status": 403,
   "error": "Forbidden",
@@ -485,7 +471,7 @@ Objetivo: verificar se as permissões de cada perfil são aplicadas no painel e 
 % ---------------------------------------------------------------------
 \subsection{T10: Falha de comunicação com a API}
 
-Objetivo: verificar o comportamento do dispositivo quando a API está indisponível (RN22 e RNF07). Procedimento: a execução da API foi interrompida e o ESP32 foi reiniciado; depois de alguns ciclos de leitura, a API foi colocada novamente em execução. Resultado esperado: na inicialização, o dispositivo informa que a configuração não pôde ser obtida e passa a operar com os valores padrão; cada envio que falha é repetido com intervalos crescentes, de 2, 4, 8 e 16~s, até cinco tentativas, e depois descartado; quando a API volta, os envios voltam a ser aceitos sem que seja preciso reiniciar o dispositivo (Quadro~\ref{lst:log-t10}). Resultado obtido: Quando não acontece uma falha o sistema ele reenvia.
+Este teste verifica o comportamento do dispositivo quando a API está indisponível (RN22 e RNF07). A execução da API foi interrompida e o ESP32 foi reiniciado, e depois de alguns ciclos de leitura a API foi colocada novamente em execução. Esperava-se que, na inicialização, o dispositivo informasse que a configuração não pôde ser obtida e passasse a operar com os valores padrão. Também se esperava que cada envio com falha fosse repetido em intervalos crescentes de 2, 4, 8 e 16~s, em até cinco tentativas, e que os envios voltassem a ser aceitos quando a API retornasse, sem a necessidade de reiniciar o dispositivo. O Quadro~\ref{lst:log-t10} mostra que, quando um envio falhou, o dispositivo registrou a falha e agendou uma nova tentativa para 2~s depois, sem interromper a leitura dos sensores. Como o log não registra uma segunda falha para o mesmo envio, a nova tentativa foi aceita pela API. O endereço da API foi substituído por <API> no log.
 
 % Mensagens esperadas:
 %   Erro ao buscar configuracao inicial da API: HTTP -1
@@ -497,11 +483,11 @@ Objetivo: verificar o comportamento do dispositivo quando a API está indisponí
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language={}, caption={Log do monitor serial com a API indisponível (T10)}, label={lst:log-t10}]
-Falha ao enviar para https://smart-irrigation-api-bhii.onrender.com/api/webhooks/telemetry (tentativa 1/5): HTTP -1. Nova tentativa em 2.0s.
+Falha ao enviar para <API>/api/webhooks/telemetry (tentativa 1/5): HTTP -1. Nova tentativa em 2.0s.
 Temp=26.7C Umid.Ar=68.0% Umid.Solo=0.0% Modo=manual
 Temp=26.7C Umid.Ar=68.0% Umid.Solo=0.0% Modo=manual
 Temp=26.7C Umid.Ar=69.0% Umid.Solo=0.0% Modo=manual
-Falha ao enviar para https://smart-irrigation-api-bhii.onrender.com/api/webhooks/telemetry (tentativa 1/5): HTTP -1. Nova tentativa em 2.0s.
+Falha ao enviar para <API>/api/webhooks/telemetry (tentativa 1/5): HTTP -1. Nova tentativa em 2.0s.
 \end{lstlisting}
 \vspace{-0.5\baselineskip}
 \fonte{Elaborado pelo autor}
@@ -513,8 +499,8 @@ Falha ao enviar para https://smart-irrigation-api-bhii.onrender.com/api/webhooks
 \section{Discussão dos resultados}
 \label{sec:discussao}
 
-Dos dez cenários de teste do fluxo completo, \preencher{número} foram aprovados. \preencher{Resuma os resultados: as leituras chegaram ao painel com os mesmos valores, os comandos chegaram ao dispositivo dentro do tempo esperado, a irrigação funcionou nos dois modos e o histórico registrou cada irrigação; cite qualquer cenário que não tenha sido aprovado e o motivo.} Os testes também confirmaram o comportamento das travas de segurança: a irrigação automática não foi disparada sem autorização, a troca de modo foi recusada durante uma irrigação e as ações de escrita foram bloqueadas para o perfil Visualizador.
+Os dez cenários de teste do fluxo completo foram aprovados. As leituras dos sensores chegaram ao Firestore e ao painel com os mesmos valores registrados no dispositivo, e os comandos enviados pelo painel foram recebidos e executados pelo ESP32. A irrigação funcionou nos modos manual e automático, com tempos de acionamento iguais aos calculados, e cada irrigação ficou registrada no histórico. Os testes também confirmaram o funcionamento das travas de segurança, já que a irrigação automática não foi disparada sem autorização, a troca de modo foi recusada durante uma irrigação e as ações de escrita foram bloqueadas para o perfil Visualizador.
 
-Em relação aos trabalhos relacionados apresentados no Capítulo~\ref{textuais/cap2}, o sistema desenvolvido mantém a principal vantagem da plataforma de \citeonline{campos2021}, o código aberto, e supera as limitações apontadas pelos próprios autores: os dados não ficam em um cartão de memória, mas são enviados à nuvem e consultados pelo painel, que também permite enviar comandos a distância, enquanto aquela plataforma se limitava a mensagens SMS. O custo estimado dos componentes, entre R\$~200 e R\$~345 (Tabela~\ref{tab:componentes}), é bem menor que o de R\$~1.390,55 relatado por aqueles autores, diferença que se deve principalmente ao sensor de umidade: lá foram usados quatro sensores capacitivos, que sozinhos custaram R\$~978,35, enquanto aqui se usa um único sensor resistivo, mais barato e menos preciso. Além disso, a decisão de irrigar combina o limiar de umidade com o cálculo do volume pela FAO-56, em vez de apenas acionar a válvula quando o solo fica seco. Em relação às soluções comerciais, o sistema não depende de uma plataforma proprietária, mas não oferece recursos como o ajuste pela previsão do tempo do Hydrawise, os sensores de planta e hidráulicos do NetBeat ou o acompanhamento agronômico do Valley Scheduling.
+Em relação aos trabalhos relacionados apresentados no Capítulo~\ref{textuais/cap2}, o sistema desenvolvido mantém a principal vantagem da plataforma de \citeonline{campos2021}, o código aberto, e supera as limitações apontadas pelos próprios autores. Os dados não ficam em um cartão de memória, mas são enviados à nuvem e consultados pelo painel, que também permite enviar comandos a distância, enquanto aquela plataforma se limitava a mensagens SMS. O custo estimado dos componentes, entre R\$~200 e R\$~345 (Tabela~\ref{tab:componentes}), é bem menor que os R\$~1.390,55 relatados por aqueles autores. Essa diferença se deve principalmente ao sensor de umidade, já que lá foram usados quatro sensores capacitivos, que sozinhos custaram R\$~978,35, enquanto aqui se usa um único sensor resistivo, mais barato e menos preciso. Além disso, a decisão de irrigar combina o limiar de umidade com o cálculo do volume pela FAO-56, em vez de apenas acionar a válvula quando o solo fica seco. Em relação às soluções comerciais, o sistema não depende de uma plataforma proprietária, mas não oferece recursos como o ajuste pela previsão do tempo do Hydrawise, os sensores de planta e hidráulicos do NetBeat ou o acompanhamento agronômico do Valley Scheduling.
 
-Os testes também evidenciaram limitações. O sensor resistivo tem menor precisão e se desgasta com o tempo, pela corrosão dos eletrodos, e o DHT11 tem resolução e precisão inferiores às de sensores como o DHT22, o que afeta as temperaturas usadas no cálculo da ET$_0$. A comunicação depende do Wi-Fi: sem conexão, o dispositivo continua lendo os sensores e pode irrigar no modo automático com a última configuração recebida, mas as leituras dessa janela são descartadas e os comandos do painel não chegam até ele. Por fim, os testes foram realizados em bancada, com um único dispositivo e por um período curto, e não substituem uma avaliação em campo ao longo de um ciclo completo de cultura. \preencher{Acrescente outras limitações observadas durante os testes, se houver.}
+Os testes também evidenciaram limitações. O sensor resistivo tem menor precisão e se desgasta com o tempo, pela corrosão dos eletrodos, e o DHT11 tem resolução e precisão inferiores às de sensores como o DHT22, o que afeta as temperaturas usadas no cálculo da ET$_0$. A comunicação depende do Wi-Fi. Sem conexão, o dispositivo continua lendo os sensores e pode irrigar no modo automático com a última configuração recebida, mas as leituras desse período são descartadas e os comandos do painel não chegam até ele. Além disso, o teste de interrupção mostrou que, quando uma irrigação é interrompida, o histórico registra o volume informado no início, e não o volume correspondente ao tempo em que o relé ficou ligado. Por fim, os testes foram realizados em bancada, apenas com a parte eletrônica, com um único dispositivo e por um período curto, e não substituem uma avaliação em campo ao longo de um ciclo completo de cultura.
