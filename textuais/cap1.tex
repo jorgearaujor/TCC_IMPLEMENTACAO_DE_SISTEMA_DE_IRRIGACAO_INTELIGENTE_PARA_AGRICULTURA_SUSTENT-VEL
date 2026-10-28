@@ -1,5 +1,8 @@
 \chapter{Fundamentação teórica}
 
+\providecommand{\preencher}[1]{\textcolor{red}{[#1]}}
+\providecommand{\figuraprovisoria}[2]{\fbox{\parbox[c][#1][c]{0.9\textwidth}{\centering\textcolor{red}{#2}}}}
+
 Neste capítulo, são apresentados os conceitos que fundamentam a implementação de um sistema inteligente na agricultura, abrangendo os métodos e o manejo da irrigação, a Internet das Coisas aplicada à agricultura, os sensores e atuadores, os microcontroladores, os protocolos de comunicação e o armazenamento de dados.
 
 \section{Métodos e manejo da irrigação}
@@ -144,6 +147,7 @@ Tabela~\ref{tab:et0} resume a comparação entre os dois métodos.
 \end{table}
 
 \section{Internet das Coisas aplicada à agricultura}
+\label{sec:iot}
 
 A Internet das Coisas (IoT) é um paradigma em que máquinas e objetos físicos, equipados com sensores e conectados à internet, passam a se comunicar, processar dados e coordenar ações entre si \cite{burhan2018}. Na agricultura, a tecnologia tem tornado o setor mais orientado por dados, preciso e inteligente, com o uso de sensores sem fio em etapas que vão do preparo do solo à irrigação e à colheita \cite{ayaz2019}.
 
@@ -162,9 +166,29 @@ Essa organização orienta as seções seguintes deste trabalho. Os sensores e o
 
 \subsubsection{Sensor de umidade do solo}
 
-Um sensor de umidade do solo bastante utilizado em projetos IoT é do tipo resistivo, composto por duas hastes metálicas inseridas no solo e por um módulo eletrônico. Seu funcionamento baseia-se na condutividade elétrica do solo: quanto maior o teor de água, menor a resistência entre as hastes. O módulo converte essa variação em um sinal de tensão analógico, que é lido pelo microcontrolador \cite{adla2020}.
+Um sensor de umidade do solo bastante utilizado em projetos IoT é do tipo resistivo, composto por duas hastes metálicas inseridas no solo e por um módulo eletrônico. Seu funcionamento baseia-se na condutividade elétrica do solo: quanto maior o teor de água, menor a resistência entre as hastes. O módulo converte essa variação em um sinal de tensão analógico, que é lido pelo microcontrolador \cite{adla2020}. A Figura~\ref{fig:sensor-resistivo} mostra um sensor desse tipo.
 
-Sensores resistivos têm custo muito baixo, mas são menos exatos e precisos que os capacitivos. Em laboratório, o modelo resistivo YL-69 apresentou \sigla{RMSE}{raiz do erro quadrático médio} de 5,54\% na estimativa do teor de água, contra 2,36\% a 2,88\% dos sensores capacitivos avaliados, desempenho considerado adequado para sua faixa de preço \cite{adla2020}.
+\begin{figure}[!htbp]
+  \centering
+  % Troque a linha abaixo por: \includegraphics[width=0.45\textwidth]{figuras/sensor-resistivo}
+  \figuraprovisoria{5cm}{Inserir imagem do sensor de umidade do solo resistivo (hastes e módulo)}
+  \caption{Sensor de umidade do solo resistivo}
+  \label{fig:sensor-resistivo}
+  \fonte{\preencher{fonte da imagem, ex.: site ou datasheet do fabricante}}
+\end{figure}
+
+Outro tipo comum é o sensor capacitivo, que não mede a condutividade, mas a permissividade dielétrica do solo. Suas placas, revestidas e sem contato elétrico direto com o solo, formam um capacitor em que o próprio solo funciona como dielétrico. Como a água tem constante dielétrica muito maior que a das partículas do solo e a do ar, a capacitância aumenta com o teor de água, e o circuito do sensor converte essa variação em um sinal de tensão \cite{adla2020}. Por não terem eletrodos expostos, esses sensores sofrem menos corrosão que os resistivos. A Figura~\ref{fig:sensor-capacitivo} mostra um sensor capacitivo.
+
+\begin{figure}[!htbp]
+  \centering
+  % Troque a linha abaixo por: \includegraphics[width=0.45\textwidth]{figuras/sensor-capacitivo}
+  \figuraprovisoria{5cm}{Inserir imagem de um sensor de umidade do solo capacitivo}
+  \caption{Sensor de umidade do solo capacitivo}
+  \label{fig:sensor-capacitivo}
+  \fonte{\preencher{fonte da imagem, ex.: site ou datasheet do fabricante}}
+\end{figure}
+
+Comparando os dois tipos, os sensores resistivos têm custo muito baixo, mas são menos exatos e precisos que os capacitivos. Em laboratório, o modelo resistivo YL-69 apresentou \sigla{RMSE}{raiz do erro quadrático médio} de 5,54\% na estimativa do teor de água, contra 2,36\% a 2,88\% dos sensores capacitivos avaliados, desempenho considerado adequado para sua faixa de preço \cite{adla2020}.
 
 A exatidão desses sensores depende da calibração para o solo e da resolução do conversor analógico digital. Usando apenas o conversor interno do Arduino, o erro de um sensor resistivo chegou a 4,79\%, caindo para 2,64\% com um conversor externo de 16 bits \cite{nandi2024}.
 
@@ -172,19 +196,56 @@ A exatidão desses sensores depende da calibração para o solo e da resolução
 
 O DHT11 é um sensor digital que mede simultaneamente a temperatura e a umidade relativa do ar. Ele combina um elemento resistivo de umidade e um termistor do tipo NTC, conectados a um microcontrolador interno de 8 bits, que envia os dados já calibrados por um barramento serial de um único fio \cite{aosongdht11}.
 
-Segundo o fabricante, o sensor opera entre 0 e 50~$^{\circ}$C e entre 20\% e 90\% de umidade relativa, com exatidão de $\pm$2~$^{\circ}$C e $\pm$5\%, respectivamente \cite{aosongdht11}. No contexto da irrigação, essas variáveis são relevantes porque influenciam diretamente a evapotranspiração e, portanto, a demanda hídrica da cultura \cite{allen1998}.
+Segundo o fabricante, o sensor opera entre 0 e 50~$^{\circ}$C e entre 20\% e 90\% de umidade relativa, com exatidão de $\pm$2~$^{\circ}$C e $\pm$5\%, respectivamente \cite{aosongdht11}. O sensor é apresentado na Figura~\ref{fig:dht11}. No contexto da irrigação, essas variáveis são relevantes porque influenciam diretamente a evapotranspiração e, portanto, a demanda hídrica da cultura \cite{allen1998}.
+
+\begin{figure}[!htbp]
+  \centering
+  % Troque a linha abaixo por: \includegraphics[width=0.35\textwidth]{figuras/dht11}
+  \figuraprovisoria{4.5cm}{Inserir imagem do sensor DHT11}
+  \caption{Sensor de temperatura e umidade do ar DHT11}
+  \label{fig:dht11}
+  \fonte{\preencher{fonte da imagem, ex.: site ou datasheet do fabricante}}
+\end{figure}
 
 \subsubsection{Atuadores: relé e válvula solenoide}
 
 Os atuadores são os componentes que agem sobre o ambiente a partir dos comandos do microcontrolador. Na irrigação é comum encontrar válvula solenoide de 12~V, que abre ou fecha a passagem de água conforme sua bobina é energizada. Como o microcontrolador opera com baixa tensão e corrente, a válvula é comandada por meio de um relé, que funciona como uma chave eletromecânica capaz de controlar um circuito de maior potência a partir de um sinal de baixa potência \cite{ngoma2025}.
 
-Essa configuração é comum em sistemas de irrigação automatizados. Em um sistema de gotejamento baseado no ESP32, por exemplo, o microcontrolador verifica periodicamente a umidade do solo e abre a válvula solenoide quando o solo está seco \cite{pereira2023}. A escolha do relé em sistemas de irrigação também se deve à sua facilidade de uso e à ampla disponibilidade no mercado \cite{ngoma2025}.
+Essa configuração é comum em sistemas de irrigação automatizados. Em um sistema de gotejamento baseado no ESP32, por exemplo, o microcontrolador verifica periodicamente a umidade do solo e abre a válvula solenoide quando o solo está seco \cite{pereira2023}. A escolha do relé em sistemas de irrigação também se deve à sua facilidade de uso e à ampla disponibilidade no mercado \cite{ngoma2025}. As Figuras~\ref{fig:rele} e~\ref{fig:valvula} mostram um módulo relé e uma válvula solenoide.
+
+\begin{figure}[!htbp]
+  \centering
+  % Troque a linha abaixo por: \includegraphics[width=0.35\textwidth]{figuras/rele}
+  \figuraprovisoria{4.5cm}{Inserir imagem do módulo relé}
+  \caption{Módulo relé}
+  \label{fig:rele}
+  \fonte{\preencher{fonte da imagem, ex.: site ou datasheet do fabricante}}
+\end{figure}
+
+\begin{figure}[!htbp]
+  \centering
+  % Troque a linha abaixo por: \includegraphics[width=0.35\textwidth]{figuras/valvula}
+  \figuraprovisoria{4.5cm}{Inserir imagem da válvula solenoide}
+  \caption{Válvula solenoide de 12 V}
+  \label{fig:valvula}
+  \fonte{\preencher{fonte da imagem, ex.: site ou datasheet do fabricante}}
+\end{figure}
+
 
 \subsubsection{Display}
 
-Para exibir localmente as leituras dos sensores e o estado do sistema, são utilizados \sigla{LCD}{displays de cristal líquido} com módulo de interface \sigla{I2C}{Inter-Integrated Circuit}. Esse módulo utiliza o expansor de entradas e saídas PCF8574, que converte os comandos recebidos pelo barramento I2C em sinais paralelos para o display, reduzindo o número de pinos necessários no microcontrolador \cite{tipcf8574}.
+Para exibir localmente as leituras dos sensores e o estado do sistema, são utilizados \sigla{LCD}{displays de cristal líquido} com módulo de interface \sigla{I2C}{Inter-Integrated Circuit}. Esse módulo utiliza o expansor de entradas e saídas PCF8574, que converte os comandos recebidos pelo barramento I2C em sinais paralelos para o display, reduzindo o número de pinos necessários no microcontrolador \cite{tipcf8574}. A Figura~\ref{fig:lcd} mostra um display LCD 16x2 com esse módulo.
 
 O I2C é um barramento serial que utiliza apenas duas linhas, uma de dados (SDA) e outra de relógio (SCL), e permite conectar vários dispositivos ao mesmo barramento, com taxas de até 100~kbit/s no modo padrão e 400~kbit/s no modo rápido \cite{nxpi2c2021}.
+
+\begin{figure}[!htbp]
+  \centering
+  % Troque a linha abaixo por: \includegraphics[width=0.45\textwidth]{figuras/lcd}
+  \figuraprovisoria{4.5cm}{Inserir imagem do display LCD 16x2 com o módulo I2C}
+  \caption{Display LCD 16x2 com módulo I2C}
+  \label{fig:lcd}
+  \fonte{\preencher{fonte da imagem, ex.: site ou datasheet do fabricante}}
+\end{figure}
 
 \subsection{Microcontroladores e plataformas embarcadas}
 
@@ -194,20 +255,50 @@ Os microcontroladores e as plataformas embarcadas são responsáveis por ler os 
 
 O ESP32, desenvolvido pela Espressif Systems, é um \sigla{SoC}{sistema em chip} que integra um processador Xtensa LX6 de 32 bits, com até dois núcleos operando em até 240~MHz, e 520~KB de memória SRAM \cite{espressif}. Seu principal diferencial é a conectividade sem fio integrada, com Wi-Fi 802.11 b/g/n e Bluetooth, o que dispensa módulos externos de comunicação. O chip também possui \sigla{ADC}{conversores analógico-digitais} de 12 bits com até 18 canais, permitindo a leitura direta de sensores analógicos, como o de umidade do solo \cite{espressif}.
 
-Por esse conjunto de características, o ESP32 tem sido amplamente adotado em estações agrometeorológicas de baixo custo baseadas em IoT, sendo preferido pelo custo acessível e pela modularidade \cite{alkalaany2025}.
+Por esse conjunto de características, o ESP32 tem sido amplamente adotado em estações agrometeorológicas de baixo custo baseadas em IoT, sendo preferido pelo custo acessível e pela modularidade \cite{alkalaany2025}. A Figura~\ref{fig:esp32} mostra uma placa de desenvolvimento com o ESP32.
+
+\begin{figure}[!htbp]
+  \centering
+  % Troque a linha abaixo por: \includegraphics[width=0.4\textwidth]{figuras/esp32}
+  \figuraprovisoria{4.5cm}{Inserir imagem da placa ESP32 DevKit}
+  \caption{Placa de desenvolvimento ESP32}
+  \label{fig:esp32}
+  \fonte{\preencher{fonte da imagem, ex.: site ou datasheet do fabricante}}
+\end{figure}
+
 
 \subsubsection{Arduino}
 
 O Arduino é uma plataforma de prototipagem baseada em hardware e software abertos. Seu modelo mais difundido, o Arduino Uno R3, utiliza o microcontrolador ATmega328P, de 8 bits, operando a 16~MHz, com 32~KB de memória flash, 2~KB de SRAM, 14 pinos digitais e 6 entradas analógicas \cite{arduinouno}.
 
 Em sistemas de IoT agrícola descritos na literatura, o Arduino foi a placa de controle mais utilizada \cite{chamara2022}. Por outro lado, o modelo Uno não possui conectividade sem fio nativa, exigindo módulos adicionais para enviar dados à internet, e tem memória e capacidade de processamento limitadas
-\cite{arduinouno}.
+\cite{arduinouno}. A Figura~\ref{fig:arduino} mostra o Arduino Uno R3.
+
+\begin{figure}[!htbp]
+  \centering
+  % Troque a linha abaixo por: \includegraphics[width=0.4\textwidth]{figuras/arduino}
+  \figuraprovisoria{4.5cm}{Inserir imagem do Arduino Uno R3}
+  \caption{Arduino Uno R3}
+  \label{fig:arduino}
+  \fonte{\preencher{fonte da imagem, ex.: site ou datasheet do fabricante}}
+\end{figure}
+
 
 \subsubsection{Raspberry Pi}
 
 O Raspberry Pi é um computador de placa única (\sigla{SBC}{Single-Board Computer}), capaz de executar sistemas operacionais completos, como o Linux \cite{dobrojevic2022}. O modelo Raspberry Pi 4B utiliza o processador Broadcom BCM2711, com quatro núcleos Cortex-A72 de 64 bits a 1,5~GHz, até 8~GB de memória RAM, Wi-Fi de banda dupla, Bluetooth 5.0 e Ethernet gigabit, além de um conector de 40 pinos de entrada e saída \cite{raspberrypi4}.
 
-Esse poder de processamento permite aplicações mais complexas, como aprendizado de máquina e visão computacional. Em sistemas agrícolas, o Raspberry Pi costuma assumir o processamento dos dados, enquanto microcontroladores atuam como nós que leem os sensores e enviam as informações \cite{dobrojevic2022}. Além disso, ele não possui conversor analógico-digital integrado, o que exige um conversor externo para a leitura de sensores analógicos \cite{raspberrypi4}.
+Esse poder de processamento permite aplicações mais complexas, como aprendizado de máquina e visão computacional. Em sistemas agrícolas, o Raspberry Pi costuma assumir o processamento dos dados, enquanto microcontroladores atuam como nós que leem os sensores e enviam as informações \cite{dobrojevic2022}. Além disso, ele não possui conversor analógico-digital integrado, o que exige um conversor externo para a leitura de sensores analógicos \cite{raspberrypi4}. A Figura~\ref{fig:raspberry} mostra o Raspberry Pi 4B.
+
+\begin{figure}[!htbp]
+  \centering
+  % Troque a linha abaixo por: \includegraphics[width=0.45\textwidth]{figuras/raspberry}
+  \figuraprovisoria{4.5cm}{Inserir imagem do Raspberry Pi 4B}
+  \caption{Raspberry Pi 4B}
+  \label{fig:raspberry}
+  \fonte{\preencher{fonte da imagem, ex.: site ou datasheet do fabricante}}
+\end{figure}
+
 
 \subsubsection{Comparativo entre plataformas}
 
@@ -236,6 +327,10 @@ As três plataformas atendem a necessidades distintas. O Arduino Uno é adequado
   \citeonline{espressif} e \citeonline{raspberrypi4}. \textsuperscript{*}Valores
   consultados em lojas nacionais em outubro de 2026}
 \end{table}
+
+Quanto ao tipo, o Arduino Uno e o ESP32 são microcontroladores, que executam um único programa gravado na memória, o firmware, sem sistema operacional, enquanto o Raspberry Pi é um computador completo, que executa o Linux. Essa diferença aparece no processador e na memória. O ATmega328P do Arduino é de 8 bits, opera a 16~MHz e tem apenas 2~KB de RAM, o que restringe o programa a tarefas simples. O ESP32 tem processador de 32 bits, com até dois núcleos a 240~MHz, e 520~KB de RAM, o suficiente para ler sensores, fazer os cálculos de irrigação e manter conexões seguras com a internet ao mesmo tempo. Já o Raspberry Pi 4B, com quatro núcleos de 64 bits a 1,5~GHz e de 1 a 8~GB de RAM, tem capacidade muito superior à exigida por essas tarefas.
+
+Nas entradas analógicas, o Arduino oferece 6 canais com conversor de 10 bits, que entrega valores de 0 a 1023, e o ESP32 oferece até 18 canais com conversor de 12 bits, que entrega valores de 0 a 4095. Ambos podem ler diretamente o sensor de umidade do solo, o que não acontece com o Raspberry Pi, que não tem conversor e depende de um módulo externo. Na conectividade, o ESP32 e o Raspberry Pi têm Wi-Fi e Bluetooth integrados, enquanto o Arduino Uno precisa de módulos adicionais para se conectar à internet. Por fim, a faixa de preço mostra que o Arduino e o ESP32 custam valores semelhantes, entre cerca de R\$~27 e R\$~62, enquanto o Raspberry Pi custa de R\$~496 a R\$~920. Assim, pelo mesmo preço do Arduino, o ESP32 reúne a conectividade sem fio e a capacidade de processamento necessárias a um dispositivo de irrigação conectado.
 
 \section{Comunicação em sistemas IoT}
  

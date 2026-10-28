@@ -32,6 +32,8 @@
 \usepackage{booktabs}
 \hypersetup{hidelinks}                    % links sem contorno colorido no PDF
 \addto\captionsbrazil{\renewcommand{\bibname}{Referências}}
+% Fonte de figuras e tabelas com um pequeno espaço acima, para não encostar na última linha da tabela
+\renewcommand{\fonte}[1]{\par\vspace{3pt}{\small\textbf{Fonte:} #1.}\par}
 \makenomenclature                          % construir lista de acronimos
 %
 %--------------------------------------------------------------------
