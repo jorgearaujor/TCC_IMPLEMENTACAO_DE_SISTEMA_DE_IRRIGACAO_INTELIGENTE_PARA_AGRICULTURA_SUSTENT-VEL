@@ -159,7 +159,7 @@ Para organizar seus componentes, os sistemas IoT costumam ser descritos por arqu
 
 Para a agricultura inteligente, \citeonline{morchid2024} propõem uma arquitetura de quatro camadas. A camada de percepção reúne os sensores e atuadores que coletam dados do ambiente e agem sobre ele, como sensores de umidade do solo e válvulas de irrigação. A camada de rede transmite esses dados; a camada de nuvem os armazena e processa; e a camada de aplicação apresenta as informações ao usuário, por meio de painéis ou aplicativos.
 
-Essa organização orienta as seções seguintes deste trabalho. Os sensores e os microcontroladores correspondem à camada de percepção, os protocolos de comunicação à camada de rede, e o backend e o banco de dados à camada de nuvem. A camada de aplicação corresponde ao painel web, apresentado no Capítulo~\ref{textuais/cap5}.
+Essa organização orienta as seções seguintes deste trabalho. Os sensores e os microcontroladores correspondem à camada de percepção, os protocolos de comunicação à camada de rede, e o backend e o banco de dados à camada de nuvem. A camada de aplicação corresponde ao painel web. Na arquitetura proposta, apresentada no Capítulo~\ref{textuais/cap5}, a rede não é implementada como uma camada independente, mas apenas pelos protocolos que ligam as demais camadas.
 
 
 \subsection{Sensores e atuadores}
@@ -170,8 +170,7 @@ Um sensor de umidade do solo bastante utilizado em projetos IoT é do tipo resis
 
 \begin{figure}[!htbp]
   \centering
-  % Troque a linha abaixo por: \includegraphics[width=0.45\textwidth]{figuras/sensor-resistivo}
-  \figuraprovisoria{5cm}{Inserir imagem do sensor de umidade do solo resistivo (hastes e módulo)}
+  \includegraphics[width=0.35\textwidth]{figuras/sensor-resistivo.jpg}
   \caption{Sensor de umidade do solo resistivo}
   \label{fig:sensor-resistivo}
   \fonte{\preencher{fonte da imagem, ex.: site ou datasheet do fabricante}}
@@ -181,8 +180,7 @@ Outro tipo comum é o sensor capacitivo, que não mede a condutividade, mas a pe
 
 \begin{figure}[!htbp]
   \centering
-  % Troque a linha abaixo por: \includegraphics[width=0.45\textwidth]{figuras/sensor-capacitivo}
-  \figuraprovisoria{5cm}{Inserir imagem de um sensor de umidade do solo capacitivo}
+  \includegraphics[width=0.35\textwidth]{figuras/sensor-capacitivo.jpg}
   \caption{Sensor de umidade do solo capacitivo}
   \label{fig:sensor-capacitivo}
   \fonte{\preencher{fonte da imagem, ex.: site ou datasheet do fabricante}}
@@ -200,8 +198,7 @@ Segundo o fabricante, o sensor opera entre 0 e 50~$^{\circ}$C e entre 20\% e 90\
 
 \begin{figure}[!htbp]
   \centering
-  % Troque a linha abaixo por: \includegraphics[width=0.35\textwidth]{figuras/dht11}
-  \figuraprovisoria{4.5cm}{Inserir imagem do sensor DHT11}
+  \includegraphics[width=0.3\textwidth]{figuras/dht11.jpg}
   \caption{Sensor de temperatura e umidade do ar DHT11}
   \label{fig:dht11}
   \fonte{\preencher{fonte da imagem, ex.: site ou datasheet do fabricante}}
@@ -215,8 +212,7 @@ Essa configuração é comum em sistemas de irrigação automatizados. Em um sis
 
 \begin{figure}[!htbp]
   \centering
-  % Troque a linha abaixo por: \includegraphics[width=0.35\textwidth]{figuras/rele}
-  \figuraprovisoria{4.5cm}{Inserir imagem do módulo relé}
+  \includegraphics[width=0.3\textwidth]{figuras/rele.jpg}
   \caption{Módulo relé}
   \label{fig:rele}
   \fonte{\preencher{fonte da imagem, ex.: site ou datasheet do fabricante}}
@@ -224,8 +220,7 @@ Essa configuração é comum em sistemas de irrigação automatizados. Em um sis
 
 \begin{figure}[!htbp]
   \centering
-  % Troque a linha abaixo por: \includegraphics[width=0.35\textwidth]{figuras/valvula}
-  \figuraprovisoria{4.5cm}{Inserir imagem da válvula solenoide}
+  \includegraphics[width=0.35\textwidth]{figuras/valvula.jpg}
   \caption{Válvula solenoide de 12 V}
   \label{fig:valvula}
   \fonte{\preencher{fonte da imagem, ex.: site ou datasheet do fabricante}}
@@ -240,8 +235,7 @@ O I2C é um barramento serial que utiliza apenas duas linhas, uma de dados (SDA)
 
 \begin{figure}[!htbp]
   \centering
-  % Troque a linha abaixo por: \includegraphics[width=0.45\textwidth]{figuras/lcd}
-  \figuraprovisoria{4.5cm}{Inserir imagem do display LCD 16x2 com o módulo I2C}
+  \includegraphics[width=0.4\textwidth]{figuras/lcd.jpg}
   \caption{Display LCD 16x2 com módulo I2C}
   \label{fig:lcd}
   \fonte{\preencher{fonte da imagem, ex.: site ou datasheet do fabricante}}
@@ -259,8 +253,7 @@ Por esse conjunto de características, o ESP32 tem sido amplamente adotado em es
 
 \begin{figure}[!htbp]
   \centering
-  % Troque a linha abaixo por: \includegraphics[width=0.4\textwidth]{figuras/esp32}
-  \figuraprovisoria{4.5cm}{Inserir imagem da placa ESP32 DevKit}
+  \includegraphics[width=0.35\textwidth]{figuras/esp32.jpg}
   \caption{Placa de desenvolvimento ESP32}
   \label{fig:esp32}
   \fonte{\preencher{fonte da imagem, ex.: site ou datasheet do fabricante}}
@@ -276,8 +269,7 @@ Em sistemas de IoT agrícola descritos na literatura, o Arduino foi a placa de c
 
 \begin{figure}[!htbp]
   \centering
-  % Troque a linha abaixo por: \includegraphics[width=0.4\textwidth]{figuras/arduino}
-  \figuraprovisoria{4.5cm}{Inserir imagem do Arduino Uno R3}
+  \includegraphics[width=0.35\textwidth]{figuras/arduino.jpg}
   \caption{Arduino Uno R3}
   \label{fig:arduino}
   \fonte{\preencher{fonte da imagem, ex.: site ou datasheet do fabricante}}
@@ -292,8 +284,7 @@ Esse poder de processamento permite aplicações mais complexas, como aprendizad
 
 \begin{figure}[!htbp]
   \centering
-  % Troque a linha abaixo por: \includegraphics[width=0.45\textwidth]{figuras/raspberry}
-  \figuraprovisoria{4.5cm}{Inserir imagem do Raspberry Pi 4B}
+  \includegraphics[width=0.4\textwidth]{figuras/raspberry.jpg}
   \caption{Raspberry Pi 4B}
   \label{fig:raspberry}
   \fonte{\preencher{fonte da imagem, ex.: site ou datasheet do fabricante}}

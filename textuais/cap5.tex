@@ -69,7 +69,7 @@ O código foi dividido em três aplicações independentes, uma para cada camada
 \label{sec:rede}
 \label{sec:longpolling}
 
-No modelo de \citeonline{morchid2024}, a rede é uma camada própria, responsável por transportar os dados entre a percepção e a nuvem. Na arquitetura proposta neste trabalho, porém, ela não foi implementada como uma camada independente, com equipamentos ou software próprios. A comunicação é feita apenas por protocolos, usados pelas demais camadas para trocar dados entre si. O ESP32 conecta-se ao roteador Wi-Fi do local como uma estação comum e volta a se conectar automaticamente se a conexão cair (RNF09), e tanto o dispositivo quanto o painel se comunicam com a API pela internet, usando o protocolo HTTPS, que protege as mensagens com o protocolo TLS (RNF03). As mensagens seguem o estilo REST, com os dados representados em JSON (RNF15). Por isso, a Figura~\ref{fig:arquitetura} representa a comunicação apenas como as setas que ligam as camadas, e não como uma camada separada.
+No modelo de \citeonline{morchid2024}, a rede é uma camada própria, responsável por transportar os dados entre a percepção e a nuvem. Na arquitetura proposta neste trabalho, porém, ela não foi implementada como uma camada independente, com equipamentos ou software próprios. A comunicação é feita apenas por protocolos, usados pelas demais camadas para trocar dados entre si. O ESP32 conecta-se ao roteador Wi-Fi do local como uma estação comum e volta a se conectar automaticamente se a conexão cair (RNF09), e tanto o dispositivo quanto o painel se comunicam com a API pela internet, usando o protocolo HTTPS, que protege as mensagens com o protocolo TLS (RNF03). As mensagens seguem o estilo REST, com os dados representados em JSON (RNF15). Por isso, a Figura~\ref{fig:arquitetura} representa a comunicação pelas setas que ligam as camadas, identificadas pelo rótulo Comunicação, e não como uma camada separada.
 
 Cada informação enviada pelo dispositivo é uma requisição HTTP com um documento JSON no corpo. O Quadro~\ref{lst:json-telemetria} mostra, como exemplo, a mensagem de telemetria que o ESP32 envia a cada 10 segundos à rota \texttt{/api/webhooks/telemetry}.
 
@@ -106,7 +106,7 @@ Cada resposta da API traz um código de status HTTP, que informa ao cliente o re
     \hline
     200 (OK) & A requisição foi atendida, e a resposta traz os dados pedidos \\
     204 (No Content) & A requisição foi atendida, mas não há conteúdo a devolver, como quando nenhum comando chega ao dispositivo em 30 segundos \\
-    401 (Unauthorized) & A requisição não trouxe uma credencial válida, como quando o dispositivo envia uma chave ausente ou incorreta \\
+    401 (Unauthorized) & A requisição não trouxe uma credencial válida, como quando o dispositivo não envia a chave ou envia uma chave incorreta \\
     403 (Forbidden) & A credencial é válida, mas não dá permissão para a operação, como quando um Visualizador tenta alterar o sistema \\
     404 (Not Found) & O recurso pedido não existe, como um dispositivo não cadastrado \\
     409 (Conflict) & A operação conflita com o estado atual, como a troca de modo durante uma irrigação \\
