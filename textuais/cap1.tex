@@ -3,7 +3,7 @@
 \providecommand{\preencher}[1]{\textcolor{red}{[#1]}}
 \providecommand{\figuraprovisoria}[2]{\fbox{\parbox[c][#1][c]{0.9\textwidth}{\centering\textcolor{red}{#2}}}}
 
-Neste capítulo, são apresentados os conceitos que fundamentam a implementação de um sistema inteligente na agricultura, abrangendo os métodos e o manejo da irrigação, a Internet das Coisas aplicada à agricultura, os sensores e atuadores, os microcontroladores, os protocolos de comunicação e o armazenamento de dados.
+Neste capítulo, são apresentados os conceitos que fundamentam a implementação de um sistema inteligente na agricultura, abrangendo os métodos e o manejo da irrigação, a Internet das Coisas aplicada à agricultura, os sensores e atuadores, os microcontroladores, os protocolos de comunicação, o backend e o armazenamento de dados e, por fim, as aplicações web e a autenticação de usuários.
 
 \section{Métodos e manejo da irrigação}
 
@@ -249,7 +249,9 @@ Os microcontroladores e as plataformas embarcadas são responsáveis por ler os 
 
 O ESP32, desenvolvido pela Espressif Systems, é um \sigla{SoC}{sistema em chip} que integra um processador Xtensa LX6 de 32 bits, com até dois núcleos operando em até 240~MHz, e 520~KB de memória SRAM \cite{espressif}. Seu principal diferencial é a conectividade sem fio integrada, com Wi-Fi 802.11 b/g/n e Bluetooth, o que dispensa módulos externos de comunicação. O chip também possui \sigla{ADC}{conversores analógico-digitais} de 12 bits com até 18 canais, permitindo a leitura direta de sensores analógicos, como o de umidade do solo \cite{espressif}.
 
-Por esse conjunto de características, o ESP32 tem sido amplamente adotado em estações agrometeorológicas de baixo custo baseadas em IoT, sendo preferido pelo custo acessível e pela modularidade \cite{alkalaany2025}. A Figura~\ref{fig:esp32} mostra uma placa de desenvolvimento com o ESP32.
+Por esse conjunto de características, o ESP32 tem sido amplamente adotado em estações agrometeorológicas de baixo custo baseadas em IoT, sendo preferido pelo custo acessível e pela modularidade \cite{alkalaany2025}.
+
+Para aproveitar os dois núcleos e executar várias atividades ao mesmo tempo, como ler sensores e se comunicar com a internet, o ESP32 pode ser programado com o FreeRTOS, um sistema operacional de tempo real de código aberto para microcontroladores. No FreeRTOS, o programa é dividido em tarefas, que são executadas de forma concorrente conforme as suas prioridades. Quando duas tarefas precisam acessar o mesmo dado, um mecanismo chamado mutex garante que apenas uma delas o faça de cada vez, o que evita que o dado seja corrompido \cite{barry2016freertos}. A Figura~\ref{fig:esp32} mostra uma placa de desenvolvimento com o ESP32.
 
 \begin{figure}[!htbp]
   \centering
@@ -350,6 +352,8 @@ Os protocolos da camada de aplicação definem como as mensagens são formatadas
 \subsubsection{HTTP}
  
 O \sigla{HTTP}{Hypertext Transfer Protocol} é um protocolo da camada de aplicação, sem estado, que serve de base para a comunicação na web \cite{rfc9110}. Ele funciona no modelo requisição-resposta: o cliente envia uma requisição a um recurso identificado por uma \sigla{URI}{Uniform Resource Identifier}, indicando um método, como GET para obter dados ou POST para enviá-los, e o servidor devolve uma resposta com um código de status, como 200 (sucesso) ou 404 (recurso não encontrado). Sua versão segura, o \sigla{HTTPS}{HyperText Transfer Protocol Secure}, transmite as mensagens de forma criptografada por meio do protocolo \sigla{TLS}{Transport Layer Security} \cite{rfc9110}.
+
+Como o HTTP segue o modelo requisição-resposta, o servidor não consegue enviar uma mensagem ao cliente por iniciativa própria. Uma técnica usada para contornar essa limitação é o long-polling. Nela, o cliente faz uma requisição, e o servidor a mantém aberta até ter uma informação para enviar ou até se esgotar um tempo limite. Assim que recebe a resposta, o cliente abre uma nova requisição. Dessa forma, o servidor consegue entregar mensagens ao cliente quase imediatamente, sem que o cliente precise consultá-lo a todo instante \cite{rfc6202}.
  
 \subsubsection{MQTT}
  
@@ -397,3 +401,14 @@ Um banco de dados é uma coleção de dados relacionados, organizada para atende
 Neste trabalho, adota-se o Cloud Firestore, banco de dados da plataforma Firebase, do Google. Trata-se de um banco NoSQL orientado a documentos, hospedado em nuvem, no qual não existem tabelas nem linhas: os dados são armazenados em documentos, compostos por pares chave-valor e agrupados em coleções. Cada documento pode conter ainda subcoleções, o que permite organizar os dados de forma hierárquica \cite{firestore2026}. Essa estrutura se adapta bem a sistemas IoT, pois as leituras de cada dispositivo podem ser guardadas como documentos em uma subcoleção, sem a necessidade de definir previamente um esquema rígido.
 
 A mesma plataforma oferece o Firebase Authentication, serviço que fornece recursos prontos para autenticar usuários por meio de e-mail e senha, número de telefone ou provedores externos, como o Google, e que pode ser integrado a um backend próprio \cite{firebaseauth2026}. Com isso, o controle de acesso ao sistema não precisa ser implementado do zero.
+
+\section{Aplicações web e autenticação}
+\label{sec:web-autenticacao}
+
+\subsection{Frontend}
+
+O frontend é a parte do sistema com a qual o usuário interage diretamente. Em uma aplicação web, ele é executado no navegador e se comunica com o backend por meio de requisições HTTP à API, recebendo os dados em JSON e apresentando-os em telas, tabelas e gráficos. Para organizar esse código, é comum o uso de frameworks como o Angular, mantido pelo Google, em que a interface é construída a partir de componentes reutilizáveis, cada um responsável por uma parte da tela, e os dados compartilhados entre as telas ficam em serviços \cite{angular2026}.
+
+\subsection{Autenticação por token}
+
+A autenticação verifica quem é o usuário, enquanto a autorização define o que ele pode fazer no sistema. Em APIs REST, que não guardam estado entre uma requisição e outra, é comum o uso de tokens. Após o login, o serviço de autenticação emite um token, que o cliente passa a enviar em todas as requisições, normalmente no cabeçalho HTTP Authorization. Um formato bastante usado é o \sigla{JWT}{JSON Web Token}, um conjunto de informações sobre o usuário representado em JSON e assinado digitalmente, o que permite ao servidor confirmar que o token foi emitido por uma fonte confiável e não foi alterado \cite{rfc7519}. O Firebase Authentication, apresentado na seção anterior, emite tokens nesse formato após o login, que podem ser verificados por um backend próprio \cite{firebaseauth2026}.
