@@ -1,81 +1,46 @@
 \chapter{Introdução}
-%\addcontentsline{toc}{chapter}{INTRODUÇÃO}
-%%\thispagestyle{plain}
+\label{textuais/introducao}
 
-%MAIS DICAS
-%
-%Delimite o tema na introdução de TCC
-%Uma boa introdução de TCC deve procurar falar sobre o tema de forma geral e introduzir o leitor ao assunto principal da pesquisa.
-%
-%Em um texto de cerca de 10 parágrafos, os principais elementos que compõem o TCC devem ser apresentados, tais como o tema, o problema, o objetivo e a metodologia.
-%
-%No começo da introdução de TCC, apresente o tema que será abordado e explique sua importância.
-%
-%Nesta parte, seja objetivo e não se aprofunde muito, pois o tema será tratado mais a fundo ao longo do desenvolvimento do TCC.
-%
-%Um cuidado que deve-se ter na introdução de TCC, é realizar uma boa delimitação do tema, isto é, deixar clara a questão que será investigada mesmo sem se aprofundar no assunto.
-%
-%É importante fazer essa delimitação para evitar que a introdução de TCC fique muito abrangente.
-%
-%Não deixando margem para a banca do tcc levantar questionamentos que não foram tratados pela monografia.
-%
-%Apresente o problema de seu TCC
-%Uma boa maneira de delimitar o tema é apresentar a problemática do trabalho.
-%
-%Você pode fazer isso elaborando um questionamento que serve como propósito para a investigação realizada.
-%
-%Todo TCC tem o objetivo de responder a uma pergunta ou discutir um tema de forma aprofundada.
-%
-%Possibilitando assim que se chegue a conclusões ou considerações fundamentadas.
-%
-%A apresentação do problema nada mais é do que explicar exatamente qual será a pergunta a ser respondida ou tema a ser tratado pelo seu trabalho acadêmico.
-%
-%Também é a apresentação do problema que deve deixar clara a relevância do tema da sua monografia.
-%
-%Você deve ressaltar porque o problema que será tratado pelo seu trabalho é importante e deve ser investigado, mostrando assim o valor da sua investigação.
-%
-%Exponha os objetivos na Introdução do TCC
-%Por fim, é essencial apresentar os objetivos do seu TCC na introdução, pois são eles que vão fornecer o direcionamento dado à pesquisa e apresentar  as etapas fundamentais para resolver o problema que está sendo investigado pelo trabalho.
-%
-%Aqui, você também pode falar sobre algumas hipóteses que foram levantadas, mesmo que de forma superficial, e que serão confirmadas ou refutadas ao final da sua investigação.
-%
-%Isto ajuda a dar mais foco para o seu TCC e torna mais claro os objetivos do seu trabalho.
-%
-%Em conjunto com a exposição dos objetivos, devem ser ser apresentados os métodos utilizados para atingi-los.
-%
-%De forma concisa, escreva sobre a metodologia usada no TCC e identifique o tipo de pesquisa e os instrumentos utilizados para desenvolver seu trabalho.
-%
-%Para finalizar, não esqueça de usar as informações da introdução no resumo e também no sumário de seu trabalho.
-%
-%Seguindo os passos acima, você poderá escrever uma boa introdução de TCC para seu trabalho acadêmico de forma simples e estruturada.
+% --- Contexto e importância do tema -----------------------------------
+O uso eficiente da água é um fator determinante para a sustentabilidade da produção de alimentos, independentemente do porte ou da região da propriedade agrícola. A irrigação responde por cerca de 70\% de toda a água doce retirada no mundo, o que faz da agricultura o setor que mais demanda recursos hídricos \cite{mcdermid2023}. Essa pressão tende a crescer, pois mais da metade (52\%) da área irrigada acrescentada no mundo entre 2000 e 2015 ocorreu em regiões que já enfrentavam estresse hídrico \cite{mehta2024}.
 
-% --- Parágrafo 1: contexto e importância do tema -----------------------
-Nos dias atuais, o uso eficiente da água é um fator determinante para a sustentabilidade da produção de alimentos, independentemente do porte ou da região da propriedade agrícola. A irrigação responde por cerca de 70\% de toda a água doce retirada no mundo, o que faz da agricultura o setor mais intensivo no uso de recursos hídricos \cite{mcdermid2023}. No Brasil, o país possui cerca de 8,2 milhões de hectares equipados para irrigação e deve incorporar mais 4,2 milhões de hectares irrigados até 2040, expansão limitada pela oferta hídrica e pela concorrência com outros usos, o que exige um manejo mais racional da água \cite{ana2021atlas}.
- 
-% --- Parágrafo 2: importância da solução tecnológica + estudos ----------
-Nesse contexto, os sistemas de irrigação inteligente, baseados na \sigla{IoT}{Internet of Things ou Internet das Coisas}, tornam-se ferramentas essenciais para o monitoramento e a automação do manejo hídrico. Esses sistemas permitem acompanhar continuamente variáveis do solo e do clima e acionar a irrigação conforme a demanda da cultura, reduzindo também a necessidade de intervenção manual \cite{garcia2020iot}. Estudos recentes demonstram seus benefícios: no cultivo de alface irrigada por gotejamento, um sistema com sensores de baixo custo consumiu 28,8\% menos água e alcançou produtividade da água 52,5\% superior à do manejo convencional \cite{abdelmoneim2025comparative}, e, em campo, estratégias apoiadas por sensores IoT reduziram em 30\% o volume aplicado sem prejuízo à produção \cite{dong2024implementation}.
- 
-Alguns sistemas comerciais de irrigação inteligente amplamente utilizados no mercado incluem o Hydrawise, o NetBeat e o Valley Scheduling. O Hydrawise, da Hunter Industries \cite{hunterhydrawise}, é voltado para jardins e paisagismo e ajusta a programação da irrigação com base na previsão de temperatura, chuva, vento e umidade, disponibilizando parte de suas funcionalidades avançadas mediante planos de assinatura do Software. O NetBeat, da Netafim \cite{netafimgrowsphere}, por sua vez, destaca-se no segmento agrícola pela robustez: com distribuição no Brasil, integra o monitoramento da lavoura, o apoio à decisão por meio de modelos de cultura proprietários e o controle da irrigação e da fertirrigação, técnica que consiste em aplicar fertilizantes dissolvidos na própria água de irrigação. Já o Valley Scheduling \cite{valley2026scheduling} é uma plataforma voltada para sistemas de irrigação por pivô central, que estima a necessidade diária de água por meio de balanço hídrico, sensores de solo e imagens de satélite, contando ainda com o acompanhamento de técnicos especializados. Embora todas essas soluções ofereçam interfaces gráficas para o gerenciamento da irrigação e funcionalidades parecidas com o sistema apresentado nessa pesquisa, tratam-se de ecossistemas fechados: além do custo elevado, oferecem pouca flexibilidade quanto aos sensores e módulos que podem ser integrados, limitação que um sistema desenvolvido com tecnologias de IoT permite contornar.
- 
-% --- Parágrafo 4: diferencial da proposta ------------------------------
-O sistema proposto neste trabalho apresenta um diferencial estratégico em relação a essas ferramentas, que são, em geral, ecossistemas fechados, dependentes da nuvem do fabricante ou voltados para operações de maior escala, ao oferecer uma solução de baixo custo, baseada em tecnologias abertas e adaptável às particularidades de cada cultivo. Destacam-se recursos como a parametrização da cultura, com a fase fenológica, o espaçamento entre plantas e linhas, e a vazão e o número de gotejadores; a definição de um limite mínimo de umidade do solo para o acionamento da irrigação; a operação nos modos automático e manual; e o registro histórico de todas as leituras e irrigações realizadas. Com isso, a aplicação torna-se uma alternativa acessível para pequenos produtores que desejam automatizar a irrigação sem depender exclusivamente de ferramentas comerciais com escopo fixo.
- 
-% --- Parágrafo 5: arquitetura, controle e segurança --------------------
-É importante destacar que a solução prioriza precisão e controle. A quantidade ideal de água é estimada pela metodologia FAO-56 \cite{allen1998}: a evapotranspiração de referência é calculada pelo método de \citeonline{hargreaves1985}, ajustada pelo coeficiente de cultura e convertida em volume e tempo de irrigação, sendo o acionamento condicionado à umidade do solo. A irrigação automática só é iniciada mediante autorização explícita do usuário, evitando acionamentos indevidos. A arquitetura do sistema foi projetada em três camadas desacopladas: a de dispositivos, com sensores de baixo custo e um \sigla{MCU}{Microcontrolador} que aciona a válvula por meio de um módulo relé; a camada de serviços, com uma \sigla{API}{Application Programming Interface ou Interface de Programação de Aplicações} responsável pela coleta, pelo processamento e pelo armazenamento dos dados em nuvem; e a de apresentação, com uma interface gráfica WEB integrada à API, o que facilita a manutenção e a inclusão de novos sensores.
- 
-% --- Parágrafo 6: justificativa ---------------------------------------
-O desenvolvimento desse sistema se justifica pela necessidade crescente de tornar o uso da água na agricultura mais eficiente. Estima-se que a eficiência física dos sistemas de irrigação varie entre 25\% e 50\% em escala mundial \cite{perezblanco2021zombie}, perdas associadas ao manejo inadequado: em muitas propriedades, sobretudo as de pequeno porte, a decisão sobre quando e quanto irrigar ainda é empírica, baseada em turnos fixos ou na observação visual do solo, e depende do acionamento manual pelo produtor. Ao mesmo tempo, o custo de aquisição e a conectividade figuram entre os principais obstáculos à adoção de tecnologias digitais pelos produtores brasileiros \cite{bolfe2020precision}, e os sensores comerciais para irrigação agrícola costumam ter custo que inviabiliza sua adoção por pequenos produtores \cite{garcia2020iot}.
- 
-% --- Parágrafo 7: objetivo do trabalho --------------------------------
-Diante desse cenário, o objetivo deste trabalho é desenvolver um sistema de irrigação inteligente de baixo custo, baseado em Internet das Coisas, capaz de coletar dados ambientais por meio de sensores, estimar a necessidade hídrica da cultura e automatizar o fornecimento de água, disponibilizando uma interface web para o monitoramento e o gerenciamento da irrigação. O sistema foi desenvolvido e validado em ambiente controlado, com um único setor de irrigação por gotejamento e tendo a alface (Lactuca sativa) como cultura de referência. Com isso, busca-se oferecer ao pequeno produtor uma forma de irrigar apenas o volume de água necessário, de maneira estável e rastreável.
+O Brasil possui cerca de 8,2 milhões de hectares equipados para irrigação e deve incorporar mais 4,2 milhões de hectares irrigados até 2040, expansão limitada pela oferta hídrica e pela concorrência com outros usos da água \cite{ana2021atlas}. Essa expansão se concentra na região central do país. A área irrigada mapeada por satélite cresceu cerca de 3,8 vezes entre 1985 e 2021, e Minas Gerais, Goiás e Bahia reúnem, juntos, 64\% da área irrigada por pivô central \cite{mapbiomas2022irrigacao}. Como cerca de 76\% dos pivôs do Cerrado estão instalados em regiões de baixa disponibilidade hídrica \cite{sano2024}, o manejo racional da água torna-se uma necessidade também para os produtores goianos.
 
+% --- Tecnologia e estudos ---------------------------------------------
+Nesse contexto, os sistemas de irrigação inteligente baseados em \sigla{IoT}{Internet of Things ou Internet das Coisas} tornam-se ferramentas importantes para o monitoramento e a automação do manejo hídrico. Esses sistemas permitem acompanhar continuamente variáveis do solo e do clima, acionar a irrigação conforme a demanda da cultura e reduzir a necessidade de intervenção manual \cite{garcia2020iot}. Estudos recentes demonstram seus benefícios. No cultivo de alface irrigada por gotejamento, um sistema com sensores de baixo custo consumiu 28,8\% menos água e alcançou produtividade da água 52,5\% superior à do manejo convencional \cite{abdelmoneim2025comparative}. Em campo, estratégias apoiadas por sensores IoT reduziram em 30\% o volume aplicado sem prejuízo à produção \cite{dong2024implementation}.
 
-Nos capítulos seguintes, serão apresentados os fundamentos teóricos relacionados à irrigação, à evapotranspiração e à Internet das Coisas, o levantamento e a análise dos requisitos do sistema, a implementação do hardware, da API e da interface WEB, e os resultados obtidos nos testes realizados.
+% --- Soluções comerciais ----------------------------------------------
+Entre as soluções comerciais de irrigação inteligente disponíveis no mercado, destacam-se o Hydrawise, o NetBeat e o Valley Scheduling. O Hydrawise, da Hunter Industries, é voltado a jardins e áreas paisagísticas e ajusta a programação da irrigação com base na previsão de temperatura, chuva, vento e umidade do ar, com um plano gratuito básico e planos pagos que ampliam suas funcionalidades \cite{hunterhydrawise}. O NetBeat, da Netafim, é voltado ao segmento agrícola e integra o monitoramento da lavoura, o apoio à decisão por modelos de cultura proprietários e o controle da irrigação e da fertirrigação, técnica que consiste em aplicar fertilizantes dissolvidos na própria água de irrigação \cite{israelagri2018netbeat}. Já o Valley Scheduling, da Valmont Industries, gera recomendações de irrigação a partir do tipo de solo, da cultura, da fase de desenvolvimento e de dados meteorológicos, sendo compatível com pivôs centrais, sistemas lineares e gotejamento \cite{valmont2018,valleyscheduling}.
 
-A água é um recurso essencial para a vida no planeta, e a agricultura é o setor que mais a demanda, respondendo por aproximadamente 70\% do volume de água doce retirado, enquanto a indústria e o uso doméstico correspondem a cerca de 22\% e 8\%, respectivamente \cite{ingrao2023}. Diante do crescimento populacional e das mudanças climáticas, a expansão da irrigação tem pressionado os recursos hídricos: mais da metade (52\%) da área irrigada acrescentada no mundo entre 2000 e 2015 ocorreu em regiões que já enfrentavam estresse hídrico \cite{mehta2024}. Nesse contexto, \citeonline{ingrao2023} apontam o aprimoramento das tecnologias e das práticas de irrigação como uma das principais estratégias para reduzir o desperdício de água no campo e tornar a produção de alimentos mais eficiente.
+Essas soluções oferecem interfaces gráficas para o gerenciamento da irrigação e funcionalidades semelhantes às do sistema apresentado nesta pesquisa. Trata-se, porém, de produtos proprietários, voltados em geral a escalas específicas e que oferecem pouca flexibilidade quanto aos sensores e módulos que podem ser integrados. Os sistemas de controle comerciais também podem ter custo elevado para o pequeno produtor \cite{campos2021}, e os sensores comerciais para irrigação agrícola costumam ter preço que inviabiliza sua adoção em pequenas propriedades \cite{garcia2020iot}.
 
-\subsection{Agricultura irrigada brasileira (obs: talvez tirar)}
+% --- Diferencial da proposta ------------------------------------------
+O sistema proposto neste trabalho busca contornar essas limitações com uma solução de baixo custo, construída com componentes eletrônicos genéricos e com código próprio, o que permite substituir sensores e adaptar a lógica de irrigação às particularidades de cada cultivo. Entre seus recursos estão a parametrização da cultura, com a fase de desenvolvimento, o espaçamento entre plantas e entre linhas, a vazão e o número de gotejadores, a definição de um limite mínimo de umidade do solo para o acionamento da irrigação, a operação nos modos automático e manual e o registro histórico das leituras e das irrigações realizadas. Com isso, o sistema torna-se uma alternativa acessível para pequenos produtores que desejam automatizar a irrigação sem depender de ferramentas comerciais de escopo fixo.
 
-Segundo dados do \citeonline{mapbiomas2022irrigacao}, a área irrigada no Brasil aumentou cerca de 3,8 vezes em 37 anos, passando de 804 mil hectares em 1985 para 3,29 milhões de hectares em 2021. Minas Gerais, Goiás e Bahia possuem, juntos, 64\% da área irrigada por pivô central no país, e nesses estados estão os principais polos de irrigação, com destaque para o Oeste Baiano, São Marcos, em Goiás, e Alto Paracatu, em Minas Gerais \cite{mapbiomas2022irrigacao}.
+% --- Funcionamento e arquitetura --------------------------------------
+A quantidade de água a ser aplicada é estimada pela metodologia FAO-56 \cite{allen1998}. A evapotranspiração de referência é calculada pelo método de \citeonline{hargreaves1985}, ajustada pelo coeficiente de cultura e convertida em volume e tempo de irrigação, e o acionamento é condicionado à umidade do solo. Para evitar acionamentos indevidos, a irrigação automática só ocorre quando o usuário habilita o modo automático e autoriza a irrigação pelo painel. O sistema foi organizado em três camadas. A camada de percepção reúne os sensores, o microcontrolador ESP32 e o módulo relé que aciona a válvula. A camada de nuvem corresponde à \sigla{API}{Application Programming Interface ou Interface de Programação de Aplicações}, responsável por receber, processar e armazenar os dados. A camada de aplicação corresponde ao painel web, por meio do qual o usuário acompanha e controla a irrigação. Essa separação facilita a manutenção do sistema e a inclusão de novos sensores.
 
-Esses polos se concentram na região central do país, onde predomina o Cerrado. Essa expansão, no entanto, ocorre em um contexto de pressão sobre os recursos hídricos, já que cerca de 76\% dos pivôs do Cerrado estão instalados em regiões de baixa disponibilidade hídrica, o que reforça a necessidade de uma gestão eficiente da água na agricultura irrigada \cite{sano2024}.
+% --- Justificativa ----------------------------------------------------
+O desenvolvimento desse sistema se justifica pela necessidade crescente de tornar o uso da água na agricultura mais eficiente. Estima-se que a eficiência física dos sistemas de irrigação varie entre 25\% e 50\% em escala mundial \cite{perezblanco2021zombie}, e parte dessas perdas está associada ao manejo inadequado. Em muitas propriedades, sobretudo as de pequeno porte, a decisão sobre quando e quanto irrigar ainda é empírica, baseada em turnos fixos ou na observação visual do solo, e depende do acionamento manual pelo produtor. Ao mesmo tempo, o custo de aquisição e a conectividade figuram entre os principais obstáculos à adoção de tecnologias digitais pelos produtores brasileiros \cite{bolfe2020precision}.
+
+% --- Objetivos --------------------------------------------------------
+\section{Objetivos}
+
+O objetivo geral deste trabalho é desenvolver um sistema de irrigação inteligente de baixo custo, baseado em Internet das Coisas, capaz de coletar dados ambientais por meio de sensores, estimar a necessidade hídrica da cultura e automatizar o fornecimento de água, com uma interface web para o monitoramento e o gerenciamento da irrigação.
+
+Para alcançar esse objetivo, foram definidos os seguintes objetivos específicos:
+\begin{itemize}
+  \item Levantar os requisitos do sistema a partir do problema e da análise de soluções existentes;
+  \item Montar um dispositivo de campo com ESP32, sensores de umidade do solo, de temperatura e de umidade do ar e um relé para o acionamento da válvula;
+  \item Implementar no firmware o cálculo da necessidade hídrica pela metodologia FAO-56, com a ET$_0$ estimada pelo método de Hargreaves-Samani;
+  \item Desenvolver uma API para a comunicação com o dispositivo, o armazenamento dos dados em nuvem e o controle de acesso dos usuários;
+  \item Desenvolver um painel web para o monitoramento, a configuração e o acionamento da irrigação;
+  \item Verificar, por meio de testes de ponta a ponta, o funcionamento integrado do sistema e o atendimento aos requisitos definidos.
+\end{itemize}
+
+O sistema foi desenvolvido e avaliado em ambiente controlado, com um único setor de irrigação por gotejamento. A alface (\textit{Lactuca sativa}) foi adotada como cultura de referência para a definição do escopo, mas o sistema permite configurar outras culturas e fases de desenvolvimento, o que foi explorado nos testes. Com isso, busca-se oferecer ao pequeno produtor uma forma de aplicar apenas o volume de água necessário, de maneira estável e rastreável.
+
+% --- Metodologia e organização ----------------------------------------
+\section{Organização do trabalho}
+
+Trata-se de uma pesquisa aplicada e exploratória, que partiu de uma pesquisa bibliográfica e prosseguiu com o desenvolvimento incremental de um protótipo funcional, avaliado por testes do fluxo completo do sistema. O texto está organizado da seguinte forma. O Capítulo~\ref{textuais/cap1} apresenta a fundamentação teórica sobre irrigação, evapotranspiração, Internet das Coisas e aplicações web. O Capítulo~\ref{textuais/cap2} descreve os trabalhos relacionados e os compara com a proposta. O Capítulo~\ref{textuais/cap3} detalha a metodologia adotada. O Capítulo~\ref{textuais/cap4} apresenta o levantamento e a análise dos requisitos. O Capítulo~\ref{textuais/cap5} descreve a implementação das camadas de percepção, de nuvem e de aplicação. O Capítulo~\ref{textuais/cap6} apresenta os testes e os resultados obtidos. Por fim, o Capítulo~\ref{textuais/conclusao} traz as conclusões, os custos de operação e os trabalhos futuros.
