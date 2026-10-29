@@ -8,7 +8,7 @@ Este capítulo define o que o sistema deve fazer e sob quais condições. A part
 
 A irrigação feita sem controle, por tempo fixo ou pela percepção do produtor, tende a aplicar mais ou menos água do que a cultura necessita, o que gera desperdício ou estresse hídrico. As soluções comerciais que automatizam essa decisão, como as analisadas no Capítulo~\ref{textuais/cap2}, oferecem modelos de decisão elaborados, mas são proprietárias, têm custo elevado e, em geral, são voltadas a escalas diferentes daquelas observadas em pequenas áreas de cultivo.
 
-Para enfrentar esse problema, o sistema proposto monitora a umidade do solo, a temperatura e a umidade do ar, decide quando irrigar com base na umidade do solo e calcula quanto irrigar pelo método FAO-56, escrito por \citeonline{allen1998}, com a ET$_0$ estimada pelo método de Hargreaves-Samani. O acompanhamento e o controle são feitos a distância, por meio de um painel web.
+Para enfrentar esse problema, o sistema proposto monitora a umidade do solo, a temperatura e a umidade do ar, decide quando irrigar com base na umidade do solo e calcula quanto irrigar pelo método FAO-56, proposto por \citeonline{allen1998}, com a ET$_0$ estimada pelo método de Hargreaves-Samani. O acompanhamento e o controle são feitos a distância, por meio de um painel web.
 
 O escopo do trabalho compreende:
 \begin{itemize}
@@ -97,7 +97,7 @@ Os \sigla{RF}{requisitos funcionais} descrevem as funções que o sistema deve o
   RF01 & Autenticar o usuário por e-mail e senha. & Administrador\slash Operador e Visualizador & Alta \\
   RF02 & Encerrar a sessão do usuário autenticado. & Administrador\slash Operador e Visualizador & Média \\
   RF03 & Restringir o acesso ao painel aos usuários cadastrados na lista de acesso do sistema. & Sistema & Alta \\
-  RF04 & Permitir que o administrador cadastre novos usuários, definindo seu perfil. & Administrador\slash Operador & Média \\
+  RF04 & Permitir que o Administrador/Operador cadastre novos usuários, definindo seu perfil. & Administrador\slash Operador & Média \\
   RF05 & Exibir o perfil do usuário autenticado. & Administrador\slash Operador e Visualizador & Média \\
   RF06 & Diferenciar os perfis de acesso e aplicar as permissões correspondentes. & Sistema & Alta \\
   \hline
@@ -136,7 +136,7 @@ Os \sigla{RF}{requisitos funcionais} descrevem as funções que o sistema deve o
   RF28 & Acionar o relé conforme o cálculo realizado ou o comando recebido. & Dispositivo & Alta \\
   RF29 & Iniciar a irrigação automática quando a umidade do solo estiver abaixo do limiar, com o modo automático e a autorização ativos. & Dispositivo & Alta \\
   RF30 & Registrar e enviar à API o histórico ao fim de cada irrigação. & Dispositivo & Alta \\
-  RF31 & Exibir informações no \textit{display} LCD. & Dispositivo & Baixa \\
+  RF31 & Exibir informações no display LCD. & Dispositivo & Baixa \\
   RF32 & Operar com valores padrão caso a configuração da API esteja indisponível e repetir os envios que falharem. & Dispositivo & Média \\
   \hline
   \multicolumn{4}{l}{\textbf{Integração e persistência}} \\
@@ -177,20 +177,20 @@ Os \sigla{RNF}{requisitos não funcionais} definem como o sistema deve operar, e
   \hline
   \endlastfoot
   RNF01 & Segurança & O dispositivo deve se autenticar em todas as requisições com uma chave enviada no cabeçalho \texttt{X-Device-Key}; requisições sem a chave devem ser rejeitadas. \\
-  RNF02 & Segurança & O acesso ao painel deve exigir um \textit{token} válido do Firebase Authentication e o cadastro do usuário na lista de acesso; as ações de escrita devem ser restritas ao perfil Administrador/Operador e verificadas pela API. \\
+  RNF02 & Segurança & O acesso ao painel deve exigir um token válido do Firebase Authentication e o cadastro do usuário na lista de acesso; as ações de escrita devem ser restritas ao perfil Administrador/Operador e verificadas pela API. \\
   RNF03 & Segurança & A comunicação deve ocorrer por HTTPS, e as chaves e credenciais devem ser mantidas em variáveis de ambiente, fora do código-fonte. \\
   RNF04 & Desempenho & O dispositivo deve ler os sensores a cada 10~s, enviar seu estado a cada 20~s e aguardar comandos por até 30~s a cada consulta. \\
   RNF05 & Desempenho & O painel deve atualizar o estado do dispositivo a cada 5~s e as leituras dos sensores a cada 10~s. \\
   RNF06 & Desempenho & Um comando enviado pelo painel deve chegar ao dispositivo em, no máximo, cerca de 30~s. \\
   RNF07 & Confiabilidade & Os envios que falharem devem ser repetidos com intervalos crescentes, em até cinco tentativas; esgotadas as tentativas, a leitura pode ser descartada para não bloquear o dispositivo. \\
-  RNF08 & Confiabilidade & O estado compartilhado entre as tarefas concorrentes do \textit{firmware} deve ser protegido contra acessos simultâneos. \\
+  RNF08 & Confiabilidade & O estado compartilhado entre as tarefas concorrentes do firmware deve ser protegido contra acessos simultâneos. \\
   RNF09 & Disponibilidade & O dispositivo deve se reconectar automaticamente ao Wi-Fi e continuar operando com a configuração padrão caso a API esteja indisponível. \\
   RNF10 & Segurança operacional & O relé deve iniciar sempre desligado, e a irrigação automática deve exigir autorização explícita do usuário. \\
   RNF11 & Usabilidade & A interface deve ser responsiva, em português, e oferecer um modo com dados simulados para demonstração sem a API. \\
   RNF12 & Manutenibilidade & O sistema deve ser organizado em camadas independentes (dispositivo, API e painel), e a API deve ter documentação gerada automaticamente. \\
-  RNF13 & Testabilidade & A API deve possuir testes automatizados. \\
-  RNF14 & Portabilidade & A API deve poder ser executada em contêiner, e o \textit{firmware} deve compilar na Arduino IDE e executar na ESP32. \\
-  RNF15 & Compatibilidade & A comunicação entre as partes deve seguir o estilo REST, com dados em JSON, e os registros de data e hora devem usar o fuso de Brasília (UTC$-$3), com relógio sincronizado pelo \sigla{NTP}{\textit{Network Time Protocol}}. \\
+  RNF13 & Testabilidade & O funcionamento do sistema deve poder ser verificado por meio dos registros (logs) do firmware e da documentação interativa da API. \\
+  RNF14 & Portabilidade & A API deve poder ser executada em contêiner, e o firmware deve compilar na Arduino IDE e executar no ESP32. \\
+  RNF15 & Compatibilidade & A comunicação entre as partes deve seguir o estilo REST, com dados em JSON, e os registros de data e hora devem usar o fuso de Brasília (UTC$-$3), com relógio sincronizado pelo \sigla{NTP}{Network Time Protocol}. \\
   RNF16 & Tecnologia & Os dados devem ser armazenados no Cloud Firestore, e a autenticação de usuários deve ser feita pelo Firebase Authentication. \\
   RNF17 & Escalabilidade & A identificação de cada dispositivo e o modelo de dados devem permitir a futura inclusão de vários dispositivos. \\
   
@@ -237,7 +237,7 @@ As \sigla{RN}{regras de negócio} definem as condições que o sistema segue par
   \hline
   \multicolumn{2}{l}{\textbf{Cálculos agronômicos}} \\
   \hline
-  RN08 & A ET$_0$ é calculada pelo método de Hargreaves-Samani, a partir das temperaturas mínima e máxima do dia e da latitude da área. \\
+  RN08 & A ET$_0$ é calculada pelo método de Hargreaves-Samani, a partir das temperaturas mínima e máxima registradas pelo dispositivo e da latitude da área. \\
   RN09 & A evapotranspiração da cultura é dada por ET$_c$ = K$_c$ $\times$ ET$_0$. \\
   RN10 & O volume por planta é o produto da ET$_c$ pela área ocupada por planta (espaçamento entre plantas $\times$ espaçamento entre linhas). \\
   RN11 & O tempo de irrigação é o volume por planta dividido pela vazão disponível por planta (vazão do gotejador $\times$ número de gotejadores por planta). \\
@@ -254,8 +254,8 @@ As \sigla{RN}{regras de negócio} definem as condições que o sistema segue par
   \hline
   \multicolumn{2}{l}{\textbf{Acesso, integração e resiliência}} \\
   \hline
-  RN19 & Somente administradores alteram configurações, enviam comandos ao dispositivo e cadastram culturas e usuários. \\
-  RN20 & Somente usuários cadastrados na lista de acesso, com \textit{token} válido, acessam o painel. \\
+  RN19 & Somente usuários do perfil Administrador/Operador alteram configurações, enviam comandos ao dispositivo e cadastram culturas e usuários. \\
+  RN20 & Somente usuários cadastrados na lista de acesso, com token válido, acessam o painel. \\
   RN21 & Requisições do dispositivo sem a chave de autenticação são rejeitadas. \\
   RN22 & Se a configuração não puder ser obtida da API ao ligar, o dispositivo opera com valores padrão. \\
 \end{longtable}
@@ -279,7 +279,7 @@ O diagrama de casos de uso (Figura~\ref{fig:casos-de-uso}) relaciona os atores �
   \fonte{Elaborado pelo autor}
 \end{figure}
 
-O diagrama de sequência (Figura~\ref{fig:sequencia-automatica}) detalha o fluxo principal do sistema: a irrigação automática. O administrador ativa o modo automático e autoriza a irrigação no painel, que envia as alterações à API. A API enfileira os comandos correspondentes e responde ao painel. O ESP32, que consulta a API continuamente à espera de comandos, recebe as alterações e as aplica. A partir daí, a cada leitura dos sensores, o dispositivo envia os dados à API e, quando a umidade do solo fica abaixo do limiar, calcula a ET$_0$ e a lâmina de irrigação, liga o relé pelo tempo calculado e informa que há uma irrigação em andamento. Ao término, desliga o relé e envia o registro da irrigação. O painel, por sua vez, consulta a API periodicamente e exibe as leituras, os gráficos e a última irrigação.
+O diagrama de sequência (Figura~\ref{fig:sequencia-automatica}) detalha o fluxo principal do sistema: a irrigação automática. O Administrador/Operador ativa o modo automático e autoriza a irrigação no painel, que envia as alterações à API. A API enfileira os comandos correspondentes e responde ao painel. O ESP32, que consulta a API continuamente à espera de comandos, recebe as alterações e as aplica. A partir daí, a cada leitura dos sensores, o dispositivo envia os dados à API e, quando a umidade do solo fica abaixo do limiar, calcula a ET$_0$ e a lâmina de irrigação, liga o relé pelo tempo calculado e informa que há uma irrigação em andamento. Ao término, desliga o relé e envia o registro da irrigação. O painel, por sua vez, consulta a API periodicamente e exibe as leituras, os gráficos e a última irrigação.
 
 \begin{figure}[htbp]
   \centering

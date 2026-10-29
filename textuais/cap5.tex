@@ -3,17 +3,18 @@
 
 \providecommand{\preencher}[1]{\textcolor{red}{[#1]}}
 \providecommand{\figuraprovisoria}[2]{\fbox{\parbox[c][#1][c]{0.9\textwidth}{\centering\textcolor{red}{#2}}}}
-% Referência a uma equação dentro de um comentário de código: // %*\lsteq{eq:rotulo}*)
-\providecommand{\lsteq}[1]{\textcolor{gray}{\ttfamily Eq.~\ref{#1}}}
 
-Este capítulo descreve como o sistema especificado no Capítulo~\ref{textuais/cap4} foi construído. A Seção~\ref{sec:arquitetura} apresenta a arquitetura geral e a divisão do código entre as três aplicações. As seções seguintes detalham cada camada: o hardware do dispositivo de campo (Seção~\ref{sec:hardware}), o firmware e a lógica de irrigação (Seção~\ref{sec:firmware}), a API (Seção~\ref{sec:backend}) e o painel web (Seção~\ref{sec:frontend}).
+Este capítulo descreve o desenvolvimento do sistema com base nos requisitos levantados no Capítulo~\ref{textuais/cap4}. A Seção~\ref{sec:arquitetura} apresenta a arquitetura proposta e a forma como as suas camadas se comunicam. As seções seguintes descrevem cada uma das três camadas implementadas, a camada de percepção, com o hardware e o firmware do dispositivo de campo (Seção~\ref{sec:percepcao}), a camada de nuvem, com o backend e o banco de dados (Seção~\ref{sec:backend}), e a camada de aplicação, com o painel web (Seção~\ref{sec:frontend}).
 
+Ao longo do capítulo, nomes que aparecem no código-fonte, como arquivos, pastas, classes, métodos, variáveis e comandos, são escritos em \texttt{fonte monoespaçada}, para diferenciá-los do restante do texto.
+
+% =====================================================================
 \section{Arquitetura do sistema}
 \label{sec:arquitetura}
 
-O sistema segue a arquitetura em quatro camadas apresentada na fundamentação teórica \cite{morchid2024}, como mostra a Figura~\ref{fig:arquitetura}. Na camada de percepção, o ESP32 lê os sensores e aciona a válvula. Na camada de rede, ele se comunica com a API por Wi-Fi, usando HTTPS. Na camada de nuvem, a API em Spring Boot aplica as regras do sistema e guarda os dados no Cloud Firestore. Na camada de aplicação, o painel web em Angular apresenta as informações ao usuário e envia seus comandos.
+A arquitetura do sistema segue o modelo conceitual de quatro camadas para a agricultura inteligente proposto por \citeonline{morchid2024} e apresentado na Seção~\ref{sec:iot}, formado pelas camadas de percepção, rede, nuvem e aplicação. Esse modelo foi usado como base, e a partir dele este trabalho propõe a arquitetura da Figura~\ref{fig:arquitetura}, que tem três camadas, percepção, nuvem e aplicação. A camada de rede do modelo original não aparece como uma camada independente, pois a comunicação entre as três camadas é feita apenas por protocolos, como explicado na Subseção~\ref{sec:rede}.
 
-\begin{figure}[htbp]
+\begin{figure}[!htbp]
   \centering
   \begin{tikzpicture}[
       font=\footnotesize,
@@ -51,30 +52,83 @@ O sistema segue a arquitetura em quatro camadas apresentada na fundamentação t
     \node[rotulo] at (cn.north west) {Nuvem};
     \node[camada, fit=(front)] (ca) {};
     \node[rotulo] at (ca.north west) {Aplicação};
-    \node[msg, font=\scriptsize\bfseries] at ($(esp.east)!0.5!(api.west) + (0,2.05)$) {Rede\\ (Wi-Fi e HTTPS)};
+    \node[msg, font=\scriptsize\bfseries] at ($(esp.east)!0.5!(api.west) + (0,2.05)$) {Comunicação\\ (Wi-Fi e HTTPS)};
   \end{tikzpicture}
   \caption{Arquitetura geral do sistema}
   \label{fig:arquitetura}
   \fonte{Elaborado pelo autor}
 \end{figure}
 
-Os dados circulam em dois sentidos. No sentido do campo para o painel, o ESP32 envia as leituras, o seu estado e o registro de cada irrigação à API, que os grava no Firestore; o painel consulta a API periodicamente e exibe os dados atualizados. No sentido inverso, cada ação do usuário no painel, como trocar o modo ou iniciar uma irrigação, é enviada à API, que a transforma em um comando e o entrega ao ESP32 na próxima consulta do dispositivo. Assim, o dispositivo nunca recebe conexões de fora: ele sempre inicia a comunicação, o que dispensa configurar a rede local para aceitar acessos externos.
+Na camada de percepção estão os sensores, os atuadores e o ESP32, cujo firmware lê os sensores, decide quando irrigar e aciona o relé. A camada de nuvem reúne o backend, isto é, a parte do sistema executada no servidor, implementada como uma API em Spring Boot que aplica as regras do sistema, e os serviços do Firebase, que armazenam os dados e autenticam os usuários. A camada de aplicação corresponde ao frontend, o painel web em Angular por meio do qual o usuário acompanha o sistema e envia seus comandos. Essas três camadas trocam dados pela rede Wi-Fi do local e pela internet, com mensagens HTTPS no padrão REST.
 
-O código está dividido em três aplicações independentes, cada uma organizada em pacotes.
-\begin{itemize}
-    \item O firmware separa a leitura dos sensores, o acionamento dos atuadores, as regras de irrigação e a comunicação
-    \item A API separa controladores, serviços, repositórios, modelos e segurança
-    \item O Painel(Dahsboard) separa os serviços e modelos compartilhados das telas.
-\end{itemize}
- Essa divisão atende ao requisito de manutenibilidade (RNF12) e permite alterar uma parte sem modificar as demais.
+Os dados circulam em dois sentidos. No sentido do campo para o painel, o ESP32 envia as leituras, o seu estado e o registro de cada irrigação à API, que os grava no Firestore, e o painel consulta a API periodicamente para exibir os dados atualizados. No sentido inverso, cada ação do usuário no painel, como trocar o modo ou iniciar uma irrigação, é enviada à API, que a transforma em um comando e o entrega ao ESP32 na próxima consulta do dispositivo. Assim, o dispositivo nunca recebe conexões de fora, pois é sempre ele quem inicia a comunicação, o que dispensa configurar a rede local para aceitar acessos externos.
+
+O código foi dividido em três aplicações independentes, uma para cada camada. O firmware separa a leitura dos sensores, o acionamento dos atuadores, as regras de irrigação e a comunicação. A API separa controladores, serviços, repositórios, modelos e segurança. O painel separa os serviços e os modelos compartilhados das telas. Essa divisão atende ao requisito de manutenibilidade (RNF12) e permite alterar uma parte sem modificar as demais.
+
+\subsection{Comunicação entre as camadas}
+\label{sec:rede}
+\label{sec:longpolling}
+
+No modelo de \citeonline{morchid2024}, a rede é uma camada própria, responsável por transportar os dados entre a percepção e a nuvem. Na arquitetura proposta neste trabalho, porém, ela não foi implementada como uma camada independente, com equipamentos ou software próprios. A comunicação é feita apenas por protocolos, usados pelas demais camadas para trocar dados entre si. O ESP32 conecta-se ao roteador Wi-Fi do local como uma estação comum e volta a se conectar automaticamente se a conexão cair (RNF09), e tanto o dispositivo quanto o painel se comunicam com a API pela internet, usando o protocolo HTTPS, que protege as mensagens com o protocolo TLS (RNF03). As mensagens seguem o estilo REST, com os dados representados em JSON (RNF15). Por isso, a Figura~\ref{fig:arquitetura} representa a comunicação apenas como as setas que ligam as camadas, e não como uma camada separada.
+
+Cada informação enviada pelo dispositivo é uma requisição HTTP com um documento JSON no corpo. O Quadro~\ref{lst:json-telemetria} mostra, como exemplo, a mensagem de telemetria que o ESP32 envia a cada 10 segundos à rota \texttt{/api/webhooks/telemetry}.
+
+\vspace{0.6\baselineskip}
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language={}, caption={Exemplo de mensagem de telemetria enviada pelo dispositivo}, label={lst:json-telemetria}]
+{
+  "deviceId": "esp32-01",
+  "temperature": 24.5,
+  "humidity": 37.0,
+  "soilPercent": 61.5,
+  "timestamp": 1792872000
+}
+\end{lstlisting}
+\vspace{-0.5\baselineskip}
+\fonte{Elaborado pelo autor}
+\end{minipage}
+\medskip
+
+A linha 2 identifica o dispositivo que fez a leitura, as linhas 3 a 5 trazem a temperatura do ar, em graus Celsius, a umidade do ar e a umidade do solo, em porcentagem, e a linha 6 traz o momento da leitura, em segundos desde 1º de janeiro de 1970, obtido do relógio sincronizado por NTP. Junto com a mensagem, o dispositivo envia a sua chave de autenticação no cabeçalho \texttt{X-Device-Key}, como descrito na Subseção~\ref{subsec:seguranca}.
+
+Cada resposta da API traz um código de status HTTP, que informa ao cliente o resultado da requisição \cite{rfc9110}. A Tabela~\ref{tab:codigos-http} apresenta os códigos usados pelo sistema e o significado de cada um.
+
+\begin{table}[!htbp]
+  \centering
+  \caption{Códigos de status HTTP usados pela API}
+  \label{tab:codigos-http}
+  \small
+  \renewcommand{\arraystretch}{1.2}
+  \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.2cm}
+                               >{\raggedright\arraybackslash}X}
+    \hline
+    \textbf{Código} & \textbf{Significado no sistema} \\
+    \hline
+    200 (OK) & A requisição foi atendida, e a resposta traz os dados pedidos \\
+    204 (No Content) & A requisição foi atendida, mas não há conteúdo a devolver, como quando nenhum comando chega ao dispositivo em 30 segundos \\
+    401 (Unauthorized) & A requisição não trouxe uma credencial válida, como quando o dispositivo envia uma chave ausente ou incorreta \\
+    403 (Forbidden) & A credencial é válida, mas não dá permissão para a operação, como quando um Visualizador tenta alterar o sistema \\
+    404 (Not Found) & O recurso pedido não existe, como um dispositivo não cadastrado \\
+    409 (Conflict) & A operação conflita com o estado atual, como a troca de modo durante uma irrigação \\
+    \hline
+  \end{tabularx}
+  \fonte{Elaborado pelo autor com base em \citeonline{rfc9110}}
+\end{table}
+
+O principal desafio da comunicação foi entregar comandos a um dispositivo que está atrás da rede local do usuário e, portanto, não pode receber conexões vindas da internet. A solução adotada foi o long-polling, técnica em que o ESP32 faz uma requisição à rota de comandos e a API só responde quando há um comando para ele ou quando se passam 30 segundos sem comandos. No segundo caso, a API devolve o código 204, que indica que a requisição foi atendida, mas não há conteúdo a entregar. Em seguida, o dispositivo abre uma nova requisição. Com isso, um comando chega ao dispositivo quase imediatamente quando há uma consulta aberta, e em no máximo cerca de 30 segundos no pior caso (RNF06), sem que o ESP32 precise consultar a API a todo instante. A implementação desse mecanismo na API é apresentada na Subseção~\ref{subsec:dispatch}.
 
 % =====================================================================
-\section{Hardware}
+\section{Camada de percepção}
+\label{sec:percepcao}
+
+A camada de percepção corresponde ao dispositivo de campo. Ela é uma única camada, formada por duas partes que funcionam juntas, o hardware, que coleta os dados do ambiente e age sobre ele, e o firmware, o programa gravado no ESP32 que controla esse hardware. Esta seção discute primeiro o hardware, com os componentes e as suas ligações, e depois o firmware, com a sua organização, o seu funcionamento e os cálculos que ele realiza para decidir quanto irrigar.
+
+\subsection{Hardware do dispositivo de campo}
 \label{sec:hardware}
 
-O dispositivo de campo é formado pelos componentes descritos na fundamentação teórica e listados na Tabela~\ref{tab:componentes}. O ESP32 concentra a leitura dos sensores, o cálculo da irrigação e a comunicação com a API. O sensor de umidade do solo é do tipo resistivo e é ligado a uma entrada analógica do ESP32; o DHT11 usa um pino digital; o display LCD 16x2 se comunica pelo barramento I2C; e o módulo relé, ligado a uma saída digital, abre e fecha o circuito de 12~V da válvula solenoide.
+O dispositivo de campo é formado pelos componentes descritos na fundamentação teórica e listados na Tabela~\ref{tab:componentes}. O ESP32 concentra a leitura dos sensores, o cálculo da irrigação e a comunicação com a API. O sensor de umidade do solo é do tipo resistivo e é ligado a uma entrada analógica do ESP32, o DHT11 usa um pino digital, o display LCD 16x2 se comunica pelo barramento I2C e o módulo relé, ligado a uma saída digital, abre e fecha o circuito de 12~V da válvula solenoide.
 
-\begin{table}[htbp]
+\begin{table}[!htbp]
   \centering
   \caption{Componentes do dispositivo de campo}
   \label{tab:componentes}
@@ -103,9 +157,9 @@ O dispositivo de campo é formado pelos componentes descritos na fundamentação
   \fonte{Elaborado pelo autor, com preços consultados em lojas nacionais em outubro de 2026}
 \end{table}
 
-A Tabela~\ref{tab:ligacoes} indica os pinos do ESP32 usados por cada componente, e a Figura~\ref{fig:esquema} apresenta o esquema de ligação. O sensor de umidade do solo foi ligado ao GPIO 34, que pertence ao primeiro conversor analógico-digital (ADC1) do ESP32, porque o segundo conversor (ADC2) não pode ser usado enquanto o Wi-Fi está ativo. O display usa os pinos padrão do barramento I2C no ESP32, e o relé começa desligado assim que o pino é configurado. A válvula e o ESP32 trabalham com tensões diferentes, por isso a válvula é alimentada por uma fonte própria de 12~V, e apenas o sinal de controle do relé sai do ESP32.
+A Tabela~\ref{tab:ligacoes} indica os pinos do ESP32 usados por cada componente, e a Figura~\ref{fig:esquema} apresenta o esquema de ligação do sistema completo. O sensor de umidade do solo foi ligado ao GPIO 34, que pertence ao primeiro conversor analógico-digital (ADC1) do ESP32, porque o segundo conversor (ADC2) não pode ser usado enquanto o Wi-Fi está ativo. O display usa os pinos padrão do barramento I2C no ESP32, e o relé começa desligado assim que o pino é configurado. A válvula e o ESP32 trabalham com tensões diferentes, por isso a válvula é alimentada por uma fonte própria de 12~V, e apenas o sinal de controle do relé sai do ESP32. O protótipo montado é apresentado no Capítulo~\ref{textuais/cap6}, na Figura~\ref{fig:prototipo}.
 
-\begin{table}[htbp]
+\begin{table}[!htbp]
   \centering
   \caption{Ligações dos componentes ao ESP32}
   \label{tab:ligacoes}
@@ -126,7 +180,7 @@ A Tabela~\ref{tab:ligacoes} indica os pinos do ESP32 usados por cada componente,
   \fonte{Elaborado pelo autor}
 \end{table}
 
-\begin{figure}[htbp]
+\begin{figure}[!htbp]
   \centering
   \includegraphics[width=0.5\textwidth]{figuras/Circuito Esp32_bb.png}
   
@@ -135,20 +189,16 @@ A Tabela~\ref{tab:ligacoes} indica os pinos do ESP32 usados por cada componente,
   \fonte{Elaborado pelo autor}
 \end{figure}
 
-% =====================================================================
-\section{Firmware e lógica de irrigação}
+\subsection{Firmware do dispositivo de campo}
 \label{sec:firmware}
 
-O firmware foi escrito em C++ com o framework Arduino para o ESP32, usando as bibliotecas DHT sensor library, LiquidCrystal\_I2C e ArduinoJson. Ele preserva a lógica de cálculo do primeiro protótipo e a organiza em módulos com responsabilidades separadas. A classe IrrigationState guarda o estado do dispositivo (modo, autorização, volume de água, temperaturas mínima e máxima, irrigação em andamento e latitude) e os parâmetros agronômicos (ConfigIrrigacao). O módulo IrrigationService concentra as regras de irrigação, o IrrigationRunner controla o relé durante uma irrigação, o CommandPoller recebe os comandos da API, e o ApiClient faz todas as chamadas HTTP. Os módulos SoilSensor, DhtSensor, Relay e Display encapsulam o acesso ao hardware.
+O firmware foi escrito em C++ com o framework Arduino para o ESP32, usando as bibliotecas DHT sensor library, LiquidCrystal\_I2C e ArduinoJson. Ele preserva a lógica de cálculo do primeiro protótipo e a organiza em módulos com responsabilidades separadas. A classe \texttt{IrrigationState} guarda o estado do dispositivo (modo, autorização, volume de água, temperaturas mínima e máxima, irrigação em andamento e latitude) e os parâmetros agronômicos, reunidos na estrutura \texttt{ConfigIrrigacao}. O módulo \texttt{IrrigationService} concentra as regras de irrigação, o \texttt{IrrigationRunner} controla o relé durante uma irrigação, o \texttt{CommandPoller} recebe os comandos da API e o \texttt{ApiClient} faz todas as chamadas HTTP. Os módulos \texttt{SoilSensor}, \texttt{DhtSensor}, \texttt{Relay} e \texttt{Display} encapsulam o acesso ao hardware.
 
-\subsection{Funcionamento geral}
-\label{subsec:firmware-ciclo}
+Ao ser ligado, o dispositivo mantém o relé desligado, conecta-se ao Wi-Fi, sincroniza o relógio por NTP no fuso de Brasília e busca na API a sua configuração inicial, com o modo, a autorização, a latitude e os parâmetros agronômicos. Se a API não responder, o firmware segue com valores padrão locais, conforme a regra RN22. A partir daí, o trabalho é dividido entre tarefas concorrentes do FreeRTOS, sistema operacional de tempo real usado pelo ESP32. Três tarefas ficam ativas o tempo todo. A \texttt{sensorTask} lê os sensores e envia os dados, a \texttt{statusSyncTask} envia o estado do dispositivo e a \texttt{commandPollTask} aguarda os comandos da API. Uma quarta tarefa, a \texttt{irrigationTask}, é criada no início de cada irrigação e encerrada ao fim dela, o que garante que só exista uma irrigação por vez. Como as tarefas leem e alteram o mesmo estado, o acesso a ele é protegido por um mutex, que impede que duas tarefas o modifiquem ao mesmo tempo (RNF08).
 
-Ao ser ligado, o dispositivo mantém o relé desligado, conecta-se ao Wi-Fi, sincroniza o relógio por NTP no fuso de Brasília e busca na API a sua configuração inicial: modo, autorização, latitude e parâmetros agronômicos. Se a API não responder, o firmware segue com valores padrão locais, conforme a regra RN22. A partir daí, o trabalho é dividido entre tarefas concorrentes do FreeRTOS, sistema operacional de tempo real usado pelo ESP32. Três tarefas ficam ativas o tempo todo: a sensorTask lê os sensores e envia os dados, a statusSyncTask envia o estado do dispositivo e a commandPollTask aguarda os comandos da API. Uma quarta tarefa, a irrigationTask, é criada no início de cada irrigação e encerrada ao fim dela, o que garante que só exista uma irrigação por vez. Como as tarefas leem e alteram o mesmo estado, o acesso a ele é protegido por um mutex, que impede que duas tarefas o modifiquem ao mesmo tempo (RNF08).
+A \texttt{sensorTask} lê os sensores a cada 10 segundos, atualiza as temperaturas mínima e máxima registradas desde que o dispositivo foi ligado, mostra os valores no display e envia a telemetria à API. A cada 20 segundos, a \texttt{statusSyncTask} envia o estado completo do dispositivo. Quando um envio falha, o módulo \texttt{ApiClient} repete a tentativa com intervalos crescentes, até cinco vezes. Esgotadas as tentativas, a leitura é descartada para não travar a tarefa (RNF07). A Figura~\ref{fig:fluxograma} resume o ciclo de funcionamento e a decisão de irrigar.
 
-A tarefa de leitura lê os sensores a cada 10 segundos, atualiza as temperaturas mínima e máxima do dia, mostra os valores no display e envia a telemetria à API. A cada 20 segundos, a statusSyncTask envia o estado completo do dispositivo. Quando um envio falha, o módulo ApiClient repete a tentativa com intervalos crescentes, até cinco vezes, quando esgotadas as tentativas, a leitura é descartada para não travar a tarefa (RNF07). A Figura~\ref{fig:fluxograma} resume o ciclo de funcionamento e a decisão de irrigar.
-
-\begin{figure}[htbp]
+\begin{figure}[!htbp]
   \centering
   \begin{tikzpicture}[
       node distance=5mm and 8mm,
@@ -183,10 +233,10 @@ A tarefa de leitura lê os sensores a cada 10 segundos, atualiza as temperaturas
   \fonte{Elaborado pelo autor}
 \end{figure}
 
-\subsection{Leitura da umidade do solo}
+\subsubsection{Leitura da umidade do solo}
 
-O conversor analógico-digital do ESP32 tem 12 bits e entrega valores entre 0 e 4095. No sensor resistivo, quanto mais úmido o solo, menor a tensão de saída. A umidade percentual $U$ é obtida por interpolação linear entre duas tensões de calibração, uma com o sensor seco ($L_{seco}$) e outra com o sensor imerso em água ($L_{sat}$), conforme a Equação~\ref{eq:umidade}, e o resultado é limitado ao intervalo de 0 a 100\%. No firmware, esses valores estão configurados em 2,8~V e 1,2~V, respectivamente, e devem ser ajustados após a montagem, pelo procedimento descrito no Capítulo~\ref{textuais/cap3}.
-AQUI
+O conversor analógico-digital do ESP32 tem 12 bits e entrega valores entre 0 e 4095. Para reduzir o ruído, o firmware faz 16 leituras seguidas, converte cada uma em tensão e usa a média, em volts. No sensor resistivo, quanto mais úmido o solo, menor a tensão de saída. Por isso, a umidade percentual é obtida por interpolação linear entre duas tensões de calibração, uma com o sensor seco e outra com o sensor imerso em água, conforme a Equação~\ref{eq:umidade}:
+
 \begin{equation}
   U = \frac{L_{seco} - L}{L_{seco} - L_{sat}} \times 100
   \label{eq:umidade}
@@ -200,18 +250,16 @@ AQUI
   \item $L_{sat}$ é a tensão de calibração com o sensor imerso em água, que corresponde a 100\% de umidade (V).
 \end{itemize}
 
-O Quadro~\ref{lst:umidade} mostra a aplicação da Equação~\ref{eq:umidade} no firmware. As constantes SOIL\_\allowbreak MAX\_\allowbreak VOLTAGE e SOIL\_\allowbreak MIN\_\allowbreak VOLTAGE correspondem a $L_{seco}$ e $L_{sat}$, e a função constrain limita o resultado ao intervalo de 0 a 100\%.
+O resultado é limitado ao intervalo de 0 a 100\%. No firmware, as tensões de calibração estão configuradas em 2,8~V e 1,2~V, respectivamente, e devem ser ajustadas após a montagem, medindo-se a tensão de saída do sensor seco e imerso em água. O Quadro~\ref{lst:umidade} mostra a aplicação da Equação~\ref{eq:umidade} no firmware.
 
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language=C++, caption={Cálculo da umidade do solo no firmware (trecho de SoilSensor)}, label={lst:umidade}]
-#define SOIL_MAX_VOLTAGE 2.800f  // L_seco (0%)
-#define SOIL_MIN_VOLTAGE 1.200f  // L_sat (100%)
+#define SOIL_MAX_VOLTAGE 2.800f
+#define SOIL_MIN_VOLTAGE 1.200f
 
 bool readSoilPercent(float &outValue) {
-  // L: media de 16 leituras, em volts
   float tensao = lerTensaoMedia();
-  // %*\lsteq{eq:umidade}*)
   float umidade = ((SOIL_MAX_VOLTAGE - tensao) /
       (SOIL_MAX_VOLTAGE - SOIL_MIN_VOLTAGE)) * 100.0f;
   outValue = constrain(umidade, 0.0f, 100.0f);
@@ -223,10 +271,12 @@ bool readSoilPercent(float &outValue) {
 \end{minipage}
 \medskip
 
-\subsection{Cálculo da irrigação}
+Nas linhas 1 e 2, as constantes \texttt{SOIL\_\allowbreak MAX\_\allowbreak VOLTAGE} e \texttt{SOIL\_\allowbreak MIN\_\allowbreak VOLTAGE} definem os valores de $L_{seco}$ e $L_{sat}$. A função \texttt{readSoilPercent}, declarada na linha 4, recebe por referência a variável em que o resultado será gravado. Na linha 5, a função \texttt{lerTensaoMedia} devolve a tensão $L$, já calculada como a média das 16 leituras. As linhas 6 e 7 aplicam a Equação~\ref{eq:umidade}, e a linha 8 usa a função \texttt{constrain} para limitar o resultado ao intervalo de 0 a 100\%. Por fim, a linha 9 indica que a leitura foi concluída com sucesso.
+
+\subsubsection{Cálculo da irrigação}
 \label{subsec:calculo}
 
-No modo automático, o volume de água segue o método FAO-56, com a ET$_0$ estimada pela equação de Hargreaves-Samani (Equação~\ref{eq:hargreaves}) a partir das temperaturas mínima e máxima registradas no dia e da latitude informada no painel \cite{allen1998,hargreaves1985}. O primeiro passo é calcular a radiação extraterrestre $R_a$, que depende apenas da latitude e do dia do ano, pelas Equações~\ref{eq:ra} a~\ref{eq:omega} \cite{allen1998}:
+No modo automático, o volume de água segue o método FAO-56, com a ET$_0$ estimada pela equação de Hargreaves-Samani (Equação~\ref{eq:hargreaves}) a partir das temperaturas mínima e máxima registradas pelo dispositivo e da latitude informada no painel \cite{allen1998,hargreaves1985}. O primeiro passo é calcular a radiação extraterrestre $R_a$, que depende apenas da latitude e do dia do ano, pelas Equações~\ref{eq:ra} a~\ref{eq:omega} \cite{allen1998}:
 
 \begin{equation}
   R_a = \frac{24 \cdot 60}{\pi}\, G_{sc}\, d_r \left[\omega_s \sin\varphi \sin\delta + \cos\varphi \cos\delta \sin\omega_s\right]
@@ -259,7 +309,7 @@ No modo automático, o volume de água segue o método FAO-56, com a ET$_0$ esti
   \item $J$ é o número do dia no ano, de 1 a 365 ou 366.
 \end{itemize}
 
-Para uso na Equação~\ref{eq:hargreaves}, $R_a$ é convertida para lâmina equivalente de evaporação, em mm\,dia$^{-1}$, multiplicando-se o valor por 0,408 \cite{allen1998}. O Quadro~\ref{lst:eto} mostra a função \textbf{calcularEto()}, que aplica as Equações~\ref{eq:ra} a~\ref{eq:omega} e, em seguida, a equação de Hargreaves-Samani. O dia do ano $J$ é obtido do relógio sincronizado por NTP, e as temperaturas mínima e máxima são as registradas pelo DHT11 ao longo do dia. Dois cuidados foram acrescentados ao código: o argumento do arco-cosseno é limitado ao intervalo de $-1$ a 1, o que evita erro numérico em latitudes extremas, e a amplitude térmica nunca é negativa, o que evita a raiz quadrada de um número negativo.
+Para uso na Equação~\ref{eq:hargreaves}, $R_a$ é convertida para lâmina equivalente de evaporação, em mm\,dia$^{-1}$, multiplicando-se o valor por 0,408 \cite{allen1998}. O dia do ano $J$ é obtido do relógio sincronizado por NTP, e as temperaturas mínima e máxima são as registradas pelo DHT11 desde que o dispositivo foi ligado, e não apenas no dia corrente, ponto que é retomado nos trabalhos futuros. O Quadro~\ref{lst:eto} mostra a função \texttt{calcularEto}, que realiza esses cálculos.
 
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
@@ -269,25 +319,20 @@ float calcularEto(float tempMin, float tempMax,
   float tempMed = (tempMin + tempMax) / 2.0f;
   float latRad = latitude * (float)M_PI / 180.0f;
 
-  // %*\lsteq{eq:dr}*)
   float dr = 1.0f + 0.033f *
       cosf(2.0f * (float)M_PI / 365.0f * diaDoAno);
-  // %*\lsteq{eq:delta}*)
   float delta = 0.409f * sinf(
       (2.0f * (float)M_PI / 365.0f * diaDoAno) - 1.39f);
-  // %*\lsteq{eq:omega}*), com o argumento limitado a [-1, 1]
   float cosOmegaS = -tanf(latRad) * tanf(delta);
   cosOmegaS = std::max(-1.0f, std::min(1.0f, cosOmegaS));
   float omegaS = acosf(cosOmegaS);
 
-  // %*\lsteq{eq:ra}*), em MJ/m2/dia
   const float Gsc = 0.0820f;
   float raMj = (24.0f * 60.0f / (float)M_PI) * Gsc * dr *
       (omegaS * sinf(latRad) * sinf(delta) +
        cosf(latRad) * cosf(delta) * sinf(omegaS));
-  float raMm = raMj * 0.408f;  // conversao para mm/dia
+  float raMm = raMj * 0.408f;
 
-  // %*\lsteq{eq:hargreaves}*) (Hargreaves-Samani)
   const float C = 0.0023f;
   float td = std::max(0.0f, tempMax - tempMin);
   return C * raMm * sqrtf(td) * (tempMed + 17.8f);
@@ -298,7 +343,9 @@ float calcularEto(float tempMin, float tempMax,
 \end{minipage}
 \medskip
 
-Com a ET$_0$ calculada, a evapotranspiração da cultura é obtida pela Equação~\ref{eq:etc}, com o K$_c$ correspondente à cultura e à fase escolhidas no painel. A ET$_c$, em milímetros por dia, é então convertida em volume por planta. Como 1~mm de água sobre 1~m$^2$ equivale a 1~L, basta multiplicá-la pela área ocupada por planta, dada pelos espaçamentos entre plantas ($E_p$) e entre linhas ($E_l$), em metros:
+A função recebe, nas linhas 1 e 2, as temperaturas mínima e máxima, a latitude em graus e o dia do ano. A linha 3 calcula a temperatura média $T_{med}$, e a linha 4 converte a latitude $\varphi$ para radianos. As linhas 6 e 7 calculam a distância relativa inversa entre a Terra e o Sol, $d_r$, pela Equação~\ref{eq:dr}, e as linhas 8 e 9 calculam a declinação solar $\delta$, pela Equação~\ref{eq:delta}. As linhas 10 a 12 calculam o ângulo horário do pôr do sol $\omega_s$, pela Equação~\ref{eq:omega}, e a linha 11 limita o argumento do arco-cosseno ao intervalo de $-1$ a 1, o que evita erro numérico em latitudes extremas. As linhas 14 a 17 calculam a radiação extraterrestre $R_a$, em MJ\,m$^{-2}$\,dia$^{-1}$, pela Equação~\ref{eq:ra}, com a constante solar $G_{sc}$ definida na linha 14, e a linha 18 converte o resultado para mm\,dia$^{-1}$. Por fim, as linhas 20 a 22 aplicam a equação de Hargreaves-Samani (Equação~\ref{eq:hargreaves}). A linha 21 garante que a amplitude térmica $T_{max} - T_{min}$ nunca seja negativa, o que evita a raiz quadrada de um número negativo, e a linha 22 devolve a ET$_0$ em mm\,dia$^{-1}$.
+
+Com a ET$_0$ calculada, a evapotranspiração da cultura é obtida pela Equação~\ref{eq:etc}, com o K$_c$ correspondente à cultura e à fase escolhidas no painel. A ET$_c$, em milímetros por dia, é então convertida em volume por planta. Como 1~mm de água sobre 1~m$^2$ equivale a 1~L, basta multiplicá-la pela área ocupada por planta, dada pelos espaçamentos entre plantas e entre linhas, conforme a Equação~\ref{eq:volume-planta}:
 
 \begin{equation}
   A_p = E_p \cdot E_l
@@ -316,7 +363,7 @@ Com a ET$_0$ calculada, a evapotranspiração da cultura é obtida pela Equaçã
   \item $ET_c$ é a evapotranspiração da cultura (mm\,dia$^{-1}$), dada pela Equação~\ref{eq:etc}.
 \end{itemize}
 
-O tempo de irrigação depende da vazão disponível por planta, que é a vazão de cada gotejador ($q_g$, em L\,h$^{-1}$) multiplicada pelo número de gotejadores por planta ($n_g$). Como todas as plantas são irrigadas ao mesmo tempo pela mesma válvula, o tempo de abertura, em segundos, e o volume total aplicado ($V_t$) são dados pela Equação~\ref{eq:tempo}, em que $N$ é o número total de plantas:
+O tempo de irrigação depende da vazão disponível por planta, que é a vazão de cada gotejador multiplicada pelo número de gotejadores por planta. Como todas as plantas são irrigadas ao mesmo tempo pela mesma válvula, o tempo de abertura, em segundos, e o volume total aplicado são dados pela Equação~\ref{eq:tempo}:
 
 \begin{equation}
   t = \frac{V_p}{q_g \cdot n_g} \cdot 3600
@@ -336,7 +383,7 @@ O tempo de irrigação depende da vazão disponível por planta, que é a vazão
   \item $N$ é o número total de plantas.
 \end{itemize}
 
-O Quadro~\ref{lst:irrigacao} mostra a função \textbf{calcularIrrigacao()}, que aplica as Equações~\ref{eq:etc}, \ref{eq:volume-planta} e~\ref{eq:tempo} a partir da ET$_0$ e dos parâmetros configurados no painel, e a linha do modo automático que calcula o volume total.
+O Quadro~\ref{lst:irrigacao} mostra a função \texttt{calcularIrrigacao}, que aplica as Equações~\ref{eq:etc}, \ref{eq:volume-planta} e~\ref{eq:tempo} a partir da ET$_0$ e dos parâmetros configurados no painel, e a linha do modo automático que calcula o volume total.
 
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
@@ -344,21 +391,17 @@ O Quadro~\ref{lst:irrigacao} mostra a função \textbf{calcularIrrigacao()}, que
 IrrigationResult calcularIrrigacao(float etoMm, float kc,
     float espacamentoPlantasM, float espacamentoLinhasM,
     float vazaoGotejadorLph, int numGotejadoresPlanta) {
-  // %*\lsteq{eq:etc}*)
   float etcMmDia = etoMm * kc;
-  // %*\lsteq{eq:volume-planta}*): A_p e V_p (1 mm em 1 m2 = 1 L)
   float areaPorPlantaM2 =
       espacamentoPlantasM * espacamentoLinhasM;
   float volumeLitrosPorPlanta = etcMmDia * areaPorPlantaM2;
-  // vazao por planta: q_g . n_g
   float vazaoTotalPorPlantaLph =
       vazaoGotejadorLph * numGotejadoresPlanta;
 
   if (vazaoTotalPorPlantaLph == 0.0f) {
-    return {0.0f, 0.0f};  // RN15: sem vazao, nao irriga
+    return {0.0f, 0.0f};
   }
 
-  // %*\lsteq{eq:tempo}*): tempo t, em segundos
   float tempoIrrigacaoHoras =
       volumeLitrosPorPlanta / vazaoTotalPorPlantaLph;
   float tempoIrrigacaoSegundos =
@@ -366,7 +409,7 @@ IrrigationResult calcularIrrigacao(float etoMm, float kc,
   return {tempoIrrigacaoSegundos, volumeLitrosPorPlanta};
 }
 
-// em executarModoAutomatico(): V_t (%*\lsteq{eq:tempo}*))
+// em executarModoAutomatico():
 float volumeTotal =
     resultado.volumePorPlanta * config.numeroTotalPlantas;
 \end{lstlisting}
@@ -375,40 +418,41 @@ float volumeTotal =
 \end{minipage}
 \medskip
 
-Se a vazão disponível for nula, a irrigação não é executada, o que evita uma divisão por zero (RN15). Por exemplo, com ET$_0$ de 5,0~mm\,dia$^{-1}$, K$_c$ de 1,0, espaçamento de 0,3~m por 0,3~m, um gotejador de 2,0~L\,h$^{-1}$ por planta e 30 plantas, cada planta recebe $5{,}0 \times 1{,}0 \times 0{,}09 = 0{,}45$~L, a válvula fica aberta por 810~s (13,5~min) e o volume total aplicado é de 13,5~L.
+A função recebe, nas linhas 1 a 3, a ET$_0$, o K$_c$, os espaçamentos entre plantas e entre linhas, a vazão do gotejador e o número de gotejadores por planta. A linha 4 calcula a ET$_c$ pela Equação~\ref{eq:etc}. As linhas 5 a 7 aplicam a Equação~\ref{eq:volume-planta}, calculando primeiro a área ocupada por planta $A_p$ e depois o volume por planta $V_p$. As linhas 8 e 9 calculam a vazão disponível por planta, $q_g \cdot n_g$. Se essa vazão for nula, as linhas 11 a 13 encerram a função sem irrigar, o que evita uma divisão por zero (RN15). As linhas 15 a 18 aplicam a Equação~\ref{eq:tempo}, calculando o tempo em horas e convertendo-o para segundos, e a linha 19 devolve o tempo e o volume por planta. Por fim, as linhas 23 e 24, que pertencem à função \texttt{executarModoAutomatico}, calculam o volume total $V_t$, multiplicando o volume por planta pelo número total de plantas.
 
-\subsection{Modos de operação e comandos}
+Por exemplo, com ET$_0$ de 5,0~mm\,dia$^{-1}$, K$_c$ de 1,0, espaçamento de 0,3~m por 0,3~m, um gotejador de 2,0~L\,h$^{-1}$ por planta e 30 plantas, cada planta recebe $5{,}0 \times 1{,}0 \times 0{,}09 = 0{,}45$~L, a válvula fica aberta por 810~s (13,5~min) e o volume total aplicado é de 13,5~L.
 
-A irrigação automática só começa quando as quatro condições a seguir são verdadeiras ao mesmo tempo: 
+\subsubsection{Modos de operação e comandos}
+
+A irrigação automática só começa quando as quatro condições a seguir são verdadeiras ao mesmo tempo:
 \begin{itemize}
-    \item O modo esteja no automático
-    \item O usuário autorizou a irrigação automática
-    \item A umidade do solo está abaixo do limiar configurado
-    \item Se não há outra irrigação em andamento (RN01)
+    \item o modo de operação é o automático;
+    \item o usuário autorizou a irrigação automática;
+    \item a umidade do solo está abaixo do limiar configurado;
+    \item não há outra irrigação em andamento (RN01).
 \end{itemize}
 
-A autorização vem desativada por padrão e funciona como uma trava de segurança contra acionamentos indesejados (RN02). No modo manual, o usuário informa no painel o volume total de água, em litros, e o dispositivo calcula o tempo de abertura com a mesma vazão total das plantas, conforme a Equação~\ref{eq:tempo-manual}. O comando de iniciar só é aceito com o dispositivo em modo manual e sem irrigação em andamento (RN03), e o comando de interromper desliga o relé e registra o tempo real decorrido (RN05).
+A autorização vem desativada por padrão e funciona como uma trava de segurança contra acionamentos indesejados (RN02). No modo manual, o usuário informa no painel o volume total de água, em litros, e o dispositivo calcula o tempo de abertura com a mesma vazão total das plantas, conforme a Equação~\ref{eq:tempo-manual}:
 
 \begin{equation}
   t = \frac{V_t}{q_g \cdot n_g \cdot N} \cdot 3600
   \label{eq:tempo-manual}
 \end{equation}
 
-\noindent em que $V_t$ é o volume total informado pelo usuário (L), e $t$, $q_g$, $n_g$ e $N$ têm o mesmo significado da Equação~\ref{eq:tempo}. O Quadro~\ref{lst:manual} mostra o trecho correspondente do firmware, onde o volume por planta, registrado no histórico, é obtido dividindo-se $V_t$ por $N$.
+\noindent em que $V_t$ é o volume total informado pelo usuário (L), e $t$, $q_g$, $n_g$ e $N$ têm o mesmo significado da Equação~\ref{eq:tempo}.
+
+O comando de iniciar só é aceito com o dispositivo em modo manual e sem irrigação em andamento (RN03), e o comando de interromper desliga o relé e registra o tempo real decorrido (RN05). O Quadro~\ref{lst:manual} mostra o trecho da função \texttt{executarModoManual} que calcula o tempo de irrigação.
 
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language=C++, caption={Cálculo do tempo de irrigação no modo manual (trecho de executarModoManual)}, label={lst:manual}]
-// vazao de todas as plantas: q_g . n_g . N
 float vazaoTotalLph = config.vazaoGotejadorLph *
     config.numGotejadoresPlanta * config.numeroTotalPlantas;
 if (vazaoTotalLph <= 0.0f) {
-  return;  // RN15: sem vazao, nao irriga
+  return;
 }
-// %*\lsteq{eq:tempo-manual}*)
 float tempoSegundos =
     (quantidadeAguaLitros / vazaoTotalLph) * 3600.0f;
-// volume por planta registrado no historico: V_t / N
 float volumePorPlanta = config.numeroTotalPlantas > 0
     ? quantidadeAguaLitros / config.numeroTotalPlantas
     : quantidadeAguaLitros;
@@ -418,9 +462,11 @@ float volumePorPlanta = config.numeroTotalPlantas > 0
 \end{minipage}
 \medskip
 
-Os comandos chegam pelo módulo CommandPoller, que mantém uma consulta aberta à API (Subseção~\ref{subsec:endpoints}) e repassa cada comando recebido à rotina responsável. A Tabela~\ref{tab:comandos} relaciona os comandos tratados pelo firmware. Ao fim de cada irrigação, automática ou manual, o dispositivo envia à API um registro com a umidade do solo antes da irrigação, o tempo real, o volume por planta, o volume total, a data, a hora e o modo (RN16).
+As linhas 1 e 2 calculam a vazão total de todas as plantas, $q_g \cdot n_g \cdot N$. Se essa vazão for nula ou negativa, as linhas 3 a 5 encerram a função sem irrigar (RN15). As linhas 6 e 7 aplicam a Equação~\ref{eq:tempo-manual}, em que a variável \texttt{quantidadeAguaLitros} corresponde ao volume $V_t$ informado no painel. Por fim, as linhas 8 a 10 calculam o volume por planta que será registrado no histórico, dividindo $V_t$ por $N$ quando há plantas cadastradas.
 
-\begin{table}[htbp]
+Os comandos chegam pelo módulo \texttt{CommandPoller}, que mantém uma consulta aberta à API pelo mecanismo de long-polling (Subseção~\ref{sec:longpolling}) e repassa cada comando recebido à rotina responsável. A Tabela~\ref{tab:comandos} relaciona os comandos tratados pelo firmware. Ao fim de cada irrigação, automática ou manual, o dispositivo envia à API um registro com a umidade do solo antes da irrigação, o tempo real, o volume por planta, o volume total, a data, a hora e o modo (RN16).
+
+\begin{table}[!htbp]
   \centering
   \caption{Comandos enviados pela API ao dispositivo}
   \label{tab:comandos}
@@ -443,21 +489,79 @@ Os comandos chegam pelo módulo CommandPoller, que mantém uma consulta aberta �
 \end{table}
 
 % =====================================================================
-\section{Backend}
+\section{Camada de nuvem}
 \label{sec:backend}
 
-A API foi desenvolvida em Java 17 com o framework Spring Boot. Ela atende a dois clientes com necessidades diferentes: o ESP32, que envia dados e busca comandos, e o painel web, que consulta os dados e envia as ações do usuário. O acesso ao Firestore e ao Firebase Authentication é feito pelo Firebase Admin SDK, a documentação das rotas é gerada automaticamente pelo springdoc-openapi, que publica uma interface Swagger, e a aplicação pode ser empacotada em uma imagem Docker, o que permite executá-la da mesma forma em qualquer máquina (RNF14).
+A camada de nuvem reúne o processamento e o armazenamento que ficam fora do dispositivo e do navegador do usuário. Neste sistema, ela é formada pelo backend e pelos serviços do Firebase, e por isso a camada de nuvem e o backend são tratados juntos nesta seção. O backend é a parte do sistema executada no servidor e responsável pelas regras de negócio, como validar os comandos, aplicar as permissões de cada perfil e decidir o que gravar no banco de dados. Ele foi implementado como uma API REST, ou seja, as suas funções são oferecidas aos outros componentes por meio das rotas HTTP apresentadas na Tabela~\ref{tab:endpoints}. Assim, a API é a forma como o backend se comunica com o dispositivo e com o painel. Os dados são guardados no Cloud Firestore, e a autenticação dos usuários é feita pelo Firebase Authentication.
 
-\subsection{Organização em camadas}
+A API foi desenvolvida em Java 17 com o framework Spring Boot. O acesso ao Firestore e ao Firebase Authentication é feito pelo Firebase Admin SDK, a documentação das rotas é gerada automaticamente pela biblioteca springdoc-openapi, que publica uma interface Swagger, e a aplicação pode ser empacotada em uma imagem Docker, o que permite executá-la da mesma forma em qualquer máquina (RNF14).
 
-O código da API é dividido em camadas, cada uma em um pacote. Os controladores (pacote controller) recebem as requisições HTTP e são separados em dois grupos, um para o dispositivo e outro para o painel. Os serviços (service) concentram as regras do sistema, como impedir a troca de modo durante uma irrigação. Os repositórios (repository) são a única camada que acessa o Firestore. Os modelos (model) representam os documentos gravados, e os objetos de transferência de dados (dto) definem o formato do JSON de entrada e de saída de cada rota. Completam a organização os pacotes security, com os filtros de autenticação; config, com a configuração do Firebase, do CORS e do Swagger; e exception, que converte os erros em respostas padronizadas, como 404 para recurso inexistente e 409 para conflito de estado.
+\subsection{Organização interna da API}
 
-A classe DeviceService concentra a maior parte das regras, pois atende tanto aos dados enviados pelo dispositivo quanto às ações do painel, e por isso depende de três repositórios e do CommandDispatchService. Este último é o único serviço que não acessa o Firestore: ele mantém em memória as consultas abertas e os comandos pendentes de cada dispositivo, representados pelo registro Command. O FirebaseAuthFilter é o único elemento fora das camadas de negócio que usa um repositório, já que precisa consultar a coleção usuarios para definir o papel de quem faz a requisição. Do lado dos modelos, um Device é composto por uma ConfigIrrigacao e possui as suas leituras (Telemetry) e irrigações (IrrigationHistoryRecord), que correspondem às subcoleções do Firestore descritas na Subseção~\ref{subsec:modelo-dados}.
+Internamente, é comum organizar uma API REST em camadas de código, cada uma com uma responsabilidade. Essas camadas internas não se confundem com as camadas da arquitetura da Figura~\ref{fig:arquitetura}, pois todas elas fazem parte do backend e, portanto, da camada de nuvem. A camada de controladores recebe as requisições HTTP e devolve as respostas. A camada de serviços aplica as regras de negócio. A camada de repositórios lê e grava os dados no banco. Os modelos e os objetos de transferência de dados descrevem as informações que circulam entre essas camadas. Essa separação permite alterar uma camada sem afetar as outras, como trocar o banco de dados modificando apenas os repositórios. A Figura~\ref{fig:camadas-api} mostra como essas camadas internas foram organizadas em pacotes na API deste trabalho.
 
-\subsection{Endpoints e comunicação com o dispositivo}
+\begin{figure}[!htbp]
+  \centering
+  \begin{tikzpicture}[
+      font=\footnotesize,
+      bloco/.style={draw, rounded corners=2pt, align=center, text width=4.8cm, minimum height=1.0cm, fill=white},
+      apoio/.style={draw, dashed, rounded corners=2pt, align=left, text width=4.6cm, inner sep=5pt},
+      seta/.style={-{Stealth[length=2mm]}, thick}
+    ]
+    \node[align=center] (cli) at (0,1.6) {ESP32 e painel web\\ \scriptsize requisições HTTP};
+    \node[bloco] (sec) at (0,0) {Filtros de segurança\\ \scriptsize pacote \texttt{security}};
+    \node[bloco] (ctl) at (0,-1.6) {Controladores\\ \scriptsize pacote \texttt{controller} (\texttt{device} e \texttt{web})};
+    \node[bloco] (srv) at (0,-3.2) {Serviços\\ \scriptsize pacote \texttt{service}};
+    \node[bloco] (rep) at (0,-4.8) {Repositórios\\ \scriptsize pacote \texttt{repository}};
+    \node[bloco] (fs) at (0,-6.4) {Cloud Firestore};
+    \draw[seta] (cli) -- (sec);
+    \draw[seta] (sec) -- (ctl);
+    \draw[seta] (ctl) -- (srv);
+    \draw[seta] (srv) -- (rep);
+    \draw[seta] (rep) -- (fs);
+    \node[apoio, anchor=west] (ap) at (3.4,-3.2) {Pacotes de apoio\\[3pt]
+      \texttt{model}: documentos gravados\\
+      \texttt{dto}: formato do JSON das rotas\\
+      \texttt{config}: Firebase, CORS e Swagger\\
+      \texttt{exception}: respostas de erro};
+    \draw[dashed] (srv.east) -- (ap.west);
+  \end{tikzpicture}
+  \caption{Organização interna da API em pacotes}
+  \label{fig:camadas-api}
+  \fonte{Elaborado pelo autor}
+\end{figure}
+
+Cada requisição passa primeiro pelos filtros do pacote \texttt{security}, que verificam a identidade de quem a enviou. Em seguida, ela chega aos controladores do pacote \texttt{controller}, separados em dois grupos, \texttt{device}, com as rotas usadas pelo ESP32, e \texttt{web}, com as rotas usadas pelo painel. Os controladores repassam o trabalho aos serviços do pacote \texttt{service}, que concentram as regras do sistema, como impedir a troca de modo durante uma irrigação. Os serviços, por sua vez, usam os repositórios do pacote \texttt{repository}, a única camada que acessa o Firestore. Completam a organização os pacotes de apoio. O pacote \texttt{model} contém as classes que representam os documentos gravados, o \texttt{dto} define o formato do JSON de entrada e de saída de cada rota, o \texttt{config} reúne a configuração do Firebase, do CORS e do Swagger, e o \texttt{exception} converte os erros em respostas padronizadas, com os códigos da Tabela~\ref{tab:codigos-http}.
+
+A classe \texttt{DeviceService} concentra a maior parte das regras, pois atende tanto aos dados enviados pelo dispositivo quanto às ações do painel, e por isso depende de três repositórios e do serviço de comandos \texttt{CommandDispatchService}. O Quadro~\ref{lst:devicemode} mostra, como exemplo, o método \texttt{setModo}, que troca o modo de operação a pedido do painel.
+
+\vspace{0.6\baselineskip}
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language=Java, caption={Troca do modo de operação (trecho de DeviceService)}, label={lst:devicemode}]
+public void setModo(String deviceId, String modo) {
+    Device device = findDevice(deviceId);
+    if (Boolean.TRUE.equals(device.getEmExecucao())) {
+        throw new ConflictException(
+            "Nao e possivel trocar o modo enquanto o dispositivo esta irrigando.");
+    }
+    device.setModo(modo);
+    deviceRepository.save(deviceId, device);
+
+    commandDispatchService.enqueue(deviceId,
+        new CommandDispatchService.Command("MODE_CHANGE", Map.of("modo", modo)));
+}
+\end{lstlisting}
+\vspace{-0.5\baselineskip}
+\fonte{Elaborado pelo autor}
+\end{minipage}
+\medskip
+
+O método recebe, na linha 1, o identificador do dispositivo e o novo modo. A linha 2 busca o documento do dispositivo no Firestore, por meio do repositório. As linhas 3 a 6 aplicam uma regra de negócio. Se houver uma irrigação em andamento, o método lança uma \texttt{ConflictException}, que o pacote \texttt{exception} transforma em uma resposta com o código 409. Caso contrário, a linha 7 altera o modo, e a linha 8 grava o documento atualizado no Firestore. Por fim, as linhas 10 e 11 enfileiram o comando \texttt{MODE\_CHANGE}, que será entregue ao dispositivo pelo mecanismo de long-polling. Esse padrão, em que o serviço valida a ação, grava o novo estado e enfileira um comando, se repete nas demais ações do painel.
+
+\subsection{Rotas da API}
 \label{subsec:endpoints}
 
-A Tabela~\ref{tab:endpoints} apresenta as rotas da API, separadas pelo cliente que as utiliza. Todas as rotas do painel que alteram o estado do sistema enfileiram um comando para o dispositivo, além de atualizar o Firestore.
+A Tabela~\ref{tab:endpoints} apresenta as rotas da API, separadas pelo cliente que as utiliza. Cada rota combina um endereço com um método HTTP, que indica a operação desejada. O método GET obtém dados, o POST envia dados novos e o PUT altera dados existentes \cite{rfc9110}. Todas as rotas do painel que alteram o estado do sistema enfileiram um comando para o dispositivo, além de atualizar o Firestore.
 
 {\small
 \renewcommand{\arraystretch}{1.15}
@@ -509,9 +613,10 @@ A Tabela~\ref{tab:endpoints} apresenta as rotas da API, separadas pelo cliente q
 \vspace{-0.8\baselineskip}
 \fonte{Elaborado pelo autor}
 
-O principal desafio da comunicação foi entregar comandos a um dispositivo que está atrás da rede local do usuário e, portanto, não pode receber conexões vindas da internet. A solução adotada foi o long-polling, onde o ESP32 faz uma requisição à rota de comandos, e a API só responde quando há um comando para ele ou quando se passam 30 segundos sem comandos, caso em que devolve o código 204 (sem conteúdo). Em seguida, o dispositivo abre uma nova requisição. Com isso, um comando chega ao dispositivo quase imediatamente quando há uma consulta aberta, e em no máximo cerca de 30 segundos no pior caso (RNF06), sem que o ESP32 precise consultar a API a todo instante.
+\subsection{Implementação do long-polling}
+\label{subsec:dispatch}
 
-Na API, esse mecanismo é implementado pela classe CommandDispatchService, apresentada no Quadro~\ref{lst:dispatch}. Quando o dispositivo consulta a rota, o método poll devolve imediatamente um comando já pendente ou deixa a requisição registrada à espera, com um prazo de 30 segundos. Quando o painel gera um comando, o método enqueue o entrega à requisição que está esperando ou, se não houver nenhuma, guarda-o em uma fila para a próxima consulta. Do lado do controlador, a resposta é devolvida de forma assíncrona com a classe DeferredResult do Spring, o que libera a thread do servidor enquanto o dispositivo aguarda.
+Na API, a entrega de comandos descrita na Subseção~\ref{sec:longpolling} é implementada pela classe \texttt{CommandDispatchService}, apresentada no Quadro~\ref{lst:dispatch}. Ela guarda, para cada dispositivo, duas filas em memória. A fila \texttt{waiters} contém as consultas do dispositivo que estão abertas, à espera de um comando, e a fila \texttt{pending} contém os comandos que ainda não foram entregues.
 
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
@@ -522,12 +627,12 @@ public void enqueue(String deviceId, Command command) {
         CompletableFuture<Optional<Command>> waiting;
         while ((waiting = queue.poll()) != null) {
             if (waiting.complete(Optional.of(command))) {
-                return; // entregue a uma consulta que estava aberta
+                return;
             }
         }
     }
-    // nenhuma consulta aberta: guarda para a proxima
-    pending.computeIfAbsent(deviceId, id -> new ConcurrentLinkedQueue<>()).add(command);
+    pending.computeIfAbsent(deviceId, id -> new ConcurrentLinkedQueue<>())
+        .add(command);
 }
 
 public CompletableFuture<Optional<Command>> poll(String deviceId, long timeoutMillis) {
@@ -539,7 +644,7 @@ public CompletableFuture<Optional<Command>> poll(String deviceId, long timeoutMi
     var future = new CompletableFuture<Optional<Command>>();
     var queue = waiters.computeIfAbsent(deviceId, id -> new ConcurrentLinkedQueue<>());
     queue.add(future);
-    timeoutExecutor.schedule(() -> {          // sem comando em 30 s: resposta vazia (204)
+    timeoutExecutor.schedule(() -> {
         if (future.complete(Optional.empty())) {
             queue.remove(future);
         }
@@ -552,21 +657,27 @@ public CompletableFuture<Optional<Command>> poll(String deviceId, long timeoutMi
 \end{minipage}
 \medskip
 
-\subsection{Segurança e autenticação}
+O método \texttt{enqueue}, nas linhas 1 a 13, é chamado quando o painel gera um comando. A linha 2 obtém as consultas abertas do dispositivo, e as linhas 3 a 10 percorrem essa fila. Se houver uma consulta aberta, a linha 6 a completa com o comando, que é devolvido imediatamente ao ESP32 como resposta, e a linha 7 encerra o método. Se não houver nenhuma consulta aberta, as linhas 11 e 12 guardam o comando na fila \texttt{pending}, para que seja entregue na próxima consulta.
 
-A API usa dois mecanismos de autenticação, um para cada cliente, configurados com o Spring Security. O dispositivo envia em todas as requisições uma chave fixa no cabeçalho X-Device-Key, conferida pelo filtro DeviceKeyFilter (Quadro~\ref{lst:devicekey}). A chave é lida de uma variável de ambiente e nunca aparece no código-fonte (RNF03); requisições às rotas do dispositivo sem a chave correta recebem o código 401.
+O método \texttt{poll}, nas linhas 15 a 30, é chamado quando o dispositivo consulta a rota de comandos. As linhas 16 a 20 verificam se já existe um comando pendente e, se houver, devolvem-no imediatamente. Caso contrário, as linhas 21 a 23 criam uma resposta futura, do tipo \texttt{CompletableFuture}, e a registram na fila \texttt{waiters}, deixando a consulta à espera. As linhas 24 a 28 agendam o fim do prazo. Se nenhum comando chegar dentro do tempo definido, de 30 segundos, a linha 25 completa a resposta vazia, que o controlador converte no código 204, e a linha 26 remove a consulta da fila. Do lado do controlador, a resposta é devolvida de forma assíncrona com a classe \texttt{DeferredResult} do Spring, o que libera a thread do servidor enquanto o dispositivo aguarda.
+
+\subsection{Segurança e autenticação}
+\label{subsec:seguranca}
+
+A API usa dois mecanismos de autenticação, um para cada cliente, configurados com o Spring Security. O dispositivo envia em todas as requisições uma chave fixa no cabeçalho HTTP \texttt{X-Device-Key}, conferida pelo filtro \texttt{DeviceKeyFilter}, apresentado no Quadro~\ref{lst:devicekey}. A chave é lida de uma variável de ambiente e nunca aparece no código-fonte da API (RNF03).
 
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language=Java, caption={Verificação da chave do dispositivo (trecho de DeviceKeyFilter)}, label={lst:devicekey}]
 String cleanedUri = StringUtils.cleanPath(request.getRequestURI());
-if (!DevicePaths.matches(cleanedUri)) {      // rota do painel: segue adiante
+if (!DevicePaths.matches(cleanedUri)) {
     filterChain.doFilter(request, response);
     return;
 }
 String key = request.getHeader("X-Device-Key");
 if (key == null || !key.equals(firebaseEnv.deviceApiKey())) {
-    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "X-Device-Key ausente ou invalida");
+    response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+        "X-Device-Key ausente ou invalida");
     return;
 }
 filterChain.doFilter(request, response);
@@ -576,34 +687,42 @@ filterChain.doFilter(request, response);
 \end{minipage}
 \medskip
 
-O usuário do painel faz login diretamente no Firebase Authentication, com e-mail e senha, e recebe um token que o painel envia no cabeçalho Authorization de cada requisição. O filtro FirebaseAuthFilter valida esse token com o Firebase Admin SDK e procura o usuário na coleção usuarios, que funciona como lista de acesso: quem não está cadastrado recebe o código 403, mesmo tendo uma conta válida no Firebase. O campo tipo do cadastro define o papel do usuário, como mostra o Quadro~\ref{lst:papel}. As rotas que alteram o sistema são marcadas com a anotação \texttt{@PreAuthorize("hasRole('ADMIN')")}, de modo que a restrição de escrita ao perfil Administrador/Operador (RN19) é verificada na própria API, e não apenas escondida no painel.
+A linha 1 obtém o endereço da rota pedida, e as linhas 2 a 5 verificam se ela pertence ao dispositivo. Se a rota for do painel, o filtro a deixa seguir sem verificar a chave, já que ela será tratada pelo filtro do Firebase. Para as rotas do dispositivo, a linha 6 lê o cabeçalho \texttt{X-Device-Key}, e as linhas 7 a 11 comparam o valor recebido com a chave configurada. Se a chave estiver ausente ou for diferente, as linhas 8 e 9 recusam a requisição com o código HTTP 401, que indica a falta de uma credencial válida. Se estiver correta, a linha 12 deixa a requisição seguir para o controlador.
+
+O usuário do painel faz login diretamente no Firebase Authentication, com e-mail e senha, e recebe um token que o painel envia no cabeçalho HTTP \texttt{Authorization} de cada requisição. O filtro \texttt{FirebaseAuthFilter} valida esse token e define o papel do usuário, como mostra o Quadro~\ref{lst:papel}.
 
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language=Java, caption={Definição do papel do usuário (trecho de FirebaseAuthFilter)}, label={lst:papel}]
-FirebaseToken token = firebaseAuth.verifyIdToken(header.substring("Bearer ".length()));
-Usuario usuario = usuarioRepository.findById(token.getUid()).orElse(null);
-if (usuario == null) {                       // fora da lista de acesso
-    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Usuario nao autorizado");
+FirebaseToken token = firebaseAuth.verifyIdToken(
+    header.substring("Bearer ".length()));
+Usuario usuario = usuarioRepository.findById(token.getUid())
+    .orElse(null);
+if (usuario == null) {
+    response.sendError(HttpServletResponse.SC_FORBIDDEN,
+        "Usuario nao autorizado");
     return;
 }
 GrantedAuthority authority = new SimpleGrantedAuthority(
-        "Administrador".equals(usuario.getTipo()) ? "ROLE_ADMIN" : "ROLE_USER");
+    "Administrador".equals(usuario.getTipo())
+        ? "ROLE_ADMIN" : "ROLE_USER");
 \end{lstlisting}
 \vspace{-0.5\baselineskip}
 \fonte{Elaborado pelo autor}
 \end{minipage}
 \medskip
 
-A autenticação do painel pode ser desligada pela variável de ambiente DASHBOARD\_AUTH\_ENABLED, recurso usado durante o desenvolvimento para testar as telas sem login. % CONFERIR: deixar DASHBOARD_AUTH_ENABLED=true na versão avaliada
-O cadastro de novos usuários também passa pela API: o administrador preenche o formulário no painel, e a API cria a conta no Firebase Authentication e o registro correspondente na coleção usuarios, sem encerrar a sessão de quem está cadastrando.
+As linhas 1 e 2 retiram o prefixo \texttt{Bearer} do cabeçalho e validam o token com o Firebase Admin SDK, que confirma que ele foi emitido pelo Firebase e ainda não expirou. As linhas 3 e 4 procuram o usuário na coleção \texttt{usuarios}, que funciona como lista de acesso. Se ele não estiver cadastrado, as linhas 5 a 9 recusam a requisição com o código HTTP 403, que indica que a credencial é válida, mas não dá acesso ao sistema, mesmo que a pessoa tenha uma conta no Firebase. Por fim, as linhas 10 a 12 definem o papel do usuário a partir do campo \texttt{tipo} do cadastro. O Administrador/Operador recebe o papel \texttt{ROLE\_ADMIN}, e os demais recebem o papel \texttt{ROLE\_USER}.
+
+As rotas que alteram o sistema são marcadas com a anotação \texttt{@PreAuthorize}, configurada para exigir o papel de administrador por meio da expressão \texttt{hasRole('ADMIN')}, de modo que a restrição de escrita ao perfil Administrador/Operador (RN19) é verificada na própria API, e não apenas escondida no painel. A autenticação do painel pode ser desligada pela variável de ambiente \texttt{DASHBOARD\_\allowbreak AUTH\_\allowbreak ENABLED}, recurso usado durante o desenvolvimento para testar as telas sem login. % CONFERIR: deixar DASHBOARD_AUTH_ENABLED=true na versão avaliada
+O cadastro de novos usuários também passa pela API. O Administrador/Operador preenche o formulário no painel, e a API cria a conta no Firebase Authentication e o registro correspondente na coleção \texttt{usuarios}, sem encerrar a sessão de quem está cadastrando.
 
 \subsection{Modelo de dados}
 \label{subsec:modelo-dados}
 
-Os dados são armazenados no Cloud Firestore, banco NoSQL orientado a documentos \cite{firestore2026}. A Tabela~\ref{tab:colecoes} apresenta as coleções criadas. Cada dispositivo é um documento da coleção devices, identificado pelo seu nome (esp32-01), e as suas leituras e irrigações ficam em subcoleções desse documento. Essa organização acompanha a forma como os dados são consultados, sempre por dispositivo e por período, e permite incluir novos dispositivos sem alterar a estrutura (RNF17).
+Os dados são armazenados no Cloud Firestore, banco NoSQL orientado a documentos \cite{firestore2026}. A Tabela~\ref{tab:colecoes} apresenta as coleções criadas. Cada dispositivo é um documento da coleção \texttt{devices}, identificado pelo seu nome (\texttt{esp32-01}), e as suas leituras e irrigações ficam nas subcoleções \texttt{telemetry} e \texttt{irrigationHistory} desse documento. Essa organização acompanha a forma como os dados são consultados, sempre por dispositivo e por período, e permite incluir novos dispositivos sem alterar a estrutura (RNF17).
 
-\begin{table}[htbp]
+\begin{table}[!htbp]
   \centering
   \caption{Coleções do Cloud Firestore}
   \label{tab:colecoes}
@@ -624,28 +743,54 @@ Os dados são armazenados no Cloud Firestore, banco NoSQL orientado a documentos
   \fonte{Elaborado pelo autor}
 \end{table}
 
-As consultas de histórico filtram as leituras pela data de gravação, ordenam-nas da mais recente para a mais antiga e devolvem no máximo um número fixo de documentos: 500 por padrão, ou o limite pedido pelo cliente, que na tela de histórico é de 2.000. Esse limite mantém o tempo de resposta estável mesmo com o acúmulo de dados, já que, com leituras a cada 10 segundos, cada dia gera cerca de 8.640 documentos.
+As consultas de histórico filtram as leituras pela data de gravação, ordenam-nas da mais recente para a mais antiga e devolvem no máximo um número fixo de documentos, 500 por padrão ou o limite pedido pelo cliente, que na tela de histórico é de 2.000. Esse limite mantém o tempo de resposta estável mesmo com o acúmulo de dados, já que, com leituras a cada 10 segundos, cada dia gera cerca de 8.640 documentos.
 
 % =====================================================================
-\section{Frontend}
+\section{Camada de aplicação}
 \label{sec:frontend}
 
-O painel web foi desenvolvido em Angular 21, com componentes independentes (standalone) e signals para manter o estado da tela atualizado. A estilização usa o Tailwind CSS, os gráficos usam o Chart.js e o login usa o SDK JavaScript do Firebase.
+A camada de aplicação é a parte do sistema com a qual o usuário interage. Neste trabalho, ela corresponde ao frontend, o painel web por meio do qual o Administrador/Operador e o Visualizador acompanham as leituras dos sensores, consultam o histórico e, no caso do Administrador/Operador, controlam a irrigação e configuram o sistema. O painel não acessa o dispositivo nem o banco de dados diretamente, pois todas as informações passam pela API.
+
+O painel foi desenvolvido em Angular 21, com componentes independentes (standalone) e signals, valores reativos que atualizam automaticamente as partes da tela que dependem deles. A estilização usa o Tailwind CSS, os gráficos usam o Chart.js e o login usa o SDK JavaScript do Firebase.
 
 \subsection{Estrutura da aplicação}
 
-O código é dividido em duas pastas principais. A pasta core reúne o que é compartilhado entre as telas: os modelos de dados, os serviços que acessam a API, os guards que protegem as rotas e os interceptadores de requisições. A pasta features reúne as telas, cada uma com os seus próprios componentes, carregadas sob demanda na primeira vez em que são abertas.
+O código do painel fica na pasta \texttt{src/app} e é dividido em duas pastas principais, \texttt{core} e \texttt{features}, cuja organização é mostrada no Quadro~\ref{lst:pastas-front}.
 
-O serviço IrrigationService concentra a comunicação com a API. Ele consulta o estado do dispositivo a cada 5~s e as leituras dos sensores a cada 10~s (RNF05) e guarda os resultados em signals, de modo que todas as telas exibem os mesmos dados sem fazer requisições repetidas. Após uma ação do usuário, como iniciar uma irrigação, o serviço antecipa a próxima consulta para que a tela reflita a mudança logo em seguida.
+\vspace{0.6\baselineskip}
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language={}, caption={Estrutura de pastas do painel web}, label={lst:pastas-front}]
+src/app/
+  core/
+    guards/
+    interceptors/
+    mocks/
+    models/
+    services/
+  features/
+    auth/              (login e cadastro de usuarios)
+    culturas/          (cadastro de culturas)
+    dashboard/
+    historical-charts/ (historico)
+    settings/          (configuracoes)
+\end{lstlisting}
+\vspace{-0.5\baselineskip}
+\fonte{Elaborado pelo autor}
+\end{minipage}
+\medskip
 
-O acesso às telas é controlado por dois guards: o authGuard exige que o usuário esteja autenticado, e o adminGuard libera as telas de cadastro de usuários e de culturas apenas para o Administrador/Operador. Dois interceptadores atuam em todas as requisições à API: o primeiro anexa o token do Firebase ao cabeçalho Authorization (Quadro~\ref{lst:interceptor}), e o segundo encerra a sessão e volta à tela de login quando a API responde com os códigos 401 ou 403. Para o desenvolvimento, o painel também pode funcionar com dados simulados, sem depender da API (RNF11).
+A pasta \texttt{core} reúne o que é compartilhado entre as telas. Em \texttt{models} ficam as definições dos dados recebidos da API, em \texttt{services} os serviços que acessam a API e o Firebase, em \texttt{guards} as regras que protegem as rotas do painel, em \texttt{interceptors} os interceptadores que atuam sobre as requisições e em \texttt{mocks} os dados simulados usados quando o painel funciona sem a API (RNF11). A pasta \texttt{features} reúne as telas, cada uma em sua própria pasta e com os seus próprios componentes, carregadas sob demanda na primeira vez em que são abertas.
+
+O serviço \texttt{IrrigationService} concentra a comunicação com a API. Ele consulta o estado do dispositivo a cada 5 segundos e as leituras dos sensores a cada 10 segundos (RNF05) e guarda os resultados em signals, de modo que todas as telas exibem os mesmos dados sem fazer requisições repetidas. Após uma ação do usuário, como iniciar uma irrigação, o serviço antecipa a próxima consulta para que a tela reflita a mudança logo em seguida.
+
+O acesso às telas é controlado por dois guards. O \texttt{authGuard} exige que o usuário esteja autenticado, e o \texttt{adminGuard} libera as telas de cadastro de usuários e de culturas apenas para o Administrador/Operador. Dois interceptadores atuam em todas as requisições à API. O primeiro anexa o token do Firebase ao cabeçalho \texttt{Authorization}, como mostra o Quadro~\ref{lst:interceptor}, e o segundo encerra a sessão e volta à tela de login quando a API responde com os códigos 401 ou 403.
 
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language={}, caption={Inclusão do token nas requisições à API (auth.interceptor.ts)}, label={lst:interceptor}]
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   if (!req.url.startsWith(environment.apiBaseUrl)) {
-    return next(req);                 // requisicoes externas seguem sem token
+    return next(req);
   }
   const auth = inject(AuthService);
   return from(auth.getIdToken()).pipe(
@@ -663,11 +808,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 \end{minipage}
 \medskip
 
+A linha 1 declara o interceptador \texttt{authInterceptor}, que recebe cada requisição e a função que a envia adiante. As linhas 2 a 4 deixam passar sem alteração as requisições que não são destinadas à API. Para as requisições à API, a linha 5 obtém o serviço de autenticação, e a linha 6 pede a ele o token atual do usuário. As linhas 8 a 10 criam uma cópia da requisição com o cabeçalho \texttt{Authorization} preenchido com o token, ou mantêm a requisição original se não houver usuário autenticado, e a linha 11 envia a requisição.
+
 \subsection{Telas desenvolvidas}
 
-O painel possui seis telas, descritas a seguir. As Figuras~\ref{fig:tela-login} a~\ref{fig:tela-cadastro} mostram cada uma delas. A tela de login (Figura~\ref{fig:tela-login}) recebe o e-mail e a senha e autentica o usuário no Firebase; em seguida, o painel busca o perfil do usuário na API para saber quais ações liberar.
+O painel possui seis telas, apresentadas nas Figuras~\ref{fig:tela-login} a~\ref{fig:tela-cadastro}. A tela de login (Figura~\ref{fig:tela-login}) tem os campos de login, em que se informa o e-mail, e de senha, além do botão Entrar. Ao clicar nele, o painel autentica o usuário no Firebase e, em seguida, busca o seu perfil na API para saber quais ações liberar.
 
-\begin{figure}[htbp]
+\begin{figure}[!htbp]
   \centering
   \imagemsombra[width=0.8\textwidth]{figuras/login.jpg}
   \caption{Tela de login}
@@ -675,49 +822,49 @@ O painel possui seis telas, descritas a seguir. As Figuras~\ref{fig:tela-login} 
   \fonte{Elaborado pelo autor}
 \end{figure}
 
-O dashboard (Figura~\ref{fig:tela-dashboard}) é a tela principal. Ele mostra o estado do dispositivo e as últimas leituras dos sensores, permite alternar entre os modos manual e automático, autorizar ou bloquear a irrigação automática, iniciar e interromper a irrigação manual com o volume em litros, acompanhar o tempo restante de uma irrigação em andamento e consultar os dados da última irrigação e os parâmetros agronômicos em uso. Para o Visualizador, os controles aparecem desabilitados.
+O dashboard (Figura~\ref{fig:tela-dashboard}) é a tela principal. No topo, ele mostra o estado do dispositivo, como Sistema ocioso ou Irrigando agora, o modo de operação e se a irrigação automática está autorizada. Abaixo, os botões Manual e Automático alternam o modo, e três cartões exibem as últimas leituras de temperatura do ar, umidade do ar e umidade do solo. O cartão da umidade do solo muda de cor conforme o limiar configurado. Ele fica verde quando a umidade está mais de 10 pontos percentuais acima do limiar, amarelo quando está até 10 pontos acima e vermelho quando está abaixo dele. No modo automático, o cartão Irrigação Automática mostra as temperaturas mínima e máxima usadas no cálculo e o botão que autoriza ou bloqueia a irrigação automática. No modo manual, esse cartão é substituído pelo controle em que se escolhe o volume, em litros, e se inicia ou interrompe a irrigação, com o tempo restante exibido durante a execução. O cartão Última Irrigação mostra a data, a duração, o modo, o volume por planta, o volume total e a umidade do solo antes da irrigação. Para o Visualizador, os controles aparecem desabilitados.
 
 \begin{figure}[!htbp]
   \centering
-\imagemsombra[width=0.8\textwidth]{figuras/Tela_Dashboard.png}
+  \imagemsombra[width=0.75\textwidth]{figuras/Tela_Dashboard.png}
   \caption{Tela principal (dashboard)}
   \label{fig:tela-dashboard}
   \fonte{Elaborado pelo autor}
 \end{figure}
 
-A tela de histórico (Figura~\ref{fig:tela-historico}) apresenta gráficos da temperatura do ar, da umidade do ar e da umidade do solo nos períodos de 24 horas, 7 dias e 30 dias, e uma tabela com as irrigações realizadas.
+A tela de histórico (Figura~\ref{fig:tela-historico}) apresenta três gráficos, de temperatura do ar, em graus Celsius, de umidade do ar e de umidade do solo, em porcentagem, ao longo do tempo. Os botões no topo escolhem o período exibido, que pode ser as últimas 24 horas, os últimos 7 dias ou os últimos 30 dias. Na captura, que mostra as últimas 24 horas, entre 00h16 de 22/10/2026 e o início de 23/10/2026, a temperatura sobe de cerca de 14~$^{\circ}$C na madrugada até cerca de 31~$^{\circ}$C por volta do meio-dia e volta a cair à noite. A umidade do ar faz o movimento inverso, caindo de cerca de 75\% para cerca de 44\% nas horas mais quentes. A umidade do solo oscila entre cerca de 33\% e 56\%, e cada subida corresponde a uma irrigação. Abaixo dos gráficos, a tabela Histórico de Irrigações lista cada irrigação com a data, a hora, o modo, a duração, o volume total e a umidade do solo antes da irrigação. Na captura, por exemplo, a irrigação automática de 22/10/2026 às 21h09 durou 12 minutos, aplicou 230,4~L e começou com a umidade do solo em 30,1\%. % CONFERIR: se esta captura foi feita com os dados simulados (pasta mocks), informe isso no texto
 
-\begin{figure}[htbp]
+\begin{figure}[!htbp]
   \centering
-  \imagemsombra[width=0.8\textwidth]{figuras/Tela_Historico.png}
+  \imagemsombra[width=0.75\textwidth]{figuras/Tela_Historico.png}
   \caption{Tela de histórico}
   \label{fig:tela-historico}
   \fonte{Elaborado pelo autor}
 \end{figure}
 
-A tela de configurações (Figura~\ref{fig:tela-configuracoes}) reúne a latitude da área e os parâmetros agronômicos. O usuário escolhe a cultura e a fase de desenvolvimento, e o K$_c$ correspondente é aplicado automaticamente a partir do catálogo, sem ser digitado (RN13).
+A tela de configurações (Figura~\ref{fig:tela-configuracoes}) é dividida em quatro blocos. O primeiro, visível apenas para o Administrador/Operador, tem os botões Novo usuário e Nova cultura, que abrem as telas de cadastro. O bloco Localização tem o campo da latitude da área, usada no cálculo da radiação extraterrestre, e o botão Salvar Latitude. O bloco Cultura tem as listas de seleção da cultura e da fase de crescimento e o campo do coeficiente de cultura calculado, que não pode ser editado, pois o K$_c$ é obtido do catálogo a partir da cultura e da fase escolhidas (RN13). Na captura, a cultura tomate na fase 3 resulta em um K$_c$ de 1,15. Por fim, o bloco Parâmetros Agronômicos reúne os campos da umidade mínima do solo, que é o limiar de irrigação, dos espaçamentos entre plantas e entre linhas, da vazão do gotejador, do número de gotejadores por planta e da quantidade total de plantas, usados nas Equações~\ref{eq:volume-planta} a~\ref{eq:tempo-manual}. Cada bloco tem o seu próprio botão de salvar, e cada alteração salva gera um comando para o dispositivo.
 
-\begin{figure}[htbp]
+\begin{figure}[!htbp]
   \centering
-  \imagemsombra[width=\textwidth]{figuras/Tela_Configuracao.png}
+  \imagemsombra[width=0.75\textwidth]{figuras/Tela_Configuracao.png}
   \caption{Tela de configurações}
   \label{fig:tela-configuracoes}
   \fonte{Elaborado pelo autor}
 \end{figure}
 
-Por fim, duas telas são exclusivas do Administrador/Operador: a de cadastro de culturas (Figura~\ref{fig:tela-cultura}), em que se informam o nome da cultura e o K$_c$ de cada uma das quatro fases, e a de cadastro de usuários (Figura~\ref{fig:tela-cadastro}), em que se informam o nome, o e-mail, a senha inicial e o perfil do novo usuário.
+Por fim, duas telas são exclusivas do Administrador/Operador. A tela de cadastro de culturas (Figura~\ref{fig:tela-cultura}) tem o campo do nome da cultura e quatro campos para o K$_c$ de cada fase de crescimento, da fase 1 à fase 4, além dos botões Cadastrar e Voltar. A cultura cadastrada passa a aparecer na lista de seleção da tela de configurações. A tela de cadastro de usuários (Figura~\ref{fig:tela-cadastro}) tem os campos de nome, e-mail, senha inicial e confirmação da senha, além da lista Permissão, em que se escolhe o perfil do novo usuário, Administrador/Operador ou Visualizador. Ao clicar em Cadastrar, a API cria a conta no Firebase Authentication e o registro na coleção \texttt{usuarios}.
 
-\begin{figure}[htbp]
+\begin{figure}[!htbp]
   \centering
-  \imagemsombra[width=0.8\textwidth]{figuras/Tela_Cadastrar_Cultura.png}
+  \imagemsombra[width=0.65\textwidth]{figuras/Tela_Cadastrar_Cultura.png}
   \caption{Tela de cadastro de culturas}
   \label{fig:tela-cultura}
   \fonte{Elaborado pelo autor}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[!htbp]
   \centering
-  \imagemsombra[width=0.8\textwidth]{figuras/Tela_Cadastro.png}
+  \imagemsombra[width=0.65\textwidth]{figuras/Tela_Cadastro.png}
   \caption{Tela de cadastro de usuários}
   \label{fig:tela-cadastro}
   \fonte{Elaborado pelo autor}
