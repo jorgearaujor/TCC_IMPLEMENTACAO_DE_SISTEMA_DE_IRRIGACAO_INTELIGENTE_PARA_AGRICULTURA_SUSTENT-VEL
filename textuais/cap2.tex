@@ -9,9 +9,9 @@ já está acessível ao produtor, enquanto os segundos indicam as abordagens
 técnicas mais recentes.
 
 Cada solução é descrita em uma seção própria. As Seções~\ref{sec:hydrawise},
-\ref{sec:netbeat} e~\ref{sec:valley} apresentam três soluções comerciais, e as
-Seções~\ref{sec:campos}, \ref{sec:pereira} e~\ref{sec:abdelmoneim} apresentam três trabalhos acadêmicos de baixo custo. Por
-fim, a Seção~\ref{sec:comparativo-trabalhos} compara essas soluções.
+\ref{sec:netbeat} e~\ref{sec:valley} apresentam três soluções comerciais, e a
+Seção~\ref{sec:campos} apresenta uma plataforma acadêmica de baixo custo. Por
+fim, a Seção~\ref{sec:comparativo-trabalhos} compara essas soluções abordadas.
 
 % =====================================================================
 
@@ -103,22 +103,6 @@ os dados à nuvem e acompanhá-los em tempo real. Por fim, a plataforma exige m�
 de obra especializada para desenvolvimento e manutenção \cite{campos2021}.
 
 % =====================================================================
-\section{Sistema de gotejamento inteligente com ESP32}
-\label{sec:pereira}
-
-\citeonline{pereira2023} desenvolveram um sistema de irrigação por gotejamento baseado no ESP32, escolhido pelo baixo custo e pelo Wi-Fi integrado. O dispositivo usa um sensor capacitivo de umidade do solo, um sensor de temperatura do solo, um sensor DHT22 de temperatura e umidade do ar e um sensor de vazão, e aciona por relé uma válvula solenoide e uma bomba. Os dados são enviados por Wi-Fi à plataforma Blynk, cujo aplicativo e painel web exibem gráficos das leituras, guardam os registros de cada irrigação e permitem abrir a válvula manualmente ou desligar o modo automático.
-
-A decisão de irrigar é feita por limiar. A válvula é aberta quando o solo está seco, dentro de janelas de horário pela manhã e à noite, e fica aberta por um tempo fixo de uma hora. O sistema foi avaliado por uma semana no cultivo de cebolinha em um pequeno recipiente. Os próprios autores relatam excesso de irrigação causado pela demora do sensor em perceber a água aplicada, problema que levaram a corrigir no firmware, bloqueando uma segunda irrigação no mesmo dia. A economia de água não foi medida, e o custo do sistema não foi informado \cite{pereira2023}.
-
-% =====================================================================
-\section{Manejo por umidade do solo e por clima na alface}
-\label{sec:abdelmoneim}
-
-\citeonline{abdelmoneim2025comparative} construíram um dispositivo de baixo custo, com um ESP32 e quatro sensores capacitivos instalados em diferentes profundidades, alimentado por bateria e painel solar, que envia as leituras por Wi-Fi à plataforma ThingSpeak a cada seis horas. O protótipo custou cerca de 62 dólares, contra 800 a 1.500 dólares estimados para equipamentos comerciais equivalentes. Os dados podem ser consultados em gráficos na plataforma e exportados em arquivos.
-
-O dispositivo foi usado para comparar duas formas de manejo da irrigação por gotejamento de alface em campo, na Itália. Em uma parcela, a irrigação era iniciada quando a umidade do solo atingia um limiar. Na outra, seguia a programação pelo método FAO-56, com a ET$_0$ de Penman-Monteith e coeficientes de cultura. O manejo pela umidade do solo usou 28,8\% menos água e obteve produtividade da água 52,5\% maior. Os autores apontam como limitações a avaliação em uma única safra e um único tipo de solo, sem repetições, e a calibração dos sensores específica para aquele solo \cite{abdelmoneim2025comparative}.
-
-% =====================================================================
 \section{Comparativo entre os trabalhos}
 \label{sec:comparativo-trabalhos}
 
@@ -131,88 +115,68 @@ partir de oito critérios. Cada critério é explicado a seguir.
   \label{tab:comparativo-trabalhos}
   \scriptsize
   \renewcommand{\arraystretch}{1.25}
-  \setlength{\tabcolsep}{3pt}
-  \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{1.6cm}
-                                >{\raggedright\arraybackslash}X
-                                >{\raggedright\arraybackslash}X
+  \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.1cm}
                                 >{\raggedright\arraybackslash}X
                                 >{\raggedright\arraybackslash}X
                                 >{\raggedright\arraybackslash}X
                                 >{\raggedright\arraybackslash}X}
     \hline
     \textbf{Critério} & \textbf{Hydrawise} & \textbf{NetBeat} &
-    \textbf{Valley Scheduling} & \textbf{\citeonline{campos2021}} &
-    \textbf{\citeonline{pereira2023}} & \textbf{\citeonline{abdelmoneim2025comparative}}\\
+    \textbf{Valley Scheduling} & \textbf{\citeonline{campos2021}}\\
     \hline
     Público-alvo &
     Residências e profissionais de paisagismo &
     Desde grandes áreas até pequenos produtores &
     Produtores rurais com pivô, linear ou gotejamento &
-    Pesquisa em casa de vegetação &
-    Pequenos cultivos, avaliado em recipiente &
-    Pesquisa em campo, com alface \\
+    Pesquisa em casa de vegetação \\
     \hline
     Base para decidir a irrigação &
     Possibilita ajustar os programas pela previsão do tempo &
     Possibilita recomendações por modelos dinâmicos de cultura &
     Possibilita recomendações por algoritmo ou por dados medidos &
-    Aciona quando a umidade do solo cai abaixo do limiar &
-    Limiar de umidade do solo, com janelas de horário &
-    Compara limiar de umidade do solo e FAO-56 \\
+    Aciona quando a umidade do solo cai abaixo do limiar \\
     \hline
     Variáveis consideradas &
     Dados meteorológicos externos; pode receber sensores &
     Solo, planta, clima e hidráulica &
     Solo, cultura, fase e clima &
-    Umidade do solo, temperatura e umidade do ar &
-    Umidade e temperatura do solo, temperatura e umidade do ar e vazão &
-    Umidade do solo em quatro profundidades \\
+    Umidade do solo, temperatura e umidade do ar \\
     \hline
     Forma de atuação &
     Possibilita controle automático e manual dos setores &
     Possibilita controlar irrigação e fertirrigação &
     Fornece recomendação; a aplicação fica a cargo do produtor &
-    Acionamento de válvulas por relés &
-    Válvula e bomba por relé, automático e manual &
-    Apenas monitoramento \\
+    Acionamento de válvulas por relés\\
     \hline
     Acesso remoto &
     Aplicativo e navegador &
     Computador e celular &
     Celular, tablet e computador &
-    Apenas SMS com o estado da irrigação &
-    Aplicativo e painel web (Blynk) &
-    Painel web (ThingSpeak) \\
+    Apenas SMS com o estado da irrigação \\
     \hline
     Histórico de dados &
     Varia conforme o plano contratado &
     Dados processados em nuvem &
     Relatório ao fim da safra &
-    Cartão de memória, com coleta manual &
-    Gráficos e registros de irrigação no Blynk &
-    Gráficos e exportação de arquivos \\
+    Cartão de memória, com coleta manual\\
     \hline
     Comunicação &
     Wi-Fi &
     Wi-Fi, celular, LoRa e outras &
     Internet, conforme os equipamentos integrados &
-    GSM (SMS) &
-    Wi-Fi &
-    Wi-Fi, a cada seis horas \\
+    GSM (SMS)\\
     \hline
     Abertura da solução &
     Proprietária &
     Proprietária &
     Proprietária &
-    Código aberto &
-    Não informada, usa a plataforma Blynk &
-    Protótipo próprio, de cerca de US\$~62 \\
+    Código aberto\\
     \hline
   \end{tabularx}
   \fonte{Elaborado pelo autor com base em \citeonline{hunterhydrawise},
   \citeonline{israelagri2018netbeat}, \citeonline{e4cnetbeat},
-  \citeonline{valmont2018}, \citeonline{valleyscheduling},
-  \citeonline{campos2021}, \citeonline{pereira2023} e \citeonline{abdelmoneim2025comparative}}
+  \citeonline{valmont2018}, \citeonline{valleyscheduling} e
+  \citeonline{campos2021}}
 \end{table}
 
 O público-alvo indica a quem cada solução se destina e em que escala
@@ -220,50 +184,53 @@ ela opera. O Hydrawise atende residências e profissionais de paisagismo, o
 NetBeat abrange desde grandes áreas até pequenos produtores, e o Valley
 Scheduling é voltado a produtores rurais que irrigam por pivô, sistema linear ou
 gotejamento. A plataforma de \citeonline{campos2021} foi concebida para pesquisa
-em casa de vegetação e estufas. O sistema de \citeonline{pereira2023} foi pensado para pequenos cultivos e avaliado em um recipiente, e o dispositivo de \citeonline{abdelmoneim2025comparative} foi usado em uma pesquisa de campo com alface.
+em casa de vegetação e estufas.
 
 A base para decidir a irrigação corresponde ao critério usado para
 definir quando e quanto irrigar. O Hydrawise ajusta os programas pela previsão
 do tempo, o NetBeat recomenda a irrigação por modelos dinâmicos de cultura e o
 Valley Scheduling gera recomendações por algoritmo ou por dados medidos em
 campo. A plataforma de \citeonline{campos2021} apenas aciona a irrigação quando
-a umidade do solo cai abaixo de um limiar, e o sistema de \citeonline{pereira2023} faz o mesmo, mas apenas em janelas de horário e por um tempo fixo. Já \citeonline{abdelmoneim2025comparative} comparam as duas abordagens, a do limiar de umidade e a da FAO-56, sem combiná-las.
+a umidade do solo cai abaixo de um limiar.
 
 As variáveis consideradas são as informações que alimentam essa
 decisão. As soluções comerciais utilizam um conjunto mais amplo de dados, que
 inclui informações de solo, de cultura, de clima e, no caso do NetBeat, de
-sensores de planta e hidráulicos. A plataforma de \citeonline{campos2021} mede apenas três variáveis, a umidade do
-solo, a temperatura e a umidade do ar. O sistema de \citeonline{pereira2023} acrescenta a temperatura do solo e a vazão, e o dispositivo de \citeonline{abdelmoneim2025comparative} mede apenas a umidade do solo, em quatro profundidades.
+sensores de planta e hidráulicos. A plataforma de \citeonline{campos2021} mede apenas três variáveis: umidade do
+solo, temperatura e umidade do ar.
 
 A forma de atuação indica se a solução executa a irrigação ou apenas
 orienta o produtor. O Hydrawise e o NetBeat controlam diretamente os setores de
 irrigação, e o NetBeat também a fertirrigação. O Valley Scheduling apenas
 fornece recomendações, cabendo ao produtor aplicá-las. A plataforma de
-\citeonline{campos2021} aciona válvulas por meio de relés, e o sistema de \citeonline{pereira2023} aciona uma válvula e uma bomba, nos modos automático e manual. O dispositivo de \citeonline{abdelmoneim2025comparative} apenas monitora o solo.
+\citeonline{campos2021} aciona válvulas por meio de relés.
 
 O acesso remoto refere-se à possibilidade de acompanhar e comandar o
 sistema a distância. As três soluções comerciais oferecem acesso por aplicativo,
 navegador ou computador. A plataforma de \citeonline{campos2021} limita-se ao
-envio de mensagens SMS com o estado da irrigação, sem permitir comandos. O sistema de \citeonline{pereira2023} oferece aplicativo e painel web pela plataforma Blynk, que também permitem comandar a válvula, e o de \citeonline{abdelmoneim2025comparative} permite apenas consultar os dados na plataforma ThingSpeak.
+envio de mensagens SMS com o estado da irrigação, sem permitir comandos. 
 
 O histórico de dados indica como as informações ficam disponíveis para
 consulta posterior. No Hydrawise, a extensão do histórico depende do plano
 contratado; no NetBeat, os dados são processados em nuvem; e no Valley
 Scheduling, o produtor recebe um relatório ao fim da safra. Na plataforma de
 \citeonline{campos2021}, os dados ficam em um cartão de memória e precisam ser
-coletados manualmente. Nos trabalhos de \citeonline{pereira2023} e de \citeonline{abdelmoneim2025comparative}, o histórico fica nas plataformas Blynk e ThingSpeak, respectivamente.
+coletados manualmente. 
 
 A comunicação descreve a tecnologia usada para transmitir os dados. O
 Hydrawise utiliza Wi-Fi; o NetBeat combina Wi-Fi, redes celulares, LoRa e outras
 tecnologias; e o Valley Scheduling depende da conexão à internet dos
 equipamentos integrados. A plataforma de \citeonline{campos2021} usa a rede GSM
-para enviar SMS, e os trabalhos de \citeonline{pereira2023} e de \citeonline{abdelmoneim2025comparative} usam o Wi-Fi, este último enviando os dados apenas a cada seis horas para economizar energia.
+para enviar SMS.
 
 Por fim, a abertura da solução indica se o código e o projeto estão
 disponíveis para adaptação. As três soluções comerciais são proprietárias,
 enquanto a plataforma de \citeonline{campos2021} é de código aberto, o que
 permite substituir sensores e ajustar a lógica de
-irrigação conforme a necessidade. Os trabalhos de \citeonline{pereira2023} e de \citeonline{abdelmoneim2025comparative} não informam se o código está disponível, e o primeiro depende de uma plataforma de terceiros para a interface.
+irrigação conforme a necessidade.
 
 Em síntese, as soluções comerciais oferecem modelos de decisão mais elaborados
-e suporte técnico, mas são proprietárias e voltadas a escalas específicas. Os trabalhos acadêmicos mostram a viabilidade de soluções de baixo custo com hardware aberto e, no caso de \citeonline{pereira2023} e \citeonline{abdelmoneim2025comparative}, com o ESP32 e o envio dos dados pela internet. Nenhum deles, porém, combina o limiar de umidade, para decidir quando irrigar, com o cálculo pela FAO-56, para decidir quanto irrigar, e apenas o de \citeonline{pereira2023} permite comandar a irrigação a distância, por meio de uma plataforma de terceiros.
+e suporte técnico, mas são proprietárias e voltadas a escalas específicas. A
+plataforma de \citeonline{campos2021} mostra a viabilidade do controle por
+limiar de umidade com hardware aberto, porém sem acesso remoto aos
+dados.
