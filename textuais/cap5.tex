@@ -236,7 +236,7 @@ A \texttt{sensorTask} lê os sensores a cada 10 segundos, atualiza as temperatur
 \subsubsection{Leitura da umidade do solo}
 
 O conversor analógico-digital do ESP32 tem 12 bits e entrega valores entre 0 e 4095. Para reduzir o ruído, o firmware faz 16 leituras seguidas, converte cada uma em tensão e usa a média, em volts. No sensor resistivo, quanto mais úmido o solo, menor a tensão de saída. Por isso, a umidade percentual é obtida por interpolação linear entre duas tensões de calibração, uma com o sensor seco e outra com o sensor imerso em água, conforme a Equação~\ref{eq:umidade}:
-
+ 
 \begin{equation}
   U = \frac{L_{seco} - L}{L_{seco} - L_{sat}} \times 100
   \label{eq:umidade}
@@ -816,7 +816,7 @@ O painel possui seis telas, apresentadas nas Figuras~\ref{fig:tela-login} a~\ref
 
 \begin{figure}[!htbp]
   \centering
-  \imagemsombra[width=0.6\textwidth]{figuras/Tela_Login.png}
+  \imagemsombra[width=0.8\textwidth]{figuras/login.jpg}
   \caption{Tela de login}
   \label{fig:tela-login}
   \fonte{Elaborado pelo autor}
@@ -836,7 +836,7 @@ A tela de histórico (Figura~\ref{fig:tela-historico}) apresenta três gráficos
 
 \begin{figure}[!htbp]
   \centering
-  \imagemsombra[width=0.75\textwidth]{figuras/Tela_Historico.png}
+  \imagemsombra[width=0.95\textwidth]{figuras/Tela_Historico.png}
   \caption{Tela de histórico}
   \label{fig:tela-historico}
   \fonte{Elaborado pelo autor}
@@ -846,7 +846,7 @@ A tela de configurações (Figura~\ref{fig:tela-configuracoes}) é dividida em q
 
 \begin{figure}[!htbp]
   \centering
-  \imagemsombra[width=0.75\textwidth]{figuras/Tela_Configuracao.png}
+  \imagemsombra[width=0.85\textwidth]{figuras/Tela_Configuracao.png}
   \caption{Tela de configurações}
   \label{fig:tela-configuracoes}
   \fonte{Elaborado pelo autor}
@@ -856,7 +856,7 @@ Por fim, duas telas são exclusivas do Administrador/Operador. A tela de cadastr
 
 \begin{figure}[!htbp]
   \centering
-  \imagemsombra[width=0.65\textwidth]{figuras/Tela_Cadastrar_Cultura.png}
+  \imagemsombra[width=0.60\textwidth]{figuras/Tela_Cadastrar_Cultura.jpg}
   \caption{Tela de cadastro de culturas}
   \label{fig:tela-cultura}
   \fonte{Elaborado pelo autor}
@@ -864,7 +864,7 @@ Por fim, duas telas são exclusivas do Administrador/Operador. A tela de cadastr
 
 \begin{figure}[!htbp]
   \centering
-  \imagemsombra[width=0.65\textwidth]{figuras/Tela_Cadastro.png}
+  \imagemsombra[width=0.60\textwidth]{figuras/Tela_Cadastro.jpg}
   \caption{Tela de cadastro de usuários}
   \label{fig:tela-cadastro}
   \fonte{Elaborado pelo autor}
