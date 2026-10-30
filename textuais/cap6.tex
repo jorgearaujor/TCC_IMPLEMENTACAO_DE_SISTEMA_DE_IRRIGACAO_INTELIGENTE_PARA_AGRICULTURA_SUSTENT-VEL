@@ -40,7 +40,7 @@ A Tabela~\ref{tab:parametros-teste} apresenta os parâmetros configurados no pai
     \hline
     Latitude da área ($\varphi$) & 0$^{\circ}$ \\
     Cultura e fase de desenvolvimento & Tomate, fase 3 \\
-    Coeficiente de cultura (K$_c$) & 0,3 \\
+    Coeficiente de cultura (K$_c$) & 0,4 \\ % CONFERIR: ETc/ET0 do T05 = 1,61/4,02 = 0,4; confirmar a cultura e a fase que dão esse Kc
     Espaçamento entre plantas ($E_p$) & 0,3~m \\
     Espaçamento entre linhas ($E_l$) & 0,3~m \\
     Vazão do gotejador ($q_g$) & 2~L\,h$^{-1}$ \\
@@ -287,14 +287,6 @@ Temp=23.4C Umid.Ar=45.0% Umid.Solo=0.0% Modo=manual
 
 Este teste verifica se o dispositivo inicia a irrigação sozinho quando as quatro condições da regra RN01 são satisfeitas e se o volume e o tempo são calculados conforme as Equações~\ref{eq:ra} a~\ref{eq:tempo}. No painel, o modo foi alterado para automático e a irrigação automática foi autorizada. O Quadro~\ref{lst:log-t05} mostra a decisão de irrigar, os valores calculados e a execução, e a Figura~\ref{fig:t05-historico} mostra o registro da irrigação no histórico, no modo automático.
 
-% Mensagens esperadas:
-%   Modo de irrigacao definido para automatico
-%   Irrigacao automatica autorizada
-%   Modo automatico: umidade=30.0%, limiar=50.0%
-%   Disparando irrigacao automatica: 810.0s, 0.45L/planta, 13.50L total.
-%   Rele ligado
-%   Rele desligado
-%   Irrigacao (automatico) concluida. Duracao real: 810s.
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language={}, caption={Log do monitor serial durante a irrigação automática (T05)}, label={lst:log-t05}]
@@ -326,12 +318,12 @@ Rele ligado
   \fonte{Elaborado pelo autor}
 \end{figure}
 
-A Tabela~\ref{tab:t05} reúne os valores definidos pelo firmware nessa irrigação, registrados no log do Quadro~\ref{lst:log-t05}. O volume por planta aparece como 0,14~L porque o log o exibe com apenas duas casas decimais. Esperava-se que, com a umidade do solo abaixo do limiar, o firmware calculasse o volume e o tempo de irrigação e mantivesse o relé ligado pelo tempo calculado. Foi o que ocorreu. A umidade do solo estava em 0,0\%, abaixo do limiar de 45,0\%, e o relé ficou ligado por 260~s, o que corresponde ao tempo calculado de 260,5~s. Durante a irrigação, a autorização foi desativada no painel, e a irrigação seguiu até o fim, já que o firmware só verifica a autorização antes de iniciá-la. Os valores de ET$_0$ e de volume obtidos são muito menores que os de um dia real de cultivo. Isso acontece porque a equação de Hargreaves-Samani foi concebida para as temperaturas mínima e máxima de um dia inteiro, e no teste o dispositivo havia registrado as temperaturas por pouco tempo, com uma amplitude térmica pequena. O teste verifica, portanto, a execução do cálculo e do acionamento, e não o valor agronômico da lâmina aplicada.
+A Tabela~\ref{tab:t05} reúne os valores definidos pelo firmware nessa irrigação, registrados no log do Quadro~\ref{lst:log-t05}. Esperava-se que, com a umidade do solo abaixo do limiar, o firmware calculasse o volume e o tempo de irrigação e mantivesse o relé ligado pelo tempo calculado. Foi o que ocorreu. A umidade do solo estava em 0,0\%, abaixo do limiar de 45,0\%, e o firmware calculou um tempo de 260,5~s. O registro do histórico (Figura~\ref{fig:t05-historico}) mostra a irrigação no modo automático com duração de 4~min e 20~s, ou seja, 260~s, volume por planta de 0,14~L e volume total de 4,34~L, os mesmos valores do log.
+
+Os valores calculados conferem com as equações. Com o dia do ano 302, a latitude de 0$^{\circ}$ configurada no teste e as temperaturas mínima e máxima de 26,1 e 32,2~$^{\circ}$C, a Equação~\ref{eq:ra} resulta em uma $R_a$ de 15,08~mm\,dia$^{-1}$, e a equação de Hargreaves-Samani, em uma ET$_0$ de 4,02~mm\,dia$^{-1}$. Com o K$_c$ de 0,4, a ET$_c$ é de 1,61~mm\,dia$^{-1}$, o que, com a área de 0,09~m$^2$ por planta, dá 0,145~L por planta, 260,5~s de irrigação com um gotejador de 2~L\,h$^{-1}$ e 4,34~L para as 30 plantas. Se fosse usada a latitude de Urutaí, de cerca de $-$17,5$^{\circ}$, a $R_a$ seria de 16,27~mm\,dia$^{-1}$ e a ET$_0$, de 4,34~mm\,dia$^{-1}$. Vale observar que as temperaturas mínima e máxima foram registradas desde que o dispositivo foi ligado, e não ao longo de um dia completo, como pressupõe a equação de Hargreaves-Samani. O teste verifica, portanto, a execução correta do cálculo e do acionamento, e não o valor agronômico da lâmina aplicada.
 
 \begin{table}[htbp]
   \centering
-  % CONFERIR: com J=298 e as temperaturas do log, a Equação de Ra dá 15,13 mm/dia só com latitude 0 (a Tabela 7.1 diz -17),
-  % e a ET0 de 0,46 mm/dia só com amplitude térmica de cerca de 0,1 C (o log mostra 23,5 e 25,1 C). Verificar no firmware.
   \caption{Valores definidos pelo firmware na irrigação automática (T05)}
   \label{tab:t05}
   \small
