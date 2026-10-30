@@ -6,45 +6,12 @@
 \chapter*{RESUMO} 
 \thispagestyle{empty}
 
+A irrigação responde por cerca de 70\% da água doce retirada no mundo, e o manejo feito por turnos fixos ou pela observação do produtor tende a aplicar mais ou menos água do que a cultura necessita. As soluções comerciais que automatizam essa decisão costumam ser proprietárias, ter custo elevado e oferecer pouca flexibilidade quanto aos sensores utilizados. Este trabalho teve como objetivo desenvolver um sistema de irrigação inteligente de baixo custo, baseado em Internet das Coisas, capaz de monitorar o solo e o ambiente, estimar a necessidade hídrica da cultura e automatizar a irrigação por gotejamento, com acompanhamento e controle a distância. Trata-se de uma pesquisa aplicada e exploratória, conduzida de forma incremental, em que um primeiro protótipo baseado em Raspberry Pi e MQTT deu lugar à arquitetura final, organizada em três camadas. Na camada de percepção, um dispositivo com ESP32, sensor de umidade do solo, sensor DHT11, módulo relé e display LCD lê os sensores e decide quando irrigar, com base em um limiar de umidade, e quanto irrigar, pelo método FAO-56, com a evapotranspiração de referência estimada pela equação de Hargreaves-Samani. Na camada de nuvem, uma API REST em Java com Spring Boot recebe os dados, aplica as regras de acesso, armazena as informações no Cloud Firestore e entrega os comandos ao dispositivo por long-polling. Na camada de aplicação, um painel web em Angular permite acompanhar as leituras e o histórico, configurar os parâmetros agronômicos e acionar a irrigação, com perfis de acesso distintos. O sistema foi avaliado em bancada por meio de dez cenários de teste de ponta a ponta, comprovados por registros do dispositivo, documentos do banco de dados, telas do painel e respostas da API. Os resultados mostraram que as leituras chegaram ao painel com os mesmos valores registrados no dispositivo, que os comandos foram executados nos modos manual e automático com os tempos calculados e que as travas de segurança e o controle de acesso funcionaram como previsto. Os testes também apontaram ajustes a fazer no firmware, como o registro do volume das irrigações interrompidas. Conclui-se que é viável construir, com componentes estimados entre R\$~200 e R\$~345, um sistema de irrigação automatizado e modular, embora a sua eficiência agronômica ainda dependa de uma avaliação em campo.
 
-
-A agricultura contemporânea enfrenta o desafio de otimizar a produção alimentar ao mesmo tempo em que preserva recursos hídricos. Sistemas de irrigação eficientes são fundamentais nesse cenário, porém, muitas soluções de mercado apresentam alto custo e carecem de mecanismos de controle acessíveis. Este trabalho apresenta o desenvolvimento da arquitetura de software de um Sistema de Irrigação Inteligente de baixo custo, com o objetivo de promover a gestão sustentável do uso da água. Tendo em vista que o protótipo de hardware de Internet das Coisas (IoT), responsável pela coleta de dados do solo e ambiente, já se encontra plenamente consolidado, a presente pesquisa concentra-se no desenvolvimento da Interface de Programação de Aplicações (API) e da interface gráfica do usuário (Frontend). A API foi estruturada para receber, processar e armazenar os dados sensoriais em ambiente de nuvem, aplicando algoritmos para a predição da quantidade ideal de água necessária para as culturas, transferindo a complexidade de processamento do hardware para o backend. Paralelamente, desenvolveu-se uma interface web responsiva para o monitoramento em tempo real do histórico ambiental e o gerenciamento remoto da irrigação. O design, os fluxos de interação e a experiência de uso (UX) do sistema foram modelados e direcionados especificamente para estudantes de engenharia agrícola e agronomia, garantindo que a aplicação entregue funcionalidades alinhadas ao rigor acadêmico e prático, facilitando a tomada de decisão no manejo hídrico. A metodologia abrangeu o desenvolvimento do backend para coleta e envio de dados, a criação da interface visual, e a integração entre ambas as camadas, culminando em testes de estabilidade em ambiente controlado. Os resultados demonstram um sistema de alta confiabilidade no fluxo de informações, oferecendo uma ferramenta acessível e intuitiva. Conclui-se que o foco na estruturação robusta das camadas de software potencializou a usabilidade e a escalabilidade do projeto, consolidando uma solução tecnológica moderna e viável para o avanço da agricultura irrigada sustentável. 
- 
- 
 %--------------------------------------------------------------------------
 \vspace{2cm}
 {\Large \textbf{Palavras-chave:}}
 \vspace{0.4cm}
 %--------------------------------------------------------------------------
 
-IoT. Agricultura, API
-%MAIS DICAS
-%
-%Passo 1: O que é (contexto)
-%
-%Para iniciar o resumo e abstract, apresente ao leitor do que se trata seu trabalho, ou seja, qual problema você está investigando e a sua relevância.
-%
-%Logo aqui, nas primeiras linhas, você precisa criar um contexto que desperte a curiosidade e o interesse para a leitura.
-%
-%Passo 2: Por quê? (Descreva o objetivo do trabalho)
-%
-%Com base no problema ou situação investigada, seu trabalho já precisa dizer a que veio. A forma de descrever um objetivo varia de acordo com o estudo realizado.
-%
-%Seu trabalho pode se propor a analisar diferentes aspectos de um mesmo problema, a compreender um fenômeno, ou então, a “apresentar uma solução para reduzir a produção de energia não renovável”, por exemplo. Em resumo, você conta o porquê do seu TCC existir.
-%
-%Passo 3: Como? (Método utilizado)
-%
-%Você deve explicar rapidamente como seu trabalho foi feito, qual metodologia utilizou. Conte ao seu leitor se você realizou um estudo de caso, um experimento, uma pesquisa quantitativa e/ou pesquisa qualitativa etc.
-%
-%Passo 4: Resultados
-%
-%Apresente os resultados mais relevantes do seu estudo, sejam eles positivos ou negativos. Descreva-os de forma sucinta, e que despertem curiosidade e interesse em quem lê.
-%
-%Passo 5: Conclui-se que…
-%
-%Por fim, seu resumo deve trazer as principais conclusões sobre tudo o que você leu, pesquisou e desenvolveu.
-%
-%Aqui, também é possível mencionar como o seu trabalho poderá contribuir para o entendimento do objeto ou fenômeno estudado, ou como servirá de base para pesquisas futuras.
-%\vspace{-1cm}
-
-
+Internet das Coisas. Irrigação inteligente. ESP32. API REST. Evapotranspiração.

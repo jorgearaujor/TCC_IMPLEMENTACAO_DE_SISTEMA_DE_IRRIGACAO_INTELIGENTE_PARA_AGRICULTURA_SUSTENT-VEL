@@ -65,6 +65,27 @@ Os dados circulam em dois sentidos. No sentido do campo para o painel, o ESP32 e
 
 O código foi dividido em três aplicações independentes, uma para cada camada. O firmware separa a leitura dos sensores, o acionamento dos atuadores, as regras de irrigação e a comunicação. A API separa controladores, serviços, repositórios, modelos e segurança. O painel separa os serviços e os modelos compartilhados das telas. Essa divisão atende ao requisito de manutenibilidade (RNF12) e permite alterar uma parte sem modificar as demais.
 
+O código-fonte das três aplicações está disponível em repositórios públicos no GitHub, um para cada camada, conforme a Tabela~\ref{tab:repositorios}.
+
+\begin{table}[!htbp]
+  \centering
+  \caption{Repositórios do código-fonte do sistema}
+  \label{tab:repositorios}
+  \small
+  \renewcommand{\arraystretch}{1.2}
+  \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.6cm}
+                               >{\raggedright\arraybackslash}X}
+    \hline
+    \textbf{Aplicação} & \textbf{Repositório} \\
+    \hline
+    Firmware do ESP32 (percepção) & \url{https://github.com/jorgearaujor/smart-irrigation-colector} \\
+    API REST (nuvem) & \url{https://github.com/jorgearaujor/smart-irrigation-api} \\
+    Painel web (aplicação) & \url{https://github.com/jorgearaujor/smart-irrigation-front} \\
+    \hline
+  \end{tabularx}
+  \fonte{\citeonline{araujo2026colector}, \citeonline{araujo2026api} e \citeonline{araujo2026front}}
+\end{table}
+
 \subsection{Comunicação entre as camadas}
 \label{sec:rede}
 \label{sec:longpolling}
