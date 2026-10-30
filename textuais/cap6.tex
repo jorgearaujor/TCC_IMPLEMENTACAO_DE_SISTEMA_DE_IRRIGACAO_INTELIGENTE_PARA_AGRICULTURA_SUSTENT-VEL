@@ -38,8 +38,8 @@ A Tabela~\ref{tab:parametros-teste} apresenta os parâmetros configurados no pai
     \hline
     \textbf{Parâmetro} & \textbf{Valor} \\
     \hline
-    Latitude da área ($\varphi$) & -17$^{\circ}$ \\
-    Cultura e fase de desenvolvimento & Batata, fase 4 \\
+    Latitude da área ($\varphi$) & 0$^{\circ}$ \\
+    Cultura e fase de desenvolvimento & Tomate, fase 3 \\
     Coeficiente de cultura (K$_c$) & 0,3 \\
     Espaçamento entre plantas ($E_p$) & 0,3~m \\
     Espaçamento entre linhas ($E_l$) & 0,3~m \\
@@ -298,24 +298,20 @@ Este teste verifica se o dispositivo inicia a irrigação sozinho quando as quat
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language={}, caption={Log do monitor serial durante a irrigação automática (T05)}, label={lst:log-t05}]
-Temp=23.5C Umid.Ar=39.0% Umid.Solo=0.0% Modo=automatico
+Temp=26.6C Umid.Ar=88.0% Umid.Solo=0.0% Modo=automatico
+Irrigacao automatica autorizada
 Modo automatico: umidade=0.0%, limiar=45.0%
 ----- Irrigacao automatica: parametros -----
-Temperatura min/max: 23.5 / 25.1 C
-Dia do ano (J): 298
-Radiacao extraterrestre (Ra): 15.13 mm/dia
-ET0: 0.46 mm/dia
-ETc: 0.14 mm/dia
-Volume por planta (Vp): 0.01 L
-Tempo de irrigacao (t): 22.1 s
-Volume total (Vt): 0.37 L
+Temperatura min/max: 26.1 / 32.2 C
+Dia do ano (J): 302
+Radiacao extraterrestre (Ra): 15.08 mm/dia
+ET0: 4.02 mm/dia
+ETc: 1.61 mm/dia
+Volume por planta (Vp): 0.14 L
+Tempo de irrigacao (t): 260.5 s
+Volume total (Vt): 4.34 L
 --------------------------------------------
 Rele ligado
-Temp=23.4C Umid.Ar=38.0% Umid.Solo=0.0% Modo=automatico
-Irrigacao automatica nao autorizada
-Temp=23.5C Umid.Ar=38.0% Umid.Solo=0.0% Modo=automatico
-Rele desligado
-Irrigacao (automatico) concluida. Duracao real: 22s.
 \end{lstlisting}
 \vspace{-0.5\baselineskip}
 \fonte{Elaborado pelo autor}
@@ -330,7 +326,7 @@ Irrigacao (automatico) concluida. Duracao real: 22s.
   \fonte{Elaborado pelo autor}
 \end{figure}
 
-A Tabela~\ref{tab:t05} reúne os valores definidos pelo firmware nessa irrigação, registrados no log do Quadro~\ref{lst:log-t05}. O volume por planta aparece como 0,01~L porque o log o exibe com apenas duas casas decimais. Esperava-se que, com a umidade do solo abaixo do limiar, o firmware calculasse o volume e o tempo de irrigação e mantivesse o relé ligado pelo tempo calculado. Foi o que ocorreu. A umidade do solo estava em 0,0\%, abaixo do limiar de 45,0\%, e o relé ficou ligado por 22~s, o que corresponde ao tempo calculado de 22,1~s. Durante a irrigação, a autorização foi desativada no painel, e a irrigação seguiu até o fim, já que o firmware só verifica a autorização antes de iniciá-la. Os valores de ET$_0$ e de volume obtidos são muito menores que os de um dia real de cultivo. Isso acontece porque a equação de Hargreaves-Samani foi concebida para as temperaturas mínima e máxima de um dia inteiro, e no teste o dispositivo havia registrado as temperaturas por pouco tempo, com uma amplitude térmica pequena. O teste verifica, portanto, a execução do cálculo e do acionamento, e não o valor agronômico da lâmina aplicada.
+A Tabela~\ref{tab:t05} reúne os valores definidos pelo firmware nessa irrigação, registrados no log do Quadro~\ref{lst:log-t05}. O volume por planta aparece como 0,14~L porque o log o exibe com apenas duas casas decimais. Esperava-se que, com a umidade do solo abaixo do limiar, o firmware calculasse o volume e o tempo de irrigação e mantivesse o relé ligado pelo tempo calculado. Foi o que ocorreu. A umidade do solo estava em 0,0\%, abaixo do limiar de 45,0\%, e o relé ficou ligado por 260~s, o que corresponde ao tempo calculado de 260,5~s. Durante a irrigação, a autorização foi desativada no painel, e a irrigação seguiu até o fim, já que o firmware só verifica a autorização antes de iniciá-la. Os valores de ET$_0$ e de volume obtidos são muito menores que os de um dia real de cultivo. Isso acontece porque a equação de Hargreaves-Samani foi concebida para as temperaturas mínima e máxima de um dia inteiro, e no teste o dispositivo havia registrado as temperaturas por pouco tempo, com uma amplitude térmica pequena. O teste verifica, portanto, a execução do cálculo e do acionamento, e não o valor agronômico da lâmina aplicada.
 
 \begin{table}[htbp]
   \centering
@@ -347,15 +343,15 @@ A Tabela~\ref{tab:t05} reúne os valores definidos pelo firmware nessa irrigaç�
     \hline
     Umidade do solo no momento da decisão & 0,0~\% \\
     Limiar mínimo de umidade & 45,0~\% \\
-    Temperaturas mínima e máxima & 23,5 e 25,1~$^{\circ}$C \\
-    Dia do ano ($J$) & 298 \\
-    Radiação extraterrestre $R_a$ & 15,13~mm\,dia$^{-1}$ \\
-    ET$_0$ & 0,46~mm\,dia$^{-1}$ \\
-    ET$_c$ & 0,14~mm\,dia$^{-1}$ \\
-    Volume por planta ($V_p$) & 0,01~L \\
-    Tempo de irrigação ($t$) & 22,1~s \\
-    Volume total ($V_t$) & 0,37~L \\
-    Duração real da irrigação & 22~s \\
+    Temperaturas mínima e máxima & 26,1 e 32,2~$^{\circ}$C \\
+    Dia do ano ($J$) & 302 \\
+    Radiação extraterrestre $R_a$ & 15,08~mm\,dia$^{-1}$ \\
+    ET$_0$ & 4,02~mm\,dia$^{-1}$ \\
+    ET$_c$ & 1,61~mm\,dia$^{-1}$ \\
+    Volume por planta ($V_p$) & 0,14~L \\
+    Tempo de irrigação ($t$) & 260,5~s \\
+    Volume total ($V_t$) & 4,34~L \\
+    Duração real da irrigação & 260~s \\
     \hline
   \end{tabularx}
   \fonte{Elaborado pelo autor}
