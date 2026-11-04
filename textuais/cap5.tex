@@ -92,7 +92,7 @@ O código-fonte das três aplicações está disponível em repositórios públi
 
 No modelo de \citeonline{morchid2024}, a rede é uma camada própria, responsável por transportar os dados entre a percepção e a nuvem. Na arquitetura proposta neste trabalho, porém, ela não foi implementada como uma camada independente, com equipamentos ou software próprios. A comunicação é feita apenas por protocolos, usados pelas demais camadas para trocar dados entre si. O ESP32 conecta-se ao roteador Wi-Fi do local como uma estação comum e volta a se conectar automaticamente se a conexão cair (RNF09), e tanto o dispositivo quanto o painel se comunicam com a API pela internet, usando o protocolo HTTPS, que protege as mensagens com o protocolo TLS (RNF03). As mensagens seguem o estilo REST, com os dados representados em JSON (RNF15). Por isso, a Figura~\ref{fig:arquitetura} representa a comunicação pelas setas que ligam as camadas, identificadas pelo rótulo Comunicação, e não como uma camada separada.
 
-Cada informação enviada pelo dispositivo é uma requisição HTTP com um documento JSON no corpo. O Quadro~\ref{lst:json-telemetria} mostra, como exemplo, a mensagem de telemetria que o ESP32 envia a cada 10 segundos à rota \texttt{/api/webhooks/telemetry}.
+Cada informação enviada pelo dispositivo é uma requisição HTTP com um documento JSON no corpo. O Quadro~\ref{lst:json-telemetria} mostra, como exemplo, a mensagem de telemetria que o ESP32 envia a cada 10 segundos à rota \texttt{/api/ingest/telemetry}. As rotas pelas quais o dispositivo envia dados ficam sob o prefixo \texttt{/api/ingest}, de ingestão de dados.
 
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
@@ -607,9 +607,9 @@ A Tabela~\ref{tab:endpoints} apresenta as rotas da API, separadas pelo cliente q
   \endlastfoot
   \multicolumn{3}{l}{\textbf{Dispositivo (autenticado pela chave X-Device-Key)}} \\
   \hline
-  POST & \texttt{/api/webhooks/telemetry} & Registra uma leitura dos sensores \\
-  POST & \texttt{/api/webhooks/status} & Atualiza o estado do dispositivo \\
-  POST & \texttt{/api/webhooks/history} & Registra uma irrigação concluída \\
+  POST & \texttt{/api/ingest/telemetry} & Registra uma leitura dos sensores \\
+  POST & \texttt{/api/ingest/status} & Atualiza o estado do dispositivo \\
+  POST & \texttt{/api/ingest/history} & Registra uma irrigação concluída \\
   GET & \texttt{/api/devices/\{id\}/config} & Devolve a configuração inicial \\
   GET & \texttt{/api/devices/\{id\}/commands/poll} & Aguarda até 30~s por um comando (long-polling) \\
   \hline
