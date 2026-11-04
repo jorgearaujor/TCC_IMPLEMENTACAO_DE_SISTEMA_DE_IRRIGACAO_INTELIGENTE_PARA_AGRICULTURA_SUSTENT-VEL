@@ -347,6 +347,7 @@ O \sigla{LoRa}{Long Range} é uma tecnologia de comunicação sem fio de longo a
 O Bluetooth é uma tecnologia de comunicação sem fio de curto alcance. Sua versão \sigla{BLE}{Bluetooth Low Energy} foi desenvolvida para aplicações de controle e monitoramento de baixo consumo de energia, nas quais os dispositivos permanecem a maior parte do tempo em modo de espera e despertam periodicamente para se comunicar \cite{gomez2012}. Por causa do alcance limitado, costuma ser usado na comunicação entre dispositivos próximos, como na configuração de um equipamento a partir do celular, e não na transmissão de dados do campo até a internet. O ESP32, por exemplo, integra Wi-Fi e Bluetooth no mesmo chip \cite{espressif}.
  
 \subsection{Protocolos da camada de aplicação}
+\label{sec:protocolos-aplicacao}
  
 Os protocolos da camada de aplicação definem como as mensagens são formatadas e trocadas entre os programas e funcionam sobre as camadas inferiores, independentemente da tecnologia sem fio utilizada \cite{kurose2021}. Assim, um mesmo protocolo pode ser usado sobre Wi-Fi ou sobre uma rede cabeada. Em sistemas IoT, os mais comuns são o HTTP e o MQTT.
  
