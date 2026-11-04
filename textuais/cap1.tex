@@ -11,7 +11,7 @@ Neste capítulo, são apresentados os conceitos que fundamentam a implementaçã
 A irrigação é a aplicação artificial de água ao solo para suprir a parte da
 necessidade hídrica das culturas que não é atendida pela chuva. Essa necessidade corresponde à água perdida pela evapotranspiração da cultura, e a lâmina de irrigação equivale, basicamente, à diferença entre essa demanda e a precipitação efetiva \cite{allen1998}. Ao suprir a água que falta, a irrigação permite elevar a produtividade de áreas limitadas pela disponibilidade hídrica e alivia o estresse hídrico e térmico das plantas, sendo apontada também como uma forma de adaptação da agricultura às mudanças climáticas \cite{rosa2022}.
  
-A agricultura irrigada ocupa cerca de 22\% das terras cultivadas, mas responde por aproximadamente 40\% da produção mundial de alimentos \cite{rosa2022}. Essa importância tem um custo hídrico elevado: a irrigação representa cerca de 70\% das retiradas de água doce e cerca de 90\% do consumo de água pelas atividades humanas \cite{mcdermid2023}. Além disso, grande parte da expansão recente das áreas irrigadas ocorreu em regiões que já enfrentam escassez de água \cite{mehta2024}. Por isso, melhorar a eficiência no uso da água na irrigação é considerado uma estratégia essencial para conciliar produção de alimentos e conservação dos recursos hídricos \cite{ingrao2023}.
+A agricultura irrigada ocupa cerca de 22\% das terras cultivadas, mas responde por aproximadamente 40\% da produção mundial de alimentos \cite{rosa2022}. Essa importância tem um custo hídrico elevado, pois a irrigação representa cerca de 70\% das retiradas de água doce e cerca de 90\% do consumo de água pelas atividades humanas \cite{mcdermid2023}. Além disso, grande parte da expansão recente das áreas irrigadas ocorreu em regiões que já enfrentam escassez de água \cite{mehta2024}. Por isso, melhorar a eficiência no uso da água na irrigação é considerado uma estratégia essencial para conciliar produção de alimentos e conservação dos recursos hídricos \cite{ingrao2023}.
  
 
 \subsection{Métodos de irrigação}
@@ -158,7 +158,7 @@ Apesar desses benefícios, a adoção da IoT no campo ainda enfrenta limitaçõe
 
 Para organizar seus componentes, os sistemas IoT costumam ser descritos por arquiteturas em camadas, cujo número varia conforme o autor \cite{burhan2018}. O modelo mais difundido possui três camadas, a de percepção, a de rede, também chamada de transporte, e a de aplicação \cite{burhan2018,tewari2020}.
 
-Para a agricultura inteligente, \citeonline{morchid2024} propõem uma arquitetura de quatro camadas. A camada de percepção reúne os sensores e atuadores que coletam dados do ambiente e agem sobre ele, como sensores de umidade do solo e válvulas de irrigação. A camada de rede transmite esses dados; a camada de nuvem os armazena e processa; e a camada de aplicação apresenta as informações ao usuário, por meio de painéis ou aplicativos.
+Para a agricultura inteligente, \citeonline{morchid2024} propõem uma arquitetura de quatro camadas. A camada de percepção reúne os sensores e atuadores que coletam dados do ambiente e agem sobre ele, como sensores de umidade do solo e válvulas de irrigação. A camada de rede transmite esses dados, a camada de nuvem os armazena e processa, e a camada de aplicação apresenta as informações ao usuário, por meio de painéis ou aplicativos.
 
 Essa organização orienta as seções seguintes deste trabalho. Os sensores e os microcontroladores correspondem à camada de percepção, os protocolos de comunicação à camada de rede, e o backend e o banco de dados à camada de nuvem. A camada de aplicação corresponde ao painel web. Na arquitetura proposta, apresentada no Capítulo~\ref{textuais/cap5}, a rede não é implementada como uma camada independente, mas apenas pelos protocolos que ligam as demais camadas.
 
@@ -296,7 +296,7 @@ Esse poder de processamento permite aplicações mais complexas, como aprendizad
 
 \subsubsection{Comparativo entre plataformas}
 
-As três plataformas atendem a necessidades distintas. O Arduino Uno é adequado para controle local simples; o ESP32 reúne leitura de sensores e conectividade sem fio em uma única placa; e o Raspberry Pi oferece maior capacidade de processamento, mas depende de periféricos externos para leituras analógicas. A Tabela~\ref{tab:comparativo-plataformas} resume as principais características.
+As três plataformas atendem a necessidades distintas. O Arduino Uno é adequado para controle local simples, o ESP32 reúne leitura de sensores e conectividade sem fio em uma única placa, e o Raspberry Pi oferece maior capacidade de processamento, mas depende de periféricos externos para leituras analógicas. A Tabela~\ref{tab:comparativo-plataformas} resume as principais características.
 
 \begin{table}[htbp]
   \centering
