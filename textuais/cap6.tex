@@ -27,7 +27,7 @@ Cada teste foi comprovado por evidências coletadas nas três partes do sistema,
 
 Nos testes T03 a T10, o sensor de umidade do solo não estava inserido na terra no momento da captura dos dados. Por isso, ao contrário do T02, a umidade do solo aparece como 0,0\% nos registros desses testes. Essa leitura não indica falha do sensor, e manteve a umidade abaixo do limiar configurado, condição necessária para os testes da irrigação automática (T05) e do bloqueio sem autorização (T06).
 
-A Tabela~\ref{tab:parametros-teste} apresenta os parâmetros configurados no painel durante os testes. São esses os valores usados nos cálculos das Equações~\ref{eq:ra} a~\ref{eq:tempo-manual}, e eles servem de referência para interpretar os resultados registrados pelo firmware. Embora a cultura de referência do trabalho seja a alface (Seção~\ref{sec:problema-escopo}), os testes usaram culturas já cadastradas no catálogo, como a batata e o tomate, pois o objetivo era verificar o funcionamento do sistema, e não o manejo de uma cultura específica.
+A Tabela~\ref{tab:parametros-teste} apresenta os parâmetros configurados no painel durante os testes. São esses os valores usados nos cálculos das Equações~\ref{eq:ra} a~\ref{eq:tempo-manual}, e eles servem de referência para interpretar os resultados registrados pelo firmware. Embora a cultura de referência do trabalho seja a alface (Seção~\ref{sec:problema-escopo}), os testes usaram uma cultura já cadastrada no catálogo, o tomate, pois o objetivo era verificar o funcionamento do sistema, e não o manejo de uma cultura específica.
 
 \begin{table}[htbp]
   \centering
@@ -42,7 +42,7 @@ A Tabela~\ref{tab:parametros-teste} apresenta os parâmetros configurados no pai
     \hline
     Latitude da área ($\varphi$) & 0$^{\circ}$ \\
     Cultura e fase de desenvolvimento & Tomate, fase 3 \\
-    Coeficiente de cultura (K$_c$) & 0,4 \\ % CONFERIR: ETc/ET0 do T05 = 1,61/4,02 = 0,4; confirmar a cultura e a fase que dão esse Kc
+    Coeficiente de cultura (K$_c$) & 0,4 \\
     Espaçamento entre plantas ($E_p$) & 0,3~m \\
     Espaçamento entre linhas ($E_l$) & 0,3~m \\
     Vazão do gotejador ($q_g$) & 2~L\,h$^{-1}$ \\
@@ -188,7 +188,7 @@ Temp=24.4C Umid.Ar=37.0% Umid.Solo=61.5% Modo=automatico
 % ---------------------------------------------------------------------
 \subsection{T03: Irrigação manual}
 
-Este teste verifica o caminho completo de um comando, do painel até o acionamento do relé, e o registro da irrigação no histórico. Com o dispositivo em modo manual, o Administrador/Operador informou no dashboard um volume de 10~L e iniciou a irrigação. O painel passou a indicar a irrigação em andamento (Figura~\ref{fig:t03-andamento}), e o dispositivo recebeu o comando \texttt{START\_IRRIGATION} e ligou o relé (Quadro~\ref{lst:log-t03}). Ao fim do tempo calculado, o relé foi desligado e o registro da irrigação foi enviado à API, aparecendo no histórico do painel (Figura~\ref{fig:t03-historico}). Esperava-se que o tempo de abertura correspondesse ao calculado pela Equação~\ref{eq:tempo-manual} e que o histórico registrasse a irrigação no modo manual. Como mostra a Tabela~\ref{tab:t03}, o tempo registrado no histórico foi igual ao tempo calculado de 600~s.
+Este teste verifica o caminho completo de um comando, do painel até o acionamento do relé, e o registro da irrigação no histórico. Com o dispositivo em modo manual, o Administrador/Operador informou no dashboard um volume de 10~L e iniciou a irrigação. O painel passou a indicar a irrigação em andamento (Figura~\ref{fig:t03-andamento}), e o dispositivo recebeu o comando \texttt{START\_IRRIGATION} e ligou o relé (Quadro~\ref{lst:log-t03}). Ao fim do tempo calculado, o relé foi desligado e o registro da irrigação foi enviado à API, aparecendo no histórico do painel (Figura~\ref{fig:t03-historico}). Esperava-se que o tempo de abertura correspondesse ao calculado pela Equação~\ref{eq:tempo-manual} e que o histórico registrasse a irrigação no modo manual. O trecho de log mostra o recebimento do comando e o acionamento do relé, e a conclusão da irrigação é comprovada pelo registro no histórico. Como mostra a Tabela~\ref{tab:t03}, o tempo registrado no histórico foi igual ao tempo calculado de 600~s.
 
 % Mensagens esperadas:
 %   Disparando irrigacao manual: 2.00L, duracao estimada 240.0s.
