@@ -470,26 +470,34 @@ O Quadro~\ref{lst:log-t10} mostra que o comportamento foi o esperado. O envio da
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language={}, caption={Log do monitor serial com as requisições recusadas pela API (T10)}, label={lst:log-t10}]
 [21:12:46.760] Temp=30.8C Umid.Ar=56.0% Umid.Solo=0.0% Modo=manual
-[21:12:47.679] Falha ao enviar para <API>/api/webhooks/telemetry
+[21:12:47.679] Falha ao enviar para
+  <API>/api/devices/esp32-01/telemetry
   (tentativa 1/5): HTTP 401. Nova tentativa em 2.0s.
-[21:12:50.648] Falha ao enviar para <API>/api/webhooks/telemetry
+[21:12:50.648] Falha ao enviar para
+  <API>/api/devices/esp32-01/telemetry
   (tentativa 2/5): HTTP 401. Nova tentativa em 4.0s.
-[21:12:51.671] Falha ao enviar para <API>/api/webhooks/status
+[21:12:51.671] Falha ao enviar para
+  <API>/api/devices/esp32-01/status
   (tentativa 4/5): HTTP 401. Nova tentativa em 16.0s.
-[21:12:55.564] Falha ao enviar para <API>/api/webhooks/telemetry
+[21:12:55.564] Falha ao enviar para
+  <API>/api/devices/esp32-01/telemetry
   (tentativa 3/5): HTTP 401. Nova tentativa em 8.0s.
-[21:13:04.579] Falha ao enviar para <API>/api/webhooks/telemetry
+[21:13:04.579] Falha ao enviar para
+  <API>/api/devices/esp32-01/telemetry
   (tentativa 4/5): HTTP 401. Nova tentativa em 16.0s.
 [21:13:04.921] Erro no long polling de comandos: HTTP 401.
   Nova tentativa em 30s.
-[21:13:08.568] Falha ao enviar para <API>/api/webhooks/status
+[21:13:08.568] Falha ao enviar para
+  <API>/api/devices/esp32-01/status
   (tentativa 5/5): HTTP 401. Nova tentativa em 32.0s.
-[21:13:21.573] Falha ao enviar para <API>/api/webhooks/telemetry
+[21:13:21.573] Falha ao enviar para
+  <API>/api/devices/esp32-01/telemetry
   (tentativa 5/5): HTTP 401. Nova tentativa em 32.0s.
 [21:13:36.114] Erro no long polling de comandos: HTTP 401.
   Nova tentativa em 30s.
 [21:13:40.581] Todas as tentativas de envio para
-  <API>/api/webhooks/status falharam. Payload descartado.
+  <API>/api/devices/esp32-01/status falharam.
+  Payload descartado.
 \end{lstlisting}
 \vspace{-0.5\baselineskip}
 \fonte{Elaborado pelo autor}
