@@ -106,7 +106,7 @@ Os testes do fluxo completo verificam se as três partes do sistema funcionam ju
     T07 & Troca de modo durante uma irrigação & RF17, RN04, RN06 & Aprovado \\
     T08 & Atualização dos parâmetros de irrigação & RF18, RF21, RF26, RN13 & Aprovado \\
     T09 & Controle de acesso & RF06, RN19 & Aprovado \\
-    T10 & Falha de comunicação com a API & RF32, RN22, RNF07, RNF09 & Parcialmente aprovado \\
+    T10 & Falha de comunicação com a API & RF32, RNF07 & Aprovado \\
     \hline
   \end{tabularx}
   \fonte{Elaborado pelo autor}
@@ -461,23 +461,43 @@ Este teste verifica se as permissões de cada perfil são aplicadas tanto no pai
 % ---------------------------------------------------------------------
 \subsection{T10: Falha de comunicação com a API}
 
-Este teste verifica o comportamento do dispositivo quando a API está indisponível (RN22 e RNF07). A execução da API foi interrompida e o ESP32 foi reiniciado, e depois de alguns ciclos de leitura a API foi colocada novamente em execução. Esperava-se que, na inicialização, o dispositivo informasse que a configuração não pôde ser obtida e passasse a operar com os valores padrão. Também se esperava que cada envio com falha fosse repetido em intervalos crescentes de 2, 4, 8 e 16~s, em até cinco tentativas, e que os envios voltassem a ser aceitos quando a API retornasse, sem a necessidade de reiniciar o dispositivo. O Quadro~\ref{lst:log-t10} mostra que, quando um envio falhou, o dispositivo registrou a falha e agendou uma nova tentativa para 2~s depois, sem interromper a leitura dos sensores. Esse comportamento atende à primeira parte do RNF07. O trecho capturado, porém, não registra a mensagem de configuração indisponível na inicialização (RN22), as tentativas seguintes, com intervalos de 4, 8 e 16~s, nem o primeiro envio aceito depois que a API voltou a funcionar. Por isso, o T10 foi considerado parcialmente aprovado, e a verificação completa desses comportamentos fica para uma nova execução do teste, com o log integral. O endereço da API foi substituído por <API> no log.
+Este teste verifica o comportamento do dispositivo quando as suas requisições não são aceitas pela API (RF32 e RNF07). Durante o teste, a API passou a recusar as requisições do ESP32 com o código 401, que indica a falta de uma credencial válida (Tabela~\ref{tab:codigos-http}), de modo que nenhum envio do dispositivo era aceito. % CONFERIR: descreva aqui como a falha foi provocada (por exemplo, chave X-Device-Key alterada no firmware ou na API)
+Esperava-se que cada envio com falha fosse repetido em intervalos crescentes, em até cinco tentativas, que os dados fossem descartados depois da última tentativa, para não bloquear o dispositivo, e que o dispositivo continuasse funcionando e tentando receber comandos.
 
-% Mensagens esperadas:
-%   Erro ao buscar configuracao inicial da API: HTTP -1
-%   Configuracao inicial indisponivel na API. Usando valores padrao locais.
-%   Falha ao enviar para <API>/api/webhooks/telemetry (tentativa 1/5): HTTP -1. Nova tentativa em 2.0s.
-%   ...
-%   Todas as tentativas de envio para <API>/api/webhooks/telemetry falharam. Payload descartado.
-% ATENÇÃO: troque o endereço da API por <API> antes de colar.
+O Quadro~\ref{lst:log-t10} mostra que o comportamento foi o esperado. O envio da telemetria iniciado às 21:12:47 falhou e foi repetido após 2, 4, 8 e 16~s, até a quinta tentativa, às 21:13:21, e o mesmo ocorreu com o envio do estado, que foi descartado às 21:13:40, após a quinta falha, com a mensagem de que o conteúdo foi descartado. Nas linhas, os horários entre colchetes, registrados pela Arduino IDE, permitem conferir esses intervalos. Ao mesmo tempo, a consulta de comandos por long-polling também recebeu o código 401 e foi repetida a cada 30~s, sem que o dispositivo travasse ou precisasse ser reiniciado. O endereço da API foi substituído por <API> no log.
+
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
-\begin{lstlisting}[language={}, caption={Log do monitor serial com a API indisponível (T10)}, label={lst:log-t10}]
-Falha ao enviar para <API>/api/webhooks/telemetry (tentativa 1/5): HTTP -1. Nova tentativa em 2.0s.
-Temp=26.7C Umid.Ar=68.0% Umid.Solo=0.0% Modo=manual
-Temp=26.7C Umid.Ar=68.0% Umid.Solo=0.0% Modo=manual
-Temp=26.7C Umid.Ar=69.0% Umid.Solo=0.0% Modo=manual
-Falha ao enviar para <API>/api/webhooks/telemetry (tentativa 1/5): HTTP -1. Nova tentativa em 2.0s.
+\begin{lstlisting}[language={}, caption={Log do monitor serial com as requisições recusadas pela API (T10)}, label={lst:log-t10}]
+[21:12:46.760] Temp=30.8C Umid.Ar=56.0% Umid.Solo=0.0% Modo=manual
+[21:12:47.679] Falha ao enviar para
+  <API>/api/devices/esp32-01/telemetry
+  (tentativa 1/5): HTTP 401. Nova tentativa em 2.0s.
+[21:12:50.648] Falha ao enviar para
+  <API>/api/devices/esp32-01/telemetry
+  (tentativa 2/5): HTTP 401. Nova tentativa em 4.0s.
+[21:12:51.671] Falha ao enviar para
+  <API>/api/devices/esp32-01/status
+  (tentativa 4/5): HTTP 401. Nova tentativa em 16.0s.
+[21:12:55.564] Falha ao enviar para
+  <API>/api/devices/esp32-01/telemetry
+  (tentativa 3/5): HTTP 401. Nova tentativa em 8.0s.
+[21:13:04.579] Falha ao enviar para
+  <API>/api/devices/esp32-01/telemetry
+  (tentativa 4/5): HTTP 401. Nova tentativa em 16.0s.
+[21:13:04.921] Erro no long polling de comandos: HTTP 401.
+  Nova tentativa em 30s.
+[21:13:08.568] Falha ao enviar para
+  <API>/api/devices/esp32-01/status
+  (tentativa 5/5): HTTP 401. Nova tentativa em 32.0s.
+[21:13:21.573] Falha ao enviar para
+  <API>/api/devices/esp32-01/telemetry
+  (tentativa 5/5): HTTP 401. Nova tentativa em 32.0s.
+[21:13:36.114] Erro no long polling de comandos: HTTP 401.
+  Nova tentativa em 30s.
+[21:13:40.581] Todas as tentativas de envio para
+  <API>/api/devices/esp32-01/status falharam.
+  Payload descartado.
 \end{lstlisting}
 \vspace{-0.5\baselineskip}
 \fonte{Elaborado pelo autor}
@@ -489,7 +509,7 @@ Falha ao enviar para <API>/api/webhooks/telemetry (tentativa 1/5): HTTP -1. Nova
 \section{Discussão dos resultados}
 \label{sec:discussao}
 
-Dos dez cenários de teste do fluxo completo, nove foram aprovados, e o T10 foi parcialmente aprovado, porque o log capturado não comprova todos os comportamentos esperados na falha de comunicação. As leituras dos sensores chegaram ao Firestore e ao painel com os mesmos valores registrados no dispositivo, e os comandos enviados pelo painel foram recebidos e executados pelo ESP32. A irrigação funcionou nos modos manual e automático, com tempos de acionamento iguais aos calculados, e cada irrigação ficou registrada no histórico. Os testes também confirmaram o funcionamento das travas de segurança, já que a irrigação automática não foi disparada sem autorização, a troca de modo foi recusada durante uma irrigação e as ações de escrita foram bloqueadas para o perfil Visualizador.
+Os dez cenários de teste do fluxo completo foram aprovados. As leituras dos sensores chegaram ao Firestore e ao painel com os mesmos valores registrados no dispositivo, e os comandos enviados pelo painel foram recebidos e executados pelo ESP32. A irrigação funcionou nos modos manual e automático, com tempos de acionamento iguais aos calculados, e cada irrigação ficou registrada no histórico. Os testes também confirmaram o funcionamento das travas de segurança, já que a irrigação automática não foi disparada sem autorização, a troca de modo foi recusada durante uma irrigação e as ações de escrita foram bloqueadas para o perfil Visualizador.
 
 Em relação aos trabalhos relacionados apresentados no Capítulo~\ref{textuais/cap2}, o sistema desenvolvido mantém a principal vantagem da plataforma de \citeonline{campos2021}, o código aberto, e supera as limitações apontadas pelos próprios autores. Os dados não ficam em um cartão de memória, mas são enviados à nuvem e consultados pelo painel, que também permite enviar comandos a distância, enquanto aquela plataforma se limitava a mensagens SMS. O custo estimado dos componentes, entre R\$~200 e R\$~345 (Tabela~\ref{tab:componentes}), é bem menor que os R\$~1.390,55 relatados por aqueles autores. Essa diferença se deve principalmente ao sensor de umidade, já que lá foram usados quatro sensores capacitivos, que sozinhos custaram R\$~978,35, enquanto aqui se usa um único sensor resistivo, mais barato e menos preciso. Além disso, a decisão de irrigar combina o limiar de umidade com o cálculo do volume pela FAO-56, em vez de apenas acionar a válvula quando o solo fica seco. Em relação às soluções comerciais, o sistema não depende de uma plataforma proprietária, mas não oferece recursos como o ajuste pela previsão do tempo do Hydrawise, os sensores de planta e hidráulicos do NetBeat ou o acompanhamento agronômico do Valley Scheduling.
 

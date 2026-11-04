@@ -92,7 +92,7 @@ O código-fonte das três aplicações está disponível em repositórios públi
 
 No modelo de \citeonline{morchid2024}, a rede é uma camada própria, responsável por transportar os dados entre a percepção e a nuvem. Na arquitetura proposta neste trabalho, porém, ela não foi implementada como uma camada independente, com equipamentos ou software próprios. A comunicação é feita apenas por protocolos, usados pelas demais camadas para trocar dados entre si. O ESP32 conecta-se ao roteador Wi-Fi do local como uma estação comum e volta a se conectar automaticamente se a conexão cair (RNF09), e tanto o dispositivo quanto o painel se comunicam com a API pela internet, usando o protocolo HTTPS, que protege as mensagens com o protocolo TLS (RNF03). As mensagens seguem o estilo REST, com os dados representados em JSON (RNF15). Por isso, a Figura~\ref{fig:arquitetura} representa a comunicação pelas setas que ligam as camadas, identificadas pelo rótulo Comunicação, e não como uma camada separada.
 
-Cada informação enviada pelo dispositivo é uma requisição HTTP com um documento JSON no corpo. O Quadro~\ref{lst:json-telemetria} mostra, como exemplo, a mensagem de telemetria que o ESP32 envia a cada 10 segundos à rota \texttt{/api/webhooks/telemetry}.
+Cada informação enviada pelo dispositivo é uma requisição HTTP com um documento JSON no corpo. O Quadro~\ref{lst:json-telemetria} mostra, como exemplo, a mensagem de telemetria que o ESP32 envia a cada 10 segundos à rota \texttt{/api/devices/esp32-01/telemetry}.
 
 \vspace{0.6\baselineskip}
 \noindent\begin{minipage}{\linewidth}
@@ -582,7 +582,7 @@ O método recebe, na linha 1, o identificador do dispositivo e o novo modo. A li
 \subsection{Rotas da API}
 \label{subsec:endpoints}
 
-A Tabela~\ref{tab:endpoints} apresenta as rotas da API, separadas pelo cliente que as utiliza. Cada rota combina um endereço com um método HTTP, que indica a operação desejada. O método GET obtém dados, o POST envia dados novos e o PUT altera dados existentes \cite{rfc9110}. Todas as rotas do painel que alteram o estado do sistema enfileiram um comando para o dispositivo, além de atualizar o Firestore.
+A Tabela~\ref{tab:endpoints} apresenta as rotas da API, separadas pelo cliente que as utiliza. Cada rota combina um endereço com um método HTTP, que indica a operação desejada. O método GET obtém dados, o POST envia dados novos e o PUT altera dados existentes \cite{rfc9110}. Por isso, uma mesma rota pode aparecer nas duas partes da tabela com métodos diferentes, como \texttt{/api/devices/\{id\}/telemetry}, que recebe as leituras do dispositivo pelo POST e as entrega ao painel pelo GET. Todas as rotas do painel que alteram o estado do sistema enfileiram um comando para o dispositivo, além de atualizar o Firestore.
 
 {\small
 \renewcommand{\arraystretch}{1.15}
@@ -607,9 +607,9 @@ A Tabela~\ref{tab:endpoints} apresenta as rotas da API, separadas pelo cliente q
   \endlastfoot
   \multicolumn{3}{l}{\textbf{Dispositivo (autenticado pela chave X-Device-Key)}} \\
   \hline
-  POST & \texttt{/api/webhooks/telemetry} & Registra uma leitura dos sensores \\
-  POST & \texttt{/api/webhooks/status} & Atualiza o estado do dispositivo \\
-  POST & \texttt{/api/webhooks/history} & Registra uma irrigação concluída \\
+  POST & \texttt{/api/devices/\{id\}/telemetry} & Registra uma leitura dos sensores \\
+  POST & \texttt{/api/devices/\{id\}/status} & Atualiza o estado do dispositivo \\
+  POST & \texttt{/api/devices/\{id\}/irrigation-history} & Registra uma irrigação concluída \\
   GET & \texttt{/api/devices/\{id\}/config} & Devolve a configuração inicial \\
   GET & \texttt{/api/devices/\{id\}/commands/poll} & Aguarda até 30~s por um comando (long-polling) \\
   \hline
@@ -691,7 +691,7 @@ A API usa dois mecanismos de autenticação, um para cada cliente, configurados 
 \noindent\begin{minipage}{\linewidth}
 \begin{lstlisting}[language=Java, caption={Verificação da chave do dispositivo (trecho de DeviceKeyFilter)}, label={lst:devicekey}]
 String cleanedUri = StringUtils.cleanPath(request.getRequestURI());
-if (!DevicePaths.matches(cleanedUri)) {
+if (!DevicePaths.matches(request.getMethod(), cleanedUri)) {
     filterChain.doFilter(request, response);
     return;
 }
@@ -708,7 +708,7 @@ filterChain.doFilter(request, response);
 \end{minipage}
 \medskip
 
-A linha 1 obtém o endereço da rota pedida, e as linhas 2 a 5 verificam se ela pertence ao dispositivo. Se a rota for do painel, o filtro a deixa seguir sem verificar a chave, já que ela será tratada pelo filtro do Firebase. Para as rotas do dispositivo, a linha 6 lê o cabeçalho \texttt{X-Device-Key}, e as linhas 7 a 11 comparam o valor recebido com a chave configurada. Se a chave estiver ausente ou for diferente, as linhas 8 e 9 recusam a requisição com o código HTTP 401, que indica a falta de uma credencial válida. Se estiver correta, a linha 12 deixa a requisição seguir para o controlador.
+A linha 1 obtém o endereço da rota pedida, e as linhas 2 a 5 verificam, pelo método HTTP e pelo endereço, se ela pertence ao dispositivo. O método é necessário porque algumas rotas do dispositivo e do painel têm o mesmo endereço, como \texttt{/api/devices/\{id\}/telemetry}, em que o POST é usado pelo dispositivo para enviar leituras e o GET é usado pelo painel para consultá-las. Se a rota for do painel, o filtro a deixa seguir sem verificar a chave, já que ela será tratada pelo filtro do Firebase. Para as rotas do dispositivo, a linha 6 lê o cabeçalho \texttt{X-Device-Key}, e as linhas 7 a 11 comparam o valor recebido com a chave configurada. Se a chave estiver ausente ou for diferente, as linhas 8 e 9 recusam a requisição com o código HTTP 401, que indica a falta de uma credencial válida. Se estiver correta, a linha 12 deixa a requisição seguir para o controlador.
 
 O usuário do painel faz login diretamente no Firebase Authentication, com e-mail e senha, e recebe um token no formato JWT \cite{firebaseauth2026,rfc7519}, que o painel envia no cabeçalho HTTP \texttt{Authorization} de cada requisição. O filtro \texttt{FirebaseAuthFilter} valida esse token e define o papel do usuário, como mostra o Quadro~\ref{lst:papel}.
 
