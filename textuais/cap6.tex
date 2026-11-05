@@ -27,7 +27,7 @@ Cada teste foi comprovado por evidências coletadas nas três partes do sistema,
 
 Nos testes T03 a T10, o sensor de umidade do solo não estava inserido na terra no momento da captura dos dados. Por isso, ao contrário do T02, a umidade do solo aparece como 0,0\% nos registros desses testes. Essa leitura não indica falha do sensor, e manteve a umidade abaixo do limiar configurado, condição necessária para os testes da irrigação automática (T05) e do bloqueio sem autorização (T06).
 
-A Tabela~\ref{tab:parametros-teste} apresenta os parâmetros configurados no painel durante os testes. São esses os valores usados nos cálculos das Equações~\ref{eq:ra} a~\ref{eq:tempo-manual}, e eles servem de referência para interpretar os resultados registrados pelo firmware. Embora a cultura de referência do trabalho seja a alface (Seção~\ref{sec:problema-escopo}), os testes usaram uma cultura já cadastrada no catálogo, o tomate, pois o objetivo era verificar o funcionamento do sistema, e não o manejo de uma cultura específica.
+A Tabela~\ref{tab:parametros-teste} apresenta os parâmetros configurados no painel durante os testes. São esses os valores usados nos cálculos das Equações~\ref{eq:ra} a~\ref{eq:tempo-manual}, e eles servem de referência para interpretar os resultados registrados pelo firmware. Os testes usaram uma cultura já cadastrada no catálogo, o tomate, pois o objetivo era verificar o funcionamento do sistema, e não o manejo de uma cultura específica.
 
 \begin{table}[htbp]
   \centering
@@ -406,7 +406,7 @@ Este teste verifica se o sistema impede a troca do modo de operação enquanto u
 % ---------------------------------------------------------------------
 \subsection{T08: Atualização dos parâmetros de irrigação}
 
-Este teste verifica se os parâmetros alterados no painel são gravados e chegam ao dispositivo. Na tela de configurações, a cultura foi alterada de alface para tomate, na fase 3, e os parâmetros foram salvos. Esperava-se que o K$_c$ correspondente fosse aplicado automaticamente a partir do catálogo (RN13), que o documento do dispositivo fosse atualizado no Firestore e que o firmware recebesse os novos parâmetros. A nova cultura foi gravada no banco de dados, o firmware registrou a atualização dos parâmetros no log (Quadro~\ref{lst:log-t08}) e o painel exibiu uma confirmação ao usuário (Figura~\ref{fig:t08-config}).
+Este teste verifica se os parâmetros alterados no painel são gravados e chegam ao dispositivo. Na tela de configurações, a cultura foi alterada para tomate, na fase 3, e os parâmetros foram salvos. Esperava-se que o K$_c$ correspondente fosse aplicado automaticamente a partir do catálogo (RN13), que o documento do dispositivo fosse atualizado no Firestore e que o firmware recebesse os novos parâmetros. A nova cultura foi gravada no banco de dados, o firmware registrou a atualização dos parâmetros no log (Quadro~\ref{lst:log-t08}) e o painel exibiu uma confirmação ao usuário (Figura~\ref{fig:t08-config}).
 
 % Mensagem esperada:
 %   Parametros de irrigacao atualizados.
